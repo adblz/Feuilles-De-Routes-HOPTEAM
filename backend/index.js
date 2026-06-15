@@ -17,38 +17,42 @@ app.post('/send-email', upload.single('file'), async (req, res) => {
   if (!to)       return res.status(400).json({ error: 'Email destinataire manquant.' });
 
   const body = {
-    sender: {
+    personalizations: [{ to: [{ email: to }] }],
+    from: {
+      email: process.env.SENDGRID_SENDER_EMAIL,
       name:  techName || 'Feuille de Route',
-      email: process.env.BREVO_SENDER_EMAIL,
     },
-    to: [{ email: to }],
-    subject:     `Rapport d'intervention — ${techName || 'Technicien'}`,
-    htmlContent: '<p>Veuillez trouver en pièce jointe le rapport d\'intervention.</p>',
-    attachment: [{
-      name:    req.file.originalname || 'rapport.pdf',
-      content: req.file.buffer.toString('base64'),
+    subject:  `Rapport d'intervention — ${techName || 'Technicien'}`,
+    content:  [{ type: 'text/html', value: '<p>Veuillez trouver en pièce jointe le rapport d\'intervention.</p>' }],
+    attachments: [{
+      content:     req.file.buffer.toString('base64'),
+      filename:    req.file.originalname || 'rapport.pdf',
+      type:        'application/pdf',
+      disposition: 'attachment',
     }],
   };
 
-  if (techEmail) body.replyTo = { email: techEmail };
+  if (techEmail) body.reply_to = { email: techEmail };
 
   try {
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'accept':       'application/json',
-        'api-key':      process.env.BREVO_API_KEY,
-        'content-type': 'application/json',
+        'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'Content-Type':  'application/json',
       },
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    if (!response.ok) {
+      const data = await response.json();
+      const msg = data.errors?.[0]?.message || 'Erreur SendGrid';
+      return res.status(500).json({ error: msg });
+    }
 
-    if (!response.ok) return res.status(500).json({ error: data.message || 'Erreur Brevo' });
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Erreur Brevo :', err.message);
+    console.error('Erreur SendGrid :', err.message);
     return res.status(500).json({ error: err.message });
   }
 });
