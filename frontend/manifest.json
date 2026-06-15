@@ -1,0 +1,17 @@
+{
+  "name": "Feuille de Route",
+  "short_name": "Feuille de Route",
+  "description": "Rapport journalier d'interventions – Hopteam",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef2f7",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
