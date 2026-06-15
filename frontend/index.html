@@ -447,7 +447,11 @@
         </div>
         <div class="form-group">
             <label>Email du responsable</label>
-            <input type="email" id="s-email" placeholder="responsable@exemple.fr">
+            <input type="email" id="s-email" placeholder="responsable@hopteam.fr">
+        </div>
+        <div class="form-group">
+            <label>Votre email (technicien)</label>
+            <input type="email" id="s-tech-email" placeholder="prenom.nom@hopteam.fr">
         </div>
         <div class="form-group">
             <label>Seuil heures supplémentaires (h/jour)</label>
@@ -472,25 +476,29 @@ function getLogoBase64() { return LOGO_B64; }
 
 // ─── Paramètres ────────────────────────────────────────────────────────────────
 let cfg = {
-    company: localStorage.getItem('cfg_company') || '',
-    email:   localStorage.getItem('cfg_email')   || '',
-    seuil:   parseFloat(localStorage.getItem('cfg_seuil') || '8')
+    company:   localStorage.getItem('cfg_company')    || '',
+    email:     localStorage.getItem('cfg_email')      || '',
+    techEmail: localStorage.getItem('cfg_tech_email') || '',
+    seuil:     parseFloat(localStorage.getItem('cfg_seuil') || '8')
 };
 
 function openSettings() {
-    document.getElementById('s-company').value = cfg.company;
-    document.getElementById('s-email').value   = cfg.email;
-    document.getElementById('s-seuil').value   = cfg.seuil;
+    document.getElementById('s-company').value    = cfg.company;
+    document.getElementById('s-email').value      = cfg.email;
+    document.getElementById('s-tech-email').value = cfg.techEmail;
+    document.getElementById('s-seuil').value      = cfg.seuil;
     document.getElementById('modal-settings').classList.add('open');
 }
 function fermerModal(id) { document.getElementById(id).classList.remove('open'); }
 function sauvegarderParams() {
-    cfg.company = document.getElementById('s-company').value.trim();
-    cfg.email   = document.getElementById('s-email').value.trim();
-    cfg.seuil   = parseFloat(document.getElementById('s-seuil').value) || 8;
-    localStorage.setItem('cfg_company', cfg.company);
-    localStorage.setItem('cfg_email',   cfg.email);
-    localStorage.setItem('cfg_seuil',   cfg.seuil);
+    cfg.company   = document.getElementById('s-company').value.trim();
+    cfg.email     = document.getElementById('s-email').value.trim();
+    cfg.techEmail = document.getElementById('s-tech-email').value.trim();
+    cfg.seuil     = parseFloat(document.getElementById('s-seuil').value) || 8;
+    localStorage.setItem('cfg_company',    cfg.company);
+    localStorage.setItem('cfg_email',      cfg.email);
+    localStorage.setItem('cfg_tech_email', cfg.techEmail);
+    localStorage.setItem('cfg_seuil',      cfg.seuil);
     fermerModal('modal-settings');
     if (cfg.company && cfg.email) document.getElementById('setup-notice').style.display = 'none';
 }
@@ -898,6 +906,7 @@ function envoyerMail() {
                 fd.append('file', blob, fname);
                 fd.append('to', cfg.email);
                 fd.append('techName', tech);
+                if (cfg.techEmail) fd.append('techEmail', cfg.techEmail);
                 return fetch('/send-email', { method: 'POST', body: fd });
             })
             .then(res => {
