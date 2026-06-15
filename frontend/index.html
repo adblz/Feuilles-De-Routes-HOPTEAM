@@ -907,7 +907,7 @@ function envoyerMail() {
                 fd.append('to', cfg.email);
                 fd.append('techName', tech);
                 if (cfg.techEmail) fd.append('techEmail', cfg.techEmail);
-                return fetch('/send-email', { method: 'POST', body: fd });
+                return fetch('https://feuilles-de-routes-hopteam.onrender.com/send-email', { method: 'POST', body: fd });
             })
             .then(res => {
                 if (!res.ok) return res.json().then(d => Promise.reject(new Error(d.error || res.statusText)));
