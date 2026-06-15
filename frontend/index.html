@@ -841,34 +841,76 @@ function envoyerMail() {
         return;
     }
 
+    if (typeof html2pdf === 'undefined') {
+        alert('La librairie html2pdf ne s\'est pas chargée. Vérifiez votre connexion ou désactivez uBlock.');
+        return;
+    }
+
     const tech    = document.getElementById('technicien').value || 'Technicien';
-    const dateVal = document.getElementById('date').value;
-    const dateAff = dateVal
-        ? new Date(dateVal + 'T12:00').toLocaleDateString('fr-FR')
-        : new Date().toLocaleDateString('fr-FR');
-    const travail = document.getElementById('heures-travail').value || '—';
-    const supp    = document.getElementById('heures-supp').value    || '0h00';
-    const nbInts  = lireTousLesElements().filter(i => i.kind === 'intervention').length;
+    const dateVal = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+    const fname   = `feuille-route_${tech.replace(/\s+/g, '-').toLowerCase()}_${dateVal}.pdf`;
 
-    genererPDF().then(() => {
-        const sujet = encodeURIComponent(`Feuille de route — ${tech} — ${dateAff}`);
-        const corps = encodeURIComponent(
-`Bonjour,
+    setBusy(true);
 
-Veuillez trouver en pièce jointe la feuille de route du ${dateAff} pour ${tech}.
+    const scrollPrev = { x: window.scrollX, y: window.scrollY };
+    window.scrollTo(0, 0);
 
-Résumé :
-- Heures travaillées (−1h trajet) : ${travail}
-- Heures supplémentaires          : ${supp}
-- Nombre d'interventions          : ${nbInts}
+    const el = document.createElement('div');
+    el.className = 'pdf-wrap';
+    el.style.cssText = 'position:absolute;top:0;left:0;width:794px;background:white;';
+    el.innerHTML = construirePDF();
+    document.body.appendChild(el);
 
-Le PDF a été téléchargé sur votre appareil. Pensez à l'attacher à cet email avant d'envoyer.
+    const w = el.offsetWidth || 794;
+    const h = el.offsetHeight;
 
-Cordialement,
-${tech}`);
+    const restaurer = () => {
+        if (document.body.contains(el)) document.body.removeChild(el);
+        window.scrollTo(scrollPrev.x, scrollPrev.y);
+        setBusy(false);
+    };
 
-        window.open(`mailto:${cfg.email}?subject=${sujet}&body=${corps}`, '_blank');
-    });
+    const opts = {
+        margin:      [8, 8, 8, 8],
+        filename:    fname,
+        image:       { type: 'jpeg', quality: 0.97 },
+        html2canvas: {
+            scale: 2, useCORS: true, logging: false,
+            backgroundColor: '#ffffff',
+            width: w, height: h,
+            windowWidth: w, windowHeight: h,
+            scrollX: 0, scrollY: 0, x: 0, y: 0,
+            onclone(clonedDoc) {
+                clonedDoc.getElementById('loading-overlay').style.display = 'none';
+            }
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    setTimeout(() => {
+        html2pdf()
+            .set(opts)
+            .from(el)
+            .outputPdf('blob')
+            .then(blob => {
+                restaurer();
+                const fd = new FormData();
+                fd.append('file', blob, fname);
+                fd.append('to', cfg.email);
+                fd.append('techName', tech);
+                return fetch('/send-email', { method: 'POST', body: fd });
+            })
+            .then(res => {
+                if (!res.ok) return res.json().then(d => Promise.reject(new Error(d.error || res.statusText)));
+                return res.json();
+            })
+            .then(() => alert('Email envoyé avec succès à ' + cfg.email + ' !'))
+            .catch(err => {
+                restaurer();
+                console.error(err);
+                alert('Erreur lors de l\'envoi :\n' + (err.message || err));
+            });
+    }, 250);
 }
 
 // ─── Nouvelle feuille ──────────────────────────────────────────────────────────
