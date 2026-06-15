@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feuille de Route</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef2f7;
+            color: #2d3748;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #f97316 100%);
+            color: #1a1a1a;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(249,115,22,0.25);
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .header-logo { height: 48px; width: auto; }
+        header h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+        header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
+
+        .btn-settings {
+            background: rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.18);
+            color: #1a1a1a;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-settings:hover { background: rgba(0,0,0,0.15); }
+
+        .container { max-width: 920px; margin: 28px auto; padding: 0 16px 40px; }
+
+        .notice {
+            background: #fffbeb;
+            border-left: 4px solid #f6ad55;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #744210;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+        }
+        .card h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a365d;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 13px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2d3748;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: white;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49,130,206,0.12);
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .auto-field {
+            background: #f0fff4 !important;
+            border-color: #9ae6b4 !important;
+            color: #22543d !important;
+            font-weight: 700 !important;
+        }
+
+        /* Intervention */
+        .intervention-card {
+            background: #f7fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+
+        /* Pause */
+        .pause-card {
+            background: #fffbeb;
+            border: 1.5px solid #f6ad55;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+        .pause-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #c05621;
+        }
+
+        .int-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .int-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2b6cb0;
+        }
+        .btn-remove {
+            background: #fff5f5;
+            color: #c53030;
+            border: 1px solid #fed7d7;
+            padding: 5px 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-remove:hover { background: #fed7d7; }
+
+        /* Boutons d'ajout */
+        .add-buttons-row { display: flex; gap: 10px; }
+        .btn-add-int {
+            flex: 1;
+            padding: 13px;
+            background: #ebf8ff;
+            border: 2px dashed #90cdf4;
+            border-radius: 8px;
+            color: #2b6cb0;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-add-int:hover { background: #bee3f8; border-color: #3182ce; }
+
+        .btn-add-pause {
+            padding: 13px 20px;
+            background: #fffbeb;
+            border: 2px dashed #f6ad55;
+            border-radius: 8px;
+            color: #c05621;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-add-pause:hover { background: #feebc8; border-color: #dd6b20; }
+
+        /* Boutons d'action */
+        .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+        .btn-pdf {
+            flex: 1; min-width: 200px; padding: 15px;
+            background: linear-gradient(135deg, #2b6cb0, #3182ce);
+            color: white; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+        }
+        .btn-pdf:hover { opacity: 0.9; }
+        .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-email {
+            flex: 1; min-width: 200px; padding: 15px;
+            background: linear-gradient(135deg, #276749, #38a169);
+            color: white; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+        }
+        .btn-email:hover { opacity: 0.9; }
+        .btn-email:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-new {
+            padding: 15px 22px; background: white; color: #4a5568;
+            border: 1.5px solid #e2e8f0; border-radius: 10px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-new:hover { background: #f7fafc; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55); z-index: 999;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: white; border-radius: 14px; padding: 28px;
+            width: 90%; max-width: 460px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal h3 { font-size: 17px; font-weight: 700; color: #1a365d; margin-bottom: 20px; }
+        .modal .form-group { margin-bottom: 14px; }
+        .modal-footer { display: flex; gap: 10px; margin-top: 22px; }
+        .modal-footer button { flex: 1; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
+        .modal-save   { background: #2b6cb0; color: white; }
+        .modal-save:hover { background: #2c5282; }
+        .modal-cancel { background: #e2e8f0; color: #4a5568; }
+        .modal-cancel:hover { background: #cbd5e0; }
+        .modal-note {
+            background: #ebf8ff; border-radius: 8px; padding: 10px 14px;
+            font-size: 12px; color: #2c5282; margin-top: 16px; line-height: 1.5;
+        }
+
+        /* Overlay chargement */
+        #loading-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(255,255,255,0.88); z-index: 10000;
+            align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px;
+            font-size: 16px; font-weight: 600; color: #1a365d;
+        }
+        #loading-overlay.visible { display: flex; }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #e2e8f0; border-top-color: #2b6cb0;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .pdf-wrap {
+            font-family: Arial, Helvetica, sans-serif;
+            width: 794px;
+            padding: 36px 40px;
+            color: #111;
+            background: white;
+            font-size: 13px;
+        }
+
+        .pdf-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 3px solid #1a365d;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+        .pdf-title { font-size: 26px; font-weight: 900; color: #1a365d; line-height: 1; }
+        .pdf-date-line { color: #555; font-size: 13px; margin-top: 5px; }
+        .pdf-company-block { text-align: right; font-size: 13px; color: #333; }
+        .pdf-company-block strong { font-size: 15px; color: #1a365d; }
+
+        .pdf-technicien-row {
+            background: #eef2f7; border-radius: 8px;
+            padding: 12px 18px; margin-bottom: 16px;
+            font-size: 14px; font-weight: 700; color: #1a365d;
+        }
+
+        .pdf-hours-row { display: flex; gap: 10px; margin-bottom: 16px; }
+        .pdf-hour-box {
+            flex: 1; background: #1a365d; color: white;
+            border-radius: 8px; padding: 10px 12px; text-align: center;
+        }
+        .pdf-hour-box.supp { background: #276749; }
+        .pdf-hour-box .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.8; }
+        .pdf-hour-box .val { font-size: 18px; font-weight: 900; margin-top: 3px; }
+
+        .pdf-supp-banner {
+            background: #f0fff4; border: 1.5px solid #68d391; border-radius: 8px;
+            padding: 9px 16px; font-weight: 700; color: #22543d;
+            margin-bottom: 16px; font-size: 13px;
+        }
+
+        .pdf-section-title {
+            font-size: 13px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #1a365d;
+            border-bottom: 2px solid #e2e8f0; padding-bottom: 7px; margin-bottom: 12px;
+        }
+
+        /* Bloc intervention PDF */
+        .pdf-int {
+            border: 1.5px solid #e2e8f0; border-radius: 8px;
+            margin-bottom: 10px; overflow: hidden; page-break-inside: avoid;
+        }
+        .pdf-int-head {
+            background: #1a365d; color: white; padding: 8px 14px;
+            display: flex; justify-content: space-between;
+            font-size: 12px; font-weight: 700;
+        }
+        .pdf-int-badge {
+            background: rgba(255,255,255,0.25); border-radius: 4px;
+            padding: 1px 8px; font-size: 11px;
+        }
+        .pdf-int-body {
+            padding: 10px 14px;
+            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px 16px;
+        }
+
+        /* Bloc pause PDF */
+        .pdf-pause {
+            border: 1.5px solid #f6ad55; border-radius: 8px;
+            margin-bottom: 10px; overflow: hidden; page-break-inside: avoid;
+        }
+        .pdf-pause-head {
+            background: #c05621; color: white; padding: 8px 14px;
+            display: flex; justify-content: space-between;
+            font-size: 12px; font-weight: 700;
+        }
+        .pdf-pause-body { padding: 10px 14px; display: flex; gap: 32px; }
+
+        .pdf-field .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; font-weight: 700; }
+        .pdf-field .val { font-size: 13px; color: #111; margin-top: 2px; }
+
+        .pdf-details-row {
+            grid-column: 1 / -1; background: #f7fafc; border-radius: 5px;
+            padding: 8px 10px; font-size: 12px; color: #333; line-height: 1.5;
+        }
+        .pdf-details-row .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; font-weight: 700; margin-bottom: 3px; }
+
+        .pdf-footer {
+            margin-top: 24px; padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 10px; color: #aaa; text-align: center;
+        }
+
+        @media (max-width: 620px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .actions, .add-buttons-row { flex-direction: column; }
+            header { flex-direction: column; gap: 12px; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <img id="header-logo" class="header-logo" alt="Logo">
+        <div>
+            <h1>Feuille de Route</h1>
+            <p>Rapport journalier d'interventions</p>
+        </div>
+    </div>
+    <button class="btn-settings" onclick="openSettings()">&#9881; Paramètres</button>
+</header>
+
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <span>Génération du PDF en cours…</span>
+</div>
+
+<div class="container">
+
+    <div class="notice" id="setup-notice">
+        Première utilisation ? Cliquez sur <strong>Paramètres</strong> (en haut à droite) pour renseigner votre entreprise et l'email de votre responsable.
+    </div>
+
+    <!-- Infos générales -->
+    <div class="card">
+        <h2>Informations générales</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="date">
+            </div>
+            <div class="form-group">
+                <label>Nom du technicien</label>
+                <input type="text" id="technicien" placeholder="Prénom Nom" oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <div class="form-group">
+                <label>Heure début de journée</label>
+                <input type="time" id="heure-debut" oninput="calcHeures()">
+            </div>
+            <div class="form-group">
+                <label>Heure fin de journée</label>
+                <input type="time" id="heure-fin" oninput="calcHeures()">
+            </div>
+            <div class="form-group">
+                <label>Pause repas (minutes)</label>
+                <input type="number" id="repas" placeholder="ex: 30" min="0" max="180" oninput="calcHeures()">
+            </div>
+            <div class="form-group">
+                <label>Heures travaillées (−1h trajet)</label>
+                <input type="text" id="heures-travail" class="auto-field" readonly placeholder="Calculé auto">
+            </div>
+            <div class="form-group">
+                <label>Heures supplémentaires</label>
+                <input type="text" id="heures-supp" class="auto-field" placeholder="Calculé auto" title="Calculé automatiquement — vous pouvez modifier si besoin">
+            </div>
+        </div>
+    </div>
+
+    <!-- Interventions & Pauses -->
+    <div class="card">
+        <h2>Interventions &amp; Pauses</h2>
+        <div id="interventions-list"></div>
+        <div class="add-buttons-row">
+            <button class="btn-add-int"   onclick="ajouterIntervention()">+ Ajouter une intervention</button>
+            <button class="btn-add-pause" onclick="ajouterPause()">&#9208; Pause</button>
+        </div>
+    </div>
+
+    <!-- Boutons principaux -->
+    <div class="actions">
+        <button class="btn-pdf"   id="btn-pdf"   onclick="genererPDF()">Télécharger le PDF</button>
+        <button class="btn-email" id="btn-email" onclick="envoyerMail()">Envoyer par mail</button>
+        <button class="btn-new"                  onclick="nouvelleFeuille()">Nouvelle feuille</button>
+    </div>
+
+</div>
+
+<!-- Modal paramètres -->
+<div class="modal-overlay" id="modal-settings">
+    <div class="modal">
+        <h3>Paramètres</h3>
+        <div class="form-group">
+            <label>Nom de l'entreprise</label>
+            <input type="text" id="s-company" placeholder="Mon Entreprise SARL">
+        </div>
+        <div class="form-group">
+            <label>Email du responsable</label>
+            <input type="email" id="s-email" placeholder="responsable@exemple.fr">
+        </div>
+        <div class="form-group">
+            <label>Seuil heures supplémentaires (h/jour)</label>
+            <input type="number" id="s-seuil" placeholder="8" min="1" max="12" step="0.5">
+        </div>
+        <div class="modal-note">
+            Ces informations sont enregistrées sur votre appareil. Vous n'aurez à les saisir qu'une seule fois.
+        </div>
+        <div class="modal-footer">
+            <button class="modal-save"   onclick="sauvegarderParams()">Enregistrer</button>
+            <button class="modal-cancel" onclick="fermerModal('modal-settings')">Annuler</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+// ─── Logo intégré en base64 (fiable partout, y compris en file:// et dans le PDF) ─
+const LOGO_B64 = 'data:image/png;base64,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';
+
+function getLogoBase64() { return LOGO_B64; }
+
+// ─── Paramètres ────────────────────────────────────────────────────────────────
+let cfg = {
+    company: localStorage.getItem('cfg_company') || '',
+    email:   localStorage.getItem('cfg_email')   || '',
+    seuil:   parseFloat(localStorage.getItem('cfg_seuil') || '8')
+};
+
+function openSettings() {
+    document.getElementById('s-company').value = cfg.company;
+    document.getElementById('s-email').value   = cfg.email;
+    document.getElementById('s-seuil').value   = cfg.seuil;
+    document.getElementById('modal-settings').classList.add('open');
+}
+function fermerModal(id) { document.getElementById(id).classList.remove('open'); }
+function sauvegarderParams() {
+    cfg.company = document.getElementById('s-company').value.trim();
+    cfg.email   = document.getElementById('s-email').value.trim();
+    cfg.seuil   = parseFloat(document.getElementById('s-seuil').value) || 8;
+    localStorage.setItem('cfg_company', cfg.company);
+    localStorage.setItem('cfg_email',   cfg.email);
+    localStorage.setItem('cfg_seuil',   cfg.seuil);
+    fermerModal('modal-settings');
+    if (cfg.company && cfg.email) document.getElementById('setup-notice').style.display = 'none';
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+    document.getElementById('header-logo').src = LOGO_B64;
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    const savedName = localStorage.getItem('last_tech');
+    if (savedName) document.getElementById('technicien').value = savedName;
+    document.getElementById('technicien').addEventListener('blur', () => {
+        localStorage.setItem('last_tech', document.getElementById('technicien').value);
+    });
+    if (cfg.company && cfg.email) document.getElementById('setup-notice').style.display = 'none';
+    ajouterIntervention();
+});
+
+// ─── Calcul des heures (−1h trajet automatique) ───────────────────────────────
+function calcHeures() {
+    const debut = document.getElementById('heure-debut').value;
+    const fin   = document.getElementById('heure-fin').value;
+    const repas = parseInt(document.getElementById('repas').value) || 0;
+    if (!debut || !fin) return;
+
+    const [dH, dM] = debut.split(':').map(Number);
+    const [fH, fM] = fin.split(':').map(Number);
+
+    // Durée totale − repas − 1h de trajet
+    let totalMin = (fH * 60 + fM) - (dH * 60 + dM) - repas - 60;
+    if (totalMin < 0) totalMin = 0;
+
+    const affH = (m) => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
+
+    document.getElementById('heures-travail').value = affH(totalMin);
+
+    const suppMin = Math.max(0, totalMin - cfg.seuil * 60);
+    document.getElementById('heures-supp').value = affH(suppMin);
+}
+
+// ─── Interventions & Pauses ───────────────────────────────────────────────────
+let intCount   = 0;
+let pauseCount = 0;
+
+function ajouterIntervention() {
+    intCount++;
+    const n = intCount;
+    const div = document.createElement('div');
+    div.className    = 'intervention-card';
+    div.id           = `int-card-${n}`;
+    div.dataset.type = 'intervention';
+    div.innerHTML = `
+        <div class="int-header">
+            <span class="int-number">Intervention #${n}</span>
+            <button class="btn-remove" onclick="supprimerElement('int-card-${n}')">&#10005; Supprimer</button>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Heure d'arrivée</label>
+                <input type="time" id="i${n}-arrivee">
+            </div>
+            <div class="form-group">
+                <label>Heure de départ</label>
+                <input type="time" id="i${n}-depart">
+            </div>
+            <div class="form-group">
+                <label>Nom du client</label>
+                <input type="text" id="i${n}-client" placeholder="Nom du client" oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <div class="form-group">
+                <label>Ville</label>
+                <input type="text" id="i${n}-ville" placeholder="Ville" oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <div class="form-group">
+                <label>Type d'intervention</label>
+                <select id="i${n}-type">
+                    <option value="">-- Sélectionner --</option>
+                    <option>Sanitation</option>
+                    <option>Dépannage</option>
+                    <option>Installation</option>
+                    <option>Devis</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Main d'oeuvre</label>
+                <input type="text" id="i${n}-mo" placeholder="ex: 2h technicien">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label>Détails de l'intervention</label>
+                <textarea id="i${n}-details" placeholder="Décrivez l'intervention effectuée…"></textarea>
+            </div>
+        </div>`;
+    document.getElementById('interventions-list').appendChild(div);
+}
+
+function ajouterPause() {
+    pauseCount++;
+    const n = pauseCount;
+    const div = document.createElement('div');
+    div.className    = 'pause-card';
+    div.id           = `pause-card-${n}`;
+    div.dataset.type = 'pause';
+    div.innerHTML = `
+        <div class="int-header">
+            <span class="pause-number">&#9208; Pause</span>
+            <button class="btn-remove" onclick="supprimerElement('pause-card-${n}')">&#10005; Supprimer</button>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Heure de début</label>
+                <input type="time" id="p${n}-debut">
+            </div>
+            <div class="form-group">
+                <label>Heure de fin</label>
+                <input type="time" id="p${n}-fin">
+            </div>
+        </div>`;
+    document.getElementById('interventions-list').appendChild(div);
+}
+
+function supprimerElement(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
+
+// ─── Lecture de tous les éléments dans l'ordre ────────────────────────────────
+function lireTousLesElements() {
+    const items = [];
+    let intNum = 0;
+    document.querySelectorAll('#interventions-list > div').forEach(card => {
+        const rawId = card.id.replace('int-card-', '').replace('pause-card-', '');
+        if (card.dataset.type === 'intervention') {
+            intNum++;
+            items.push({
+                kind:    'intervention',
+                num:     intNum,
+                arrivee: document.getElementById(`i${rawId}-arrivee`)?.value  || '',
+                depart:  document.getElementById(`i${rawId}-depart`)?.value   || '',
+                client:  document.getElementById(`i${rawId}-client`)?.value   || '',
+                ville:   document.getElementById(`i${rawId}-ville`)?.value    || '',
+                typeInt: document.getElementById(`i${rawId}-type`)?.value     || '',
+                mo:      document.getElementById(`i${rawId}-mo`)?.value       || '',
+                details: document.getElementById(`i${rawId}-details`)?.value  || '',
+            });
+        } else if (card.dataset.type === 'pause') {
+            items.push({
+                kind:  'pause',
+                debut: document.getElementById(`p${rawId}-debut`)?.value || '',
+                fin:   document.getElementById(`p${rawId}-fin`)?.value   || '',
+            });
+        }
+    });
+    return items;
+}
+
+// ─── Construction du HTML pour le PDF ─────────────────────────────────────────
+function construirePDF() {
+    const dateVal = document.getElementById('date').value;
+    const tech    = document.getElementById('technicien').value || '—';
+    const debut   = document.getElementById('heure-debut').value || '—';
+    const fin     = document.getElementById('heure-fin').value   || '—';
+    const repas   = document.getElementById('repas').value ? document.getElementById('repas').value + ' min' : '—';
+    const travail = document.getElementById('heures-travail').value || '—';
+    const supp    = document.getElementById('heures-supp').value   || '0h00';
+    const items   = lireTousLesElements();
+    const nbInts  = items.filter(i => i.kind === 'intervention').length;
+
+    const dateAff = dateVal
+        ? new Date(dateVal + 'T12:00').toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'})
+        : '—';
+
+    const itemsHTML = items.map(item => {
+        if (item.kind === 'intervention') {
+            return `
+            <div class="pdf-int">
+                <div class="pdf-int-head">
+                    <span>Intervention #${item.num} &mdash; ${item.client || '—'}${item.ville ? ' (' + item.ville + ')' : ''}</span>
+                    ${item.typeInt ? `<span class="pdf-int-badge">${item.typeInt}</span>` : ''}
+                </div>
+                <div class="pdf-int-body">
+                    <div class="pdf-field"><div class="lbl">Arrivée</div><div class="val">${item.arrivee || '—'}</div></div>
+                    <div class="pdf-field"><div class="lbl">Départ</div><div class="val">${item.depart || '—'}</div></div>
+                    <div class="pdf-field"><div class="lbl">Type</div><div class="val">${item.typeInt || '—'}</div></div>
+                    <div class="pdf-field"><div class="lbl">Main d'oeuvre</div><div class="val">${item.mo || '—'}</div></div>
+                    ${item.details ? `<div class="pdf-details-row"><div class="lbl">Détails</div>${item.details}</div>` : ''}
+                </div>
+            </div>`;
+        } else {
+            return `
+            <div class="pdf-pause">
+                <div class="pdf-pause-head">
+                    <span>Pause</span>
+                    <span>${item.debut || '—'} &rarr; ${item.fin || '—'}</span>
+                </div>
+                <div class="pdf-pause-body">
+                    <div class="pdf-field"><div class="lbl">Début</div><div class="val">${item.debut || '—'}</div></div>
+                    <div class="pdf-field"><div class="lbl">Fin</div><div class="val">${item.fin || '—'}</div></div>
+                </div>
+            </div>`;
+        }
+    }).join('');
+
+    const suppBanner = (supp && supp !== '0h00')
+        ? `<div class="pdf-supp-banner">Heures supplémentaires : ${supp}</div>`
+        : '';
+
+    const logoB64  = getLogoBase64();
+    const logoHtml = logoB64
+        ? `<img src="${logoB64}" style="height:44px;width:auto;display:block;margin-bottom:6px;">`
+        : '';
+
+    return `
+        <div class="pdf-top">
+            <div>
+                <div class="pdf-title">Feuille de Route</div>
+                <div class="pdf-date-line">${dateAff}</div>
+            </div>
+            <div class="pdf-company-block">
+                ${logoHtml}
+                ${cfg.company ? `<strong>${cfg.company}</strong><br>` : ''}
+                <span style="color:#888;">Généré le ${new Date().toLocaleDateString('fr-FR')}</span>
+            </div>
+        </div>
+
+        <div class="pdf-technicien-row">Technicien : ${tech}</div>
+
+        <div class="pdf-hours-row">
+            <div class="pdf-hour-box">
+                <div class="lbl">Début journée</div>
+                <div class="val">${debut}</div>
+            </div>
+            <div class="pdf-hour-box">
+                <div class="lbl">Fin journée</div>
+                <div class="val">${fin}</div>
+            </div>
+            <div class="pdf-hour-box">
+                <div class="lbl">Pause repas</div>
+                <div class="val">${repas}</div>
+            </div>
+            <div class="pdf-hour-box supp">
+                <div class="lbl">Heures trav. (−1h trajet)</div>
+                <div class="val">${travail}</div>
+            </div>
+        </div>
+
+        ${suppBanner}
+
+        <div class="pdf-section-title">Interventions &amp; Pauses (${nbInts} intervention${nbInts > 1 ? 's' : ''})</div>
+        ${itemsHTML}
+
+        <div class="pdf-footer">
+            ${cfg.company ? cfg.company + ' &mdash; ' : ''}Feuille de route du ${dateAff} &mdash; ${tech}
+        </div>`;
+}
+
+// ─── Générer et télécharger le PDF ────────────────────────────────────────────
+function setBusy(busy) {
+    document.getElementById('loading-overlay').classList.toggle('visible', busy);
+    document.getElementById('btn-pdf').disabled   = busy;
+    document.getElementById('btn-email').disabled = busy;
+}
+
+function genererPDF() {
+    return new Promise((resolve, reject) => {
+        const tech  = document.getElementById('technicien').value || 'technicien';
+        const date  = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+        const fname = `feuille-route_${tech.replace(/\s+/g, '-').toLowerCase()}_${date}.pdf`;
+
+        // ─── DIAGNOSTIC (temporaire) ──────────────────────────────────────────
+        if (typeof html2pdf === 'undefined') {
+            alert('DIAGNOSTIC : la librairie html2pdf NE S\'EST PAS CHARGÉE.\n\n'
+                + 'C\'est sûrement votre VPN ou un bloqueur de pub (uBlock) qui '
+                + 'bloque le téléchargement depuis le CDN.\n\n'
+                + 'Essayez : désactiver le VPN / la protection, puis recharger la page (F5).');
+            return reject();
+        }
+
+        setBusy(true);
+
+        // Mémoriser puis remonter la page tout en haut : html2canvas capture en
+        // fonction du défilement de la fenêtre, et le bouton se trouve en bas de
+        // page. Sans cela, la zone capturée est vide → PDF blanc.
+        const scrollPrev = { x: window.scrollX, y: window.scrollY };
+        window.scrollTo(0, 0);
+
+        const el = document.createElement('div');
+        el.className = 'pdf-wrap';
+        el.style.cssText = 'position:absolute;top:0;left:0;width:794px;background:white;';
+        el.innerHTML = construirePDF();
+        document.body.appendChild(el);
+
+        // Dimensions réelles mesurées : on les impose à html2canvas, sinon il
+        // calcule une hauteur de 0 px (élément en position:absolute) → PDF blanc.
+        const w = el.offsetWidth  || 794;
+        const h = el.offsetHeight;
+
+        const restaurer = () => {
+            if (document.body.contains(el)) document.body.removeChild(el);
+            window.scrollTo(scrollPrev.x, scrollPrev.y);
+            setBusy(false);
+        };
+
+        const opts = {
+            margin:      [8, 8, 8, 8],
+            filename:    fname,
+            image:       { type: 'jpeg', quality: 0.97 },
+            html2canvas: {
+                scale: 2, useCORS: true, logging: false,
+                backgroundColor: '#ffffff',
+                width:  w,
+                height: h,
+                windowWidth:  w,
+                windowHeight: h,
+                scrollX: 0, scrollY: 0,
+                x: 0, y: 0,
+                onclone: function(clonedDoc) {
+                    clonedDoc.getElementById('loading-overlay').style.display = 'none';
+                }
+            },
+            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        setTimeout(() => {
+            html2pdf()
+                .set(opts)
+                .from(el)
+                .save()
+                .then(() => {
+                    restaurer();
+                    resolve(fname);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    restaurer();
+                    alert('Erreur lors de la génération du PDF :\n\n'
+                        + (err && err.message ? err.message : err));
+                    reject();
+                });
+        }, 250);
+    });
+}
+
+
+// ─── Envoyer par mail ──────────────────────────────────────────────────────────
+function envoyerMail() {
+    if (!cfg.email) {
+        alert('Veuillez d\'abord configurer l\'email du responsable dans les Paramètres.');
+        openSettings();
+        return;
+    }
+
+    const tech    = document.getElementById('technicien').value || 'Technicien';
+    const dateVal = document.getElementById('date').value;
+    const dateAff = dateVal
+        ? new Date(dateVal + 'T12:00').toLocaleDateString('fr-FR')
+        : new Date().toLocaleDateString('fr-FR');
+    const travail = document.getElementById('heures-travail').value || '—';
+    const supp    = document.getElementById('heures-supp').value    || '0h00';
+    const nbInts  = lireTousLesElements().filter(i => i.kind === 'intervention').length;
+
+    genererPDF().then(() => {
+        const sujet = encodeURIComponent(`Feuille de route — ${tech} — ${dateAff}`);
+        const corps = encodeURIComponent(
+`Bonjour,
+
+Veuillez trouver en pièce jointe la feuille de route du ${dateAff} pour ${tech}.
+
+Résumé :
+- Heures travaillées (−1h trajet) : ${travail}
+- Heures supplémentaires          : ${supp}
+- Nombre d'interventions          : ${nbInts}
+
+Le PDF a été téléchargé sur votre appareil. Pensez à l'attacher à cet email avant d'envoyer.
+
+Cordialement,
+${tech}`);
+
+        window.open(`mailto:${cfg.email}?subject=${sujet}&body=${corps}`, '_blank');
+    });
+}
+
+// ─── Nouvelle feuille ──────────────────────────────────────────────────────────
+function nouvelleFeuille() {
+    if (!confirm('Effacer la feuille de route en cours et recommencer à zéro ?')) return;
+    document.getElementById('date').value           = new Date().toISOString().split('T')[0];
+    document.getElementById('heure-debut').value    = '';
+    document.getElementById('heure-fin').value      = '';
+    document.getElementById('repas').value          = '';
+    document.getElementById('heures-travail').value = '';
+    document.getElementById('heures-supp').value    = '';
+    document.getElementById('interventions-list').innerHTML = '';
+    intCount   = 0;
+    pauseCount = 0;
+    ajouterIntervention();
+}
+</script>
+
+</body>
+</html>
