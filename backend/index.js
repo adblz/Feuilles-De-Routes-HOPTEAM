@@ -1,8 +1,7 @@
-const express    = require('express');
-const cors       = require('cors');
-const multer     = require('multer');
-const nodemailer = require('nodemailer');
-const path       = require('path');
+const express = require('express');
+const cors    = require('cors');
+const multer  = require('multer');
+const path    = require('path');
 
 const app    = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -11,36 +10,45 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
-
 app.post('/send-email', upload.single('file'), async (req, res) => {
   const { to, techName, techEmail } = req.body;
 
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier PDF reçu.' });
   if (!to)       return res.status(400).json({ error: 'Email destinataire manquant.' });
 
+  const body = {
+    sender: {
+      name:  techName || 'Feuille de Route',
+      email: process.env.BREVO_SENDER_EMAIL,
+    },
+    to: [{ email: to }],
+    subject:     `Rapport d'intervention — ${techName || 'Technicien'}`,
+    htmlContent: '<p>Veuillez trouver en pièce jointe le rapport d\'intervention.</p>',
+    attachment: [{
+      name:    req.file.originalname || 'rapport.pdf',
+      content: req.file.buffer.toString('base64'),
+    }],
+  };
+
+  if (techEmail) body.replyTo = { email: techEmail };
+
   try {
-    await transporter.sendMail({
-      from:     `"${techName || 'Feuille de Route'}" <${process.env.GMAIL_USER}>`,
-      replyTo:  techEmail || undefined,
-      to,
-      subject:  `Rapport d'intervention — ${techName || 'Technicien'}`,
-      html:     '<p>Veuillez trouver en pièce jointe le rapport d\'intervention.</p>',
-      attachments: [{
-        filename: req.file.originalname || 'rapport.pdf',
-        content:  req.file.buffer,
-      }],
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept':       'application/json',
+        'api-key':      process.env.BREVO_API_KEY,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(body),
     });
 
+    const data = await response.json();
+
+    if (!response.ok) return res.status(500).json({ error: data.message || 'Erreur Brevo' });
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Erreur envoi email :', err.message);
+    console.error('Erreur Brevo :', err.message);
     return res.status(500).json({ error: err.message });
   }
 });
