@@ -1,7 +1,8 @@
-const express = require('express');
-const cors    = require('cors');
-const multer  = require('multer');
-const path    = require('path');
+const express   = require('express');
+const cors      = require('cors');
+const multer    = require('multer');
+const path      = require('path');
+const rateLimit = require('express-rate-limit');
 
 const app    = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -10,7 +11,18 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-app.post('/send-email', upload.single('file'), async (req, res) => {
+// Réveil Render : répondre immédiatement pour sortir du cold start
+app.get('/ping', (req, res) => res.json({ ok: true }));
+
+const emailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de requêtes. Réessayez dans 15 minutes.' },
+});
+
+app.post('/send-email', emailLimiter, upload.single('file'), async (req, res) => {
   const { to, techName, techEmail } = req.body;
 
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier PDF reçu.' });

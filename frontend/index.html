@@ -60,6 +60,31 @@
             margin-bottom: 20px;
         }
 
+        /* Toast de notification */
+        #toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #2d3748;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 20000;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        #toast.warn { background: #c05621; }
+        #toast.success { background: #276749; }
+
         .card {
             background: white;
             border-radius: 12px;
@@ -246,6 +271,45 @@
             font-size: 12px; color: #2c5282; margin-top: 16px; line-height: 1.5;
         }
 
+        /* Historique */
+        .modal-histo { max-width: 560px; max-height: 80vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+        .modal-histo-header { padding: 20px 24px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .modal-histo-header h3 { font-size: 17px; font-weight: 700; color: #1a365d; margin: 0; }
+        .btn-histo-close { background: none; border: none; font-size: 20px; color: #718096; cursor: pointer; padding: 4px 8px; line-height: 1; }
+        .btn-histo-close:hover { color: #2d3748; }
+        .modal-histo-body { overflow-y: auto; flex: 1; padding: 12px 16px; }
+        .histo-empty { text-align: center; color: #a0aec0; font-size: 14px; padding: 40px 0; }
+        .histo-entry {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; border-radius: 10px; cursor: pointer;
+            border: 1.5px solid #e2e8f0; margin-bottom: 8px;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .histo-entry:hover { border-color: #90cdf4; background: #ebf8ff; }
+        .histo-entry-main { flex: 1; min-width: 0; }
+        .histo-entry-date { font-size: 14px; font-weight: 700; color: #1a365d; }
+        .histo-entry-tech { font-size: 12px; color: #4a5568; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .histo-entry-meta { font-size: 11px; color: #a0aec0; margin-top: 3px; }
+        .histo-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+        .histo-badge-pdf   { background: #ebf8ff; color: #2b6cb0; }
+        .histo-badge-email { background: #f0fff4; color: #276749; }
+        .btn-histo-del { background: none; border: none; color: #cbd5e0; cursor: pointer; font-size: 16px; padding: 4px; flex-shrink: 0; transition: color 0.15s; }
+        .btn-histo-del:hover { color: #c53030; }
+
+        /* Détail historique */
+        .histo-detail-back { background: none; border: none; color: #2b6cb0; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0 0 4px; display: inline-flex; align-items: center; gap: 4px; }
+        .histo-detail-back:hover { text-decoration: underline; }
+        .histo-detail-section { background: #f7fafc; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; }
+        .histo-detail-section .lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #718096; letter-spacing: 0.4px; margin-bottom: 6px; }
+        .histo-detail-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #edf2f7; }
+        .histo-detail-row:last-child { border: none; }
+        .histo-int-item { padding: 6px 0; border-bottom: 1px solid #edf2f7; font-size: 13px; color: #2d3748; }
+        .histo-int-item:last-child { border: none; }
+        .histo-int-item-title { font-weight: 600; color: #1a365d; }
+        .histo-int-item-sub { font-size: 11px; color: #718096; margin-top: 2px; }
+        .btn-restaurer { width: 100%; padding: 13px; background: linear-gradient(135deg, #2b6cb0, #3182ce); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: opacity 0.2s; }
+        .btn-restaurer:hover { opacity: 0.9; }
+
         /* Overlay chargement */
         #loading-overlay {
             display: none; position: fixed; inset: 0;
@@ -412,6 +476,14 @@
                 max-height: 90vh;
                 overflow-y: auto;
             }
+            .modal-histo {
+                padding: 0;
+                max-height: 85vh;
+                border-radius: 20px 20px 0 0;
+            }
+
+            /* Toast remonté au-dessus des boutons sticky */
+            #toast { bottom: 170px; }
         }
     </style>
 </head>
@@ -425,13 +497,18 @@
             <p>Rapport journalier d'interventions</p>
         </div>
     </div>
-    <button class="btn-settings" onclick="openSettings()">&#9881; Paramètres</button>
+    <div style="display:flex;gap:8px;">
+        <button class="btn-settings" onclick="ouvrirHistorique()">&#128221; Historique</button>
+        <button class="btn-settings" onclick="openSettings()">&#9881; Paramètres</button>
+    </div>
 </header>
 
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <span>Génération du PDF en cours…</span>
+    <span id="loading-msg">Génération du PDF en cours…</span>
 </div>
+
+<div id="toast"></div>
 
 <div class="container">
 
@@ -445,31 +522,33 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>Date</label>
-                <input type="date" id="date">
+                <input type="date" id="date" oninput="calcHeures(); sauvegarderBrouillon()">
             </div>
             <div class="form-group">
                 <label>Nom du technicien</label>
-                <input type="text" id="technicien" placeholder="Prénom Nom" oninput="this.value=this.value.toUpperCase()">
+                <input type="text" id="technicien" placeholder="Prénom Nom"
+                    oninput="this.value=this.value.toUpperCase(); sauvegarderBrouillon()">
             </div>
             <div class="form-group">
                 <label>Heure début de journée</label>
-                <input type="time" id="heure-debut" oninput="calcHeures()">
+                <input type="time" id="heure-debut" oninput="calcHeures(); sauvegarderBrouillon()">
             </div>
             <div class="form-group">
                 <label>Heure fin de journée</label>
-                <input type="time" id="heure-fin" oninput="calcHeures()">
+                <input type="time" id="heure-fin" oninput="calcHeures(); sauvegarderBrouillon()">
             </div>
             <div class="form-group">
                 <label>Pause repas (minutes)</label>
-                <input type="number" id="repas" placeholder="ex: 30" min="0" max="180" oninput="calcHeures()">
+                <input type="number" id="repas" placeholder="ex: 30" min="0" max="180"
+                    oninput="calcHeures(); sauvegarderBrouillon()">
             </div>
             <div class="form-group">
                 <label>Heures travaillées (−1h trajet)</label>
                 <input type="text" id="heures-travail" class="auto-field" readonly placeholder="Calculé auto">
             </div>
             <div class="form-group">
-                <label>Heures supplémentaires</label>
-                <input type="text" id="heures-supp" class="auto-field" placeholder="Calculé auto" title="Calculé automatiquement — vous pouvez modifier si besoin">
+                <label>Heures supplémentaires <span id="seuil-label" style="font-weight:400;color:#718096;font-size:11px;text-transform:none;letter-spacing:0;"></span></label>
+                <input type="text" id="heures-supp" class="auto-field" readonly placeholder="Calculé auto">
             </div>
         </div>
     </div>
@@ -493,6 +572,17 @@
 
 </div>
 
+<!-- Modal historique -->
+<div class="modal-overlay" id="modal-historique">
+    <div class="modal modal-histo">
+        <div class="modal-histo-header">
+            <h3 id="histo-title">Historique</h3>
+            <button class="btn-histo-close" onclick="fermerModal('modal-historique')">&#10005;</button>
+        </div>
+        <div class="modal-histo-body" id="histo-body"></div>
+    </div>
+</div>
+
 <!-- Modal paramètres -->
 <div class="modal-overlay" id="modal-settings">
     <div class="modal">
@@ -510,8 +600,11 @@
             <input type="email" id="s-tech-email" placeholder="prenom.nom@hopteam.fr">
         </div>
         <div class="form-group">
-            <label>Seuil heures supplémentaires (h/jour)</label>
-            <input type="number" id="s-seuil" placeholder="8" min="1" max="12" step="0.5">
+            <label>Type de contrat</label>
+            <select id="s-contrat">
+                <option value="39">39h — 8h (lun–jeu) / 7h (ven)</option>
+                <option value="35">35h — 7h/jour</option>
+            </select>
         </div>
         <div class="modal-note">
             Ces informations sont enregistrées sur votre appareil. Vous n'aurez à les saisir qu'une seule fois.
@@ -532,17 +625,17 @@ function getLogoBase64() { return LOGO_B64; }
 
 // ─── Paramètres ────────────────────────────────────────────────────────────────
 let cfg = {
-    company:   localStorage.getItem('cfg_company')    || '',
-    email:     localStorage.getItem('cfg_email')      || '',
-    techEmail: localStorage.getItem('cfg_tech_email') || '',
-    seuil:     parseFloat(localStorage.getItem('cfg_seuil') || '8')
+    company:  localStorage.getItem('cfg_company')    || '',
+    email:    localStorage.getItem('cfg_email')      || '',
+    techEmail:localStorage.getItem('cfg_tech_email') || '',
+    contrat:  localStorage.getItem('cfg_contrat')    || '39',
 };
 
 function openSettings() {
     document.getElementById('s-company').value    = cfg.company;
     document.getElementById('s-email').value      = cfg.email;
     document.getElementById('s-tech-email').value = cfg.techEmail;
-    document.getElementById('s-seuil').value      = cfg.seuil;
+    document.getElementById('s-contrat').value    = cfg.contrat;
     document.getElementById('modal-settings').classList.add('open');
 }
 function fermerModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -550,55 +643,110 @@ function sauvegarderParams() {
     cfg.company   = document.getElementById('s-company').value.trim();
     cfg.email     = document.getElementById('s-email').value.trim();
     cfg.techEmail = document.getElementById('s-tech-email').value.trim();
-    cfg.seuil     = parseFloat(document.getElementById('s-seuil').value) || 8;
+    cfg.contrat   = document.getElementById('s-contrat').value;
     localStorage.setItem('cfg_company',    cfg.company);
     localStorage.setItem('cfg_email',      cfg.email);
     localStorage.setItem('cfg_tech_email', cfg.techEmail);
-    localStorage.setItem('cfg_seuil',      cfg.seuil);
+    localStorage.setItem('cfg_contrat',    cfg.contrat);
     fermerModal('modal-settings');
+    calcHeures();
     if (cfg.company && cfg.email) document.getElementById('setup-notice').style.display = 'none';
+}
+
+// ─── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, type = '', duration = 3000) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className   = 'show' + (type ? ' ' + type : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, duration);
+}
+
+// ─── Validation souple ─────────────────────────────────────────────────────────
+function validerFormulaire() {
+    const manquants = [];
+    if (!document.getElementById('technicien').value.trim()) manquants.push('nom du technicien');
+    if (!document.getElementById('heure-debut').value)       manquants.push('heure de début');
+    if (!document.getElementById('heure-fin').value)         manquants.push('heure de fin');
+    if (manquants.length) {
+        showToast('Champs incomplets : ' + manquants.join(', '), 'warn', 4000);
+    }
 }
 
 // ─── Init ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
     document.getElementById('header-logo').src = LOGO_B64;
-    document.getElementById('date').value = new Date().toISOString().split('T')[0];
-    const savedName = localStorage.getItem('last_tech');
-    if (savedName) document.getElementById('technicien').value = savedName;
+
+    // Enregistrement du service worker PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
+    if (cfg.company && cfg.email) document.getElementById('setup-notice').style.display = 'none';
+
+    // Afficher le seuil dès le chargement
+    calcHeures();
+
+    // Restaurer le brouillon si disponible, sinon initialiser
+    if (!restaurerBrouillon()) {
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        const savedName = localStorage.getItem('last_tech');
+        if (savedName) document.getElementById('technicien').value = savedName;
+        ajouterIntervention();
+    }
+
     document.getElementById('technicien').addEventListener('blur', () => {
         localStorage.setItem('last_tech', document.getElementById('technicien').value);
+        sauvegarderBrouillon();
     });
-    if (cfg.company && cfg.email) document.getElementById('setup-notice').style.display = 'none';
-    ajouterIntervention();
 });
+
+// ─── Seuil journalier selon le contrat et le jour de la semaine ───────────────
+function seuilJour() {
+    if (cfg.contrat === '35') return 7 * 60; // 35h : 7h/jour fixe
+    // 39h : vendredi = 7h, lundi–jeudi = 8h
+    const dateVal = document.getElementById('date').value;
+    if (dateVal) {
+        const jour = new Date(dateVal + 'T12:00').getDay(); // 0=dim, 5=ven
+        return jour === 5 ? 7 * 60 : 8 * 60;
+    }
+    return 8 * 60;
+}
 
 // ─── Calcul des heures (−1h trajet automatique) ───────────────────────────────
 function calcHeures() {
     const debut = document.getElementById('heure-debut').value;
     const fin   = document.getElementById('heure-fin').value;
     const repas = parseInt(document.getElementById('repas').value) || 0;
+
+    // Mettre à jour le libellé du seuil même sans heures saisies
+    const sMin   = seuilJour();
+    const sLabel = document.getElementById('seuil-label');
+    if (sLabel) {
+        const jourEst39Ven = cfg.contrat === '39' && sMin === 7 * 60;
+        sLabel.textContent = jourEst39Ven ? '(seuil 7h — vendredi 39h)' : `(seuil ${sMin / 60}h)`;
+    }
+
     if (!debut || !fin) return;
 
     const [dH, dM] = debut.split(':').map(Number);
     const [fH, fM] = fin.split(':').map(Number);
 
-    // Durée totale − repas − 1h de trajet
     let totalMin = (fH * 60 + fM) - (dH * 60 + dM) - repas - 60;
     if (totalMin < 0) totalMin = 0;
 
     const affH = (m) => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
 
     document.getElementById('heures-travail').value = affH(totalMin);
-
-    const suppMin = Math.max(0, totalMin - cfg.seuil * 60);
-    document.getElementById('heures-supp').value = affH(suppMin);
+    document.getElementById('heures-supp').value    = affH(Math.max(0, totalMin - sMin));
 }
 
 // ─── Interventions & Pauses ───────────────────────────────────────────────────
 let intCount   = 0;
 let pauseCount = 0;
 
-function ajouterIntervention() {
+function ajouterIntervention(data = {}) {
     intCount++;
     const n = intCount;
     const div = document.createElement('div');
@@ -647,9 +795,23 @@ function ajouterIntervention() {
             </div>
         </div>`;
     document.getElementById('interventions-list').appendChild(div);
+
+    // Remplir avec les données restaurées si disponibles
+    if (data.arrivee) document.getElementById(`i${n}-arrivee`).value = data.arrivee;
+    if (data.depart)  document.getElementById(`i${n}-depart`).value  = data.depart;
+    if (data.client)  document.getElementById(`i${n}-client`).value  = data.client;
+    if (data.ville)   document.getElementById(`i${n}-ville`).value   = data.ville;
+    if (data.typeInt) document.getElementById(`i${n}-type`).value    = data.typeInt;
+    if (data.mo)      document.getElementById(`i${n}-mo`).value      = data.mo;
+    if (data.details) document.getElementById(`i${n}-details`).value = data.details;
+
+    // Sauvegarde automatique à chaque saisie dans la carte
+    div.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', sauvegarderBrouillon);
+    });
 }
 
-function ajouterPause() {
+function ajouterPause(data = {}) {
     pauseCount++;
     const n = pauseCount;
     const div = document.createElement('div');
@@ -672,11 +834,65 @@ function ajouterPause() {
             </div>
         </div>`;
     document.getElementById('interventions-list').appendChild(div);
+
+    if (data.debut) document.getElementById(`p${n}-debut`).value = data.debut;
+    if (data.fin)   document.getElementById(`p${n}-fin`).value   = data.fin;
+
+    div.querySelectorAll('input').forEach(el => {
+        el.addEventListener('input', sauvegarderBrouillon);
+    });
 }
 
 function supprimerElement(id) {
     const el = document.getElementById(id);
-    if (el) el.remove();
+    if (el) { el.remove(); sauvegarderBrouillon(); }
+}
+
+// ─── Auto-sauvegarde brouillon ─────────────────────────────────────────────────
+function sauvegarderBrouillon() {
+    try {
+        const brouillon = {
+            date:      document.getElementById('date').value,
+            tech:      document.getElementById('technicien').value,
+            debut:     document.getElementById('heure-debut').value,
+            fin:       document.getElementById('heure-fin').value,
+            repas:     document.getElementById('repas').value,
+            elements:  lireTousLesElements(),
+        };
+        localStorage.setItem('fdr_brouillon', JSON.stringify(brouillon));
+    } catch (e) { /* quota dépassé, on ignore */ }
+}
+
+function restaurerBrouillon() {
+    try {
+        const raw = localStorage.getItem('fdr_brouillon');
+        if (!raw) return false;
+        const d = JSON.parse(raw);
+
+        document.getElementById('date').value        = d.date  || new Date().toISOString().split('T')[0];
+        document.getElementById('technicien').value  = d.tech  || '';
+        document.getElementById('heure-debut').value = d.debut || '';
+        document.getElementById('heure-fin').value   = d.fin   || '';
+        document.getElementById('repas').value        = d.repas || '';
+
+        if (d.debut && d.fin) calcHeures();
+
+        (d.elements || []).forEach(item => {
+            if (item.kind === 'intervention') ajouterIntervention(item);
+            else if (item.kind === 'pause')   ajouterPause(item);
+        });
+
+        if (!d.elements || d.elements.length === 0) ajouterIntervention();
+
+        showToast('Brouillon restauré', 'success', 2500);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+function effacerBrouillon() {
+    localStorage.removeItem('fdr_brouillon');
 }
 
 // ─── Lecture de tous les éléments dans l'ordre ────────────────────────────────
@@ -778,7 +994,10 @@ function construirePDF() {
             </div>
         </div>
 
-        <div class="pdf-technicien-row">Technicien : ${tech}</div>
+        <div class="pdf-technicien-row" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Technicien : ${tech}</span>
+            <span style="font-size:11px;font-weight:400;color:#4a5568;">Contrat ${cfg.contrat}h &mdash; seuil ${seuilJour() / 60}h ce jour</span>
+        </div>
 
         <div class="pdf-hours-row">
             <div class="pdf-hour-box">
@@ -809,113 +1028,8 @@ function construirePDF() {
         </div>`;
 }
 
-// ─── Générer et télécharger le PDF ────────────────────────────────────────────
-function setBusy(busy) {
-    document.getElementById('loading-overlay').classList.toggle('visible', busy);
-    document.getElementById('btn-pdf').disabled   = busy;
-    document.getElementById('btn-email').disabled = busy;
-}
-
-function genererPDF() {
-    return new Promise((resolve, reject) => {
-        const tech  = document.getElementById('technicien').value || 'technicien';
-        const date  = document.getElementById('date').value || new Date().toISOString().split('T')[0];
-        const fname = `feuille-route_${tech.replace(/\s+/g, '-').toLowerCase()}_${date}.pdf`;
-
-        // ─── DIAGNOSTIC (temporaire) ──────────────────────────────────────────
-        if (typeof html2pdf === 'undefined') {
-            alert('DIAGNOSTIC : la librairie html2pdf NE S\'EST PAS CHARGÉE.\n\n'
-                + 'C\'est sûrement votre VPN ou un bloqueur de pub (uBlock) qui '
-                + 'bloque le téléchargement depuis le CDN.\n\n'
-                + 'Essayez : désactiver le VPN / la protection, puis recharger la page (F5).');
-            return reject();
-        }
-
-        setBusy(true);
-
-        // Mémoriser puis remonter la page tout en haut : html2canvas capture en
-        // fonction du défilement de la fenêtre, et le bouton se trouve en bas de
-        // page. Sans cela, la zone capturée est vide → PDF blanc.
-        const scrollPrev = { x: window.scrollX, y: window.scrollY };
-        window.scrollTo(0, 0);
-
-        const el = document.createElement('div');
-        el.className = 'pdf-wrap';
-        el.style.cssText = 'position:absolute;top:0;left:0;width:794px;background:white;';
-        el.innerHTML = construirePDF();
-        document.body.appendChild(el);
-
-        // Dimensions réelles mesurées : on les impose à html2canvas, sinon il
-        // calcule une hauteur de 0 px (élément en position:absolute) → PDF blanc.
-        const w = el.offsetWidth  || 794;
-        const h = el.offsetHeight;
-
-        const restaurer = () => {
-            if (document.body.contains(el)) document.body.removeChild(el);
-            window.scrollTo(scrollPrev.x, scrollPrev.y);
-            setBusy(false);
-        };
-
-        const opts = {
-            margin:      [8, 8, 8, 8],
-            filename:    fname,
-            image:       { type: 'jpeg', quality: 0.97 },
-            html2canvas: {
-                scale: 2, useCORS: true, logging: false,
-                backgroundColor: '#ffffff',
-                width:  w,
-                height: h,
-                windowWidth:  w,
-                windowHeight: h,
-                scrollX: 0, scrollY: 0,
-                x: 0, y: 0,
-                onclone: function(clonedDoc) {
-                    clonedDoc.getElementById('loading-overlay').style.display = 'none';
-                }
-            },
-            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        setTimeout(() => {
-            html2pdf()
-                .set(opts)
-                .from(el)
-                .save()
-                .then(() => {
-                    restaurer();
-                    resolve(fname);
-                })
-                .catch((err) => {
-                    console.error(err);
-                    restaurer();
-                    alert('Erreur lors de la génération du PDF :\n\n'
-                        + (err && err.message ? err.message : err));
-                    reject();
-                });
-        }, 250);
-    });
-}
-
-
-// ─── Envoyer par mail ──────────────────────────────────────────────────────────
-function envoyerMail() {
-    if (!cfg.email) {
-        alert('Veuillez d\'abord configurer l\'email du responsable dans les Paramètres.');
-        openSettings();
-        return;
-    }
-
-    if (typeof html2pdf === 'undefined') {
-        alert('La librairie html2pdf ne s\'est pas chargée. Vérifiez votre connexion ou désactivez uBlock.');
-        return;
-    }
-
-    const tech    = document.getElementById('technicien').value || 'Technicien';
-    const dateVal = document.getElementById('date').value || new Date().toISOString().split('T')[0];
-    const fname   = `feuille-route_${tech.replace(/\s+/g, '-').toLowerCase()}_${dateVal}.pdf`;
-
-    setBusy(true);
-
+// ─── Utilitaire partagé : prépare l'élément DOM pour html2pdf ─────────────────
+function preparerPdfElement() {
     const scrollPrev = { x: window.scrollX, y: window.scrollY };
     window.scrollTo(0, 0);
 
@@ -925,18 +1039,17 @@ function envoyerMail() {
     el.innerHTML = construirePDF();
     document.body.appendChild(el);
 
-    const w = el.offsetWidth || 794;
+    const w = el.offsetWidth  || 794;
     const h = el.offsetHeight;
 
-    const restaurer = () => {
+    const nettoyer = () => {
         if (document.body.contains(el)) document.body.removeChild(el);
         window.scrollTo(scrollPrev.x, scrollPrev.y);
-        setBusy(false);
     };
 
     const opts = {
         margin:      [8, 8, 8, 8],
-        filename:    fname,
+        filename:    nomFichierPdf(),
         image:       { type: 'jpeg', quality: 0.97 },
         html2canvas: {
             scale: 2, useCORS: true, logging: false,
@@ -951,36 +1064,280 @@ function envoyerMail() {
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    setTimeout(() => {
-        html2pdf()
-            .set(opts)
-            .from(el)
-            .outputPdf('blob')
-            .then(blob => {
-                restaurer();
-                const fd = new FormData();
-                fd.append('file', blob, fname);
-                fd.append('to', cfg.email);
-                fd.append('techName', tech);
-                if (cfg.techEmail) fd.append('techEmail', cfg.techEmail);
-                return fetch('https://feuilles-de-routes-hopteam.onrender.com/send-email', { method: 'POST', body: fd });
-            })
-            .then(res => {
-                if (!res.ok) return res.json().then(d => Promise.reject(new Error(d.error || res.statusText)));
-                return res.json();
-            })
-            .then(() => alert('Email envoyé avec succès à ' + cfg.email + ' !'))
-            .catch(err => {
-                restaurer();
-                console.error(err);
-                alert('Erreur lors de l\'envoi :\n' + (err.message || err));
-            });
+    return { el, opts, nettoyer };
+}
+
+function nomFichierPdf() {
+    const tech = document.getElementById('technicien').value || 'technicien';
+    const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+    return `feuille-route_${tech.replace(/\s+/g, '-').toLowerCase()}_${date}.pdf`;
+}
+
+// ─── Chargement / déverrouillage UI ───────────────────────────────────────────
+function setBusy(busy, msg = 'Génération du PDF en cours…') {
+    document.getElementById('loading-overlay').classList.toggle('visible', busy);
+    document.getElementById('loading-msg').textContent = msg;
+    document.getElementById('btn-pdf').disabled   = busy;
+    document.getElementById('btn-email').disabled = busy;
+}
+
+// ─── Générer et télécharger le PDF ────────────────────────────────────────────
+function genererPDF() {
+    if (typeof html2pdf === 'undefined') {
+        alert('La librairie html2pdf ne s\'est pas chargée.\n\n'
+            + 'Vérifiez votre connexion ou désactivez uBlock, puis rechargez la page (F5).');
+        return Promise.reject();
+    }
+
+    validerFormulaire();
+
+    setBusy(true, 'Génération du PDF en cours…');
+    const { el, opts, nettoyer } = preparerPdfElement();
+
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            html2pdf()
+                .set(opts)
+                .from(el)
+                .save()
+                .then(() => {
+                    nettoyer();
+                    setBusy(false);
+                    sauvegarderHistorique('pdf');
+                    resolve(nomFichierPdf());
+                })
+                .catch(err => {
+                    nettoyer();
+                    setBusy(false);
+                    alert('Erreur lors de la génération du PDF :\n\n' + (err?.message || err));
+                    reject(err);
+                });
+        }, 250);
+    });
+}
+
+// ─── Envoyer par mail ──────────────────────────────────────────────────────────
+const API = 'https://feuilles-de-routes-hopteam.onrender.com';
+
+async function envoyerMail() {
+    if (!cfg.email) {
+        alert('Veuillez d\'abord configurer l\'email du responsable dans les Paramètres.');
+        openSettings();
+        return;
+    }
+    if (typeof html2pdf === 'undefined') {
+        alert('La librairie html2pdf ne s\'est pas chargée. Vérifiez votre connexion ou désactivez uBlock.');
+        return;
+    }
+
+    validerFormulaire();
+
+    // Étape 1 : réveil du serveur Render
+    setBusy(true, 'Connexion au serveur…');
+    try {
+        await fetch(`${API}/ping`, { signal: AbortSignal.timeout(35000) });
+    } catch (e) {
+        // On tente quand même l'envoi même si le ping a échoué
+    }
+
+    // Étape 2 : génération du blob PDF
+    setBusy(true, 'Génération du PDF…');
+    const { el, opts, nettoyer } = preparerPdfElement();
+
+    setTimeout(async () => {
+        try {
+            const blob = await html2pdf().set(opts).from(el).outputPdf('blob');
+            nettoyer();
+
+            // Étape 3 : envoi
+            setBusy(true, 'Envoi de l\'email…');
+            const fname = nomFichierPdf();
+            const tech  = document.getElementById('technicien').value || 'Technicien';
+
+            const fd = new FormData();
+            fd.append('file', blob, fname);
+            fd.append('to', cfg.email);
+            fd.append('techName', tech);
+            if (cfg.techEmail) fd.append('techEmail', cfg.techEmail);
+
+            const res = await fetch(`${API}/send-email`, { method: 'POST', body: fd });
+            if (!res.ok) {
+                const d = await res.json();
+                throw new Error(d.error || res.statusText);
+            }
+
+            setBusy(false);
+            sauvegarderHistorique('email');
+            showToast('Email envoyé à ' + cfg.email, 'success', 4000);
+        } catch (err) {
+            nettoyer();
+            setBusy(false);
+            alert('Erreur lors de l\'envoi :\n' + (err?.message || err));
+        }
     }, 250);
+}
+
+// ─── Historique ────────────────────────────────────────────────────────────────
+const MAX_HISTO = 30;
+
+function sauvegarderHistorique(mode) {
+    try {
+        const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
+        const data = {
+            date:     document.getElementById('date').value,
+            tech:     document.getElementById('technicien').value,
+            debut:    document.getElementById('heure-debut').value,
+            fin:      document.getElementById('heure-fin').value,
+            repas:    document.getElementById('repas').value,
+            travail:  document.getElementById('heures-travail').value,
+            supp:     document.getElementById('heures-supp').value,
+            elements: lireTousLesElements(),
+        };
+        histo.unshift({
+            id:              Date.now(),
+            date:            data.date,
+            tech:            data.tech,
+            nbInterventions: data.elements.filter(e => e.kind === 'intervention').length,
+            mode,
+            timestamp:       Date.now(),
+            data,
+        });
+        if (histo.length > MAX_HISTO) histo.splice(MAX_HISTO);
+        localStorage.setItem('fdr_historique', JSON.stringify(histo));
+    } catch (e) { /* quota, on ignore */ }
+}
+
+function ouvrirHistorique() {
+    document.getElementById('modal-historique').classList.add('open');
+    renderListeHistorique();
+}
+
+function renderListeHistorique() {
+    document.getElementById('histo-title').textContent = 'Historique';
+    const body = document.getElementById('histo-body');
+    const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
+
+    if (!histo.length) {
+        body.innerHTML = '<div class="histo-empty">Aucune feuille de route sauvegardée.<br>Téléchargez ou envoyez votre première feuille pour l\'y retrouver.</div>';
+        return;
+    }
+
+    body.innerHTML = histo.map(entry => {
+        const dateAff = entry.date
+            ? new Date(entry.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+            : '—';
+        const heureAff = new Date(entry.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const badgeClass = entry.mode === 'email' ? 'histo-badge-email' : 'histo-badge-pdf';
+        const badgeLabel = entry.mode === 'email' ? '✉ Email' : '↓ PDF';
+        const nbLabel = `${entry.nbInterventions} intervention${entry.nbInterventions > 1 ? 's' : ''}`;
+        return `
+        <div class="histo-entry" onclick="voirDetailHistorique(${entry.id})">
+            <div class="histo-entry-main">
+                <div class="histo-entry-date">${dateAff}</div>
+                <div class="histo-entry-tech">${entry.tech || '—'}</div>
+                <div class="histo-entry-meta">${nbLabel} &bull; enregistré à ${heureAff}</div>
+            </div>
+            <span class="histo-badge ${badgeClass}">${badgeLabel}</span>
+            <button class="btn-histo-del" title="Supprimer" onclick="supprimerHistorique(event, ${entry.id})">&#128465;</button>
+        </div>`;
+    }).join('');
+}
+
+function voirDetailHistorique(id) {
+    const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
+    const entry = histo.find(e => e.id === id);
+    if (!entry) return;
+
+    const d = entry.data;
+    const dateAff = d.date
+        ? new Date(d.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+        : '—';
+
+    document.getElementById('histo-title').textContent = 'Détail';
+
+    const ints  = (d.elements || []).filter(e => e.kind === 'intervention');
+    const pauses = (d.elements || []).filter(e => e.kind === 'pause');
+
+    const intsHtml = ints.length
+        ? ints.map(i => `
+            <div class="histo-int-item">
+                <div class="histo-int-item-title">#${i.num} — ${i.client || '—'}${i.ville ? ' (' + i.ville + ')' : ''}</div>
+                <div class="histo-int-item-sub">${i.arrivee || '—'} → ${i.depart || '—'}${i.typeInt ? ' &bull; ' + i.typeInt : ''}${i.details ? ' &bull; ' + i.details.slice(0, 60) + (i.details.length > 60 ? '…' : '') : ''}</div>
+            </div>`).join('')
+        : '<div style="color:#a0aec0;font-size:13px;">Aucune intervention</div>';
+
+    const pausesHtml = pauses.length
+        ? pauses.map(p => `<div class="histo-int-item"><span style="color:#c05621;">⏸</span> ${p.debut || '—'} → ${p.fin || '—'}</div>`).join('')
+        : '';
+
+    document.getElementById('histo-body').innerHTML = `
+        <button class="histo-detail-back" onclick="renderListeHistorique()">&#8592; Retour</button>
+
+        <div class="histo-detail-section" style="margin-top:12px;">
+            <div class="lbl">Informations générales</div>
+            <div class="histo-detail-row"><span>Date</span><span><strong>${dateAff}</strong></span></div>
+            <div class="histo-detail-row"><span>Technicien</span><span>${d.tech || '—'}</span></div>
+            <div class="histo-detail-row"><span>Début journée</span><span>${d.debut || '—'}</span></div>
+            <div class="histo-detail-row"><span>Fin journée</span><span>${d.fin || '—'}</span></div>
+            <div class="histo-detail-row"><span>Pause repas</span><span>${d.repas ? d.repas + ' min' : '—'}</span></div>
+            <div class="histo-detail-row"><span>Heures travaillées</span><span><strong>${d.travail || '—'}</strong></span></div>
+            ${d.supp && d.supp !== '0h00' ? `<div class="histo-detail-row"><span>Heures supp.</span><span style="color:#276749;font-weight:700;">${d.supp}</span></div>` : ''}
+        </div>
+
+        <div class="histo-detail-section">
+            <div class="lbl">Interventions (${ints.length})</div>
+            ${intsHtml}
+            ${pausesHtml}
+        </div>
+
+        <button class="btn-restaurer" onclick="restaurerDepuisHistorique(${id})">
+            &#8635; Restaurer cette feuille
+        </button>`;
+}
+
+function supprimerHistorique(event, id) {
+    event.stopPropagation();
+    if (!confirm('Supprimer cette entrée de l\'historique ?')) return;
+    const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
+    localStorage.setItem('fdr_historique', JSON.stringify(histo.filter(e => e.id !== id)));
+    renderListeHistorique();
+}
+
+function restaurerDepuisHistorique(id) {
+    const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
+    const entry = histo.find(e => e.id === id);
+    if (!entry) return;
+    if (!confirm('Restaurer cette feuille ? Le formulaire en cours sera remplacé.')) return;
+
+    fermerModal('modal-historique');
+
+    // Effacer + reconstruire
+    document.getElementById('interventions-list').innerHTML = '';
+    intCount   = 0;
+    pauseCount = 0;
+
+    const d = entry.data;
+    document.getElementById('date').value        = d.date  || '';
+    document.getElementById('technicien').value  = d.tech  || '';
+    document.getElementById('heure-debut').value = d.debut || '';
+    document.getElementById('heure-fin').value   = d.fin   || '';
+    document.getElementById('repas').value        = d.repas || '';
+    if (d.debut && d.fin) calcHeures();
+
+    (d.elements || []).forEach(item => {
+        if (item.kind === 'intervention') ajouterIntervention(item);
+        else if (item.kind === 'pause')   ajouterPause(item);
+    });
+    if (!d.elements || d.elements.length === 0) ajouterIntervention();
+
+    sauvegarderBrouillon();
+    showToast('Feuille restaurée depuis l\'historique', 'success', 3000);
 }
 
 // ─── Nouvelle feuille ──────────────────────────────────────────────────────────
 function nouvelleFeuille() {
     if (!confirm('Effacer la feuille de route en cours et recommencer à zéro ?')) return;
+    effacerBrouillon();
     document.getElementById('date').value           = new Date().toISOString().split('T')[0];
     document.getElementById('heure-debut').value    = '';
     document.getElementById('heure-fin').value      = '';
@@ -992,6 +1349,7 @@ function nouvelleFeuille() {
     pauseCount = 0;
     ajouterIntervention();
 }
+
 </script>
 
 </body>
