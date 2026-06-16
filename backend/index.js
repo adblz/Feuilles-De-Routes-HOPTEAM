@@ -7,7 +7,21 @@ const rateLimit = require('express-rate-limit');
 const app    = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.use(cors());
+const allowedOrigins = [
+    'https://gorgeous-rugelach-d822f4.netlify.app',
+    /\.netlify\.app$/,
+    'http://localhost:3000',
+    'http://localhost:5500',
+];
+app.use(cors({
+    origin(origin, cb) {
+        if (!origin) return cb(null, true); // appels directs / curl
+        const ok = allowedOrigins.some(o =>
+            typeof o === 'string' ? o === origin : o.test(origin)
+        );
+        cb(ok ? null : new Error('CORS refusé'), ok);
+    },
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
