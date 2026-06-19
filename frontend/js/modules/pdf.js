@@ -1,5 +1,6 @@
 import { validerFormulaire, setBusy } from '../utils/utils.js';
 import { cfg, seuilJour, lireTousLesElements, getLogoBase64, sauvegarderHistorique } from './fdr.js';
+import { sauvegarderEnBase } from './db.js';
 
 export function construirePDF() {
     const dateVal = document.getElementById('date').value;
@@ -170,6 +171,21 @@ export function genererPDF() {
                     nettoyer();
                     setBusy(false);
                     sauvegarderHistorique('pdf');
+
+                    sauvegarderEnBase({
+                        date:          document.getElementById('date').value,
+                        tech:          document.getElementById('technicien').value || '',
+                        company:       cfg.company,
+                        contrat:       cfg.contrat,
+                        heureDebut:    document.getElementById('heure-debut').value,
+                        heureFin:      document.getElementById('heure-fin').value,
+                        repasMin:      document.getElementById('repas').value,
+                        heuresTravail: document.getElementById('heures-travail').value,
+                        heuresSupp:    document.getElementById('heures-supp').value,
+                        mode:          'pdf',
+                        elements:      lireTousLesElements(),
+                    }).catch(e => console.warn('Supabase save failed (non-blocking):', e));
+
                     resolve(nomFichierPdf());
                 })
                 .catch(err => {

@@ -1,7 +1,8 @@
 import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
 import { preparerPdfElement, nomFichierPdf } from '../modules/pdf.js';
-import { cfg, sauvegarderHistorique } from '../modules/fdr.js';
+import { cfg, sauvegarderHistorique, lireTousLesElements } from '../modules/fdr.js';
 import { openSettings } from '../modules/ui.js';
+import { sauvegarderEnBase } from '../modules/db.js';
 
 const API = 'https://feuilles-de-routes-hopteam.onrender.com';
 
@@ -52,6 +53,20 @@ export async function envoyerMail() {
             setBusy(false);
             sauvegarderHistorique('email');
             showToast('Email envoyé à ' + cfg.email, 'success', 4000);
+
+            sauvegarderEnBase({
+                date:          document.getElementById('date').value,
+                tech,
+                company:       cfg.company,
+                contrat:       cfg.contrat,
+                heureDebut:    document.getElementById('heure-debut').value,
+                heureFin:      document.getElementById('heure-fin').value,
+                repasMin:      document.getElementById('repas').value,
+                heuresTravail: document.getElementById('heures-travail').value,
+                heuresSupp:    document.getElementById('heures-supp').value,
+                mode:          'email',
+                elements:      lireTousLesElements(),
+            }).catch(e => console.warn('Supabase save failed (non-blocking):', e));
         } catch (err) {
             nettoyer();
             setBusy(false);
