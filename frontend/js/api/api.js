@@ -1,10 +1,7 @@
-// ══════════════════════════════════════════════════════════════
-//  API — Envoi par email via le serveur backend (Render.com)
-// ══════════════════════════════════════════════════════════════
-
-import { validerFormulaire, setBusy, showToast } from './utils.js';
-import { preparerPdfElement, nomFichierPdf } from './pdf.js';
-import { cfg, openSettings, sauvegarderHistorique } from './app.js';
+import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
+import { preparerPdfElement, nomFichierPdf } from '../modules/pdf.js';
+import { cfg, sauvegarderHistorique } from '../modules/fdr.js';
+import { openSettings } from '../modules/ui.js';
 
 const API = 'https://feuilles-de-routes-hopteam.onrender.com';
 
@@ -21,15 +18,13 @@ export async function envoyerMail() {
 
     validerFormulaire();
 
-    // Étape 1 : réveil du serveur Render
     setBusy(true, 'Connexion au serveur…');
     try {
         await fetch(`${API}/ping`, { signal: AbortSignal.timeout(35000) });
     } catch (e) {
-        // On tente quand même l'envoi même si le ping a échoué
+        // On tente l'envoi même si le ping a échoué
     }
 
-    // Étape 2 : génération du blob PDF
     setBusy(true, 'Génération du PDF…');
     const { el, opts, nettoyer } = preparerPdfElement();
 
@@ -38,7 +33,6 @@ export async function envoyerMail() {
             const blob = await html2pdf().set(opts).from(el).outputPdf('blob');
             nettoyer();
 
-            // Étape 3 : envoi
             setBusy(true, 'Envoi de l\'email…');
             const fname = nomFichierPdf();
             const tech  = document.getElementById('technicien').value || 'Technicien';

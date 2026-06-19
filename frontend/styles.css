@@ -121,6 +121,52 @@ header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
 }
 .form-group textarea { resize: vertical; min-height: 80px; }
 
+/* Autocomplete */
+.autocomplete-wrapper {
+    position: relative;
+}
+.autocomplete-wrapper input {
+    width: 100%;
+}
+.autocomplete-wrapper.open input {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: #3182ce;
+}
+.autocomplete-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1.5px solid #3182ce;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 6px 16px rgba(49,130,206,0.15);
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 500;
+    margin: 0;
+    padding: 4px 0;
+}
+.autocomplete-dropdown.open { display: block; }
+.autocomplete-item {
+    padding: 9px 13px;
+    font-size: 14px;
+    color: #2d3748;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f4f8;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover,
+.autocomplete-item.active {
+    background: #ebf8ff;
+    color: #2b6cb0;
+    font-weight: 600;
+}
+
 .auto-field {
     background: #f0fff4 !important;
     border-color: #9ae6b4 !important;
@@ -384,7 +430,8 @@ header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
 /* Bloc intervention PDF */
 .pdf-int {
     border: 1.5px solid #e2e8f0; border-radius: 8px;
-    margin-bottom: 10px; overflow: hidden; page-break-inside: avoid;
+    margin-bottom: 10px; overflow: hidden;
+    page-break-inside: avoid; break-inside: avoid;
 }
 .pdf-int-head {
     background: #1a365d; color: white; padding: 8px 14px;
@@ -404,7 +451,8 @@ header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
 /* Bloc pause PDF */
 .pdf-pause {
     border: 1.5px solid #f6ad55; border-radius: 8px;
-    margin-bottom: 10px; overflow: hidden; page-break-inside: avoid;
+    margin-bottom: 10px; overflow: hidden;
+    page-break-inside: avoid; break-inside: avoid;
 }
 .pdf-pause-head {
     background: #c05621; color: white; padding: 8px 14px;
@@ -427,6 +475,58 @@ header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
     border-top: 1px solid #e2e8f0;
     font-size: 10px; color: #aaa; text-align: center;
 }
+
+/* Filtre année dans l'historique */
+.histo-filtre-select {
+    font-size: 12px; padding: 4px 8px;
+    border: 1.5px solid #e2e8f0; border-radius: 6px;
+    color: #4a5568; background: white; cursor: pointer;
+}
+
+/* Séparateur mois dans la liste historique */
+.histo-month-header {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: #718096; background: #f7fafc;
+    padding: 6px 10px; border-radius: 6px;
+    margin: 10px 0 6px;
+}
+
+/* Récap heures supplémentaires */
+.supp-filters {
+    display: flex; align-items: flex-end; gap: 10px;
+    padding: 16px; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap;
+}
+.supp-filter-group { display: flex; flex-direction: column; gap: 4px; }
+.supp-filter-group label { font-size: 11px; font-weight: 600; color: #4a5568; text-transform: uppercase; }
+.supp-filter-group input[type="date"] {
+    padding: 8px 10px; border: 1.5px solid #e2e8f0;
+    border-radius: 8px; font-size: 13px; color: #2d3748; background: white;
+}
+.btn-supp-calc {
+    padding: 8px 18px; background: #2b6cb0; color: white;
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+}
+.btn-supp-calc:hover { background: #2c5282; }
+
+.supp-total-block {
+    text-align: center; padding: 20px 0 16px;
+    border-bottom: 1px solid #e2e8f0; margin-bottom: 14px;
+}
+.supp-total-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #718096; letter-spacing: 0.4px; }
+.supp-total { font-size: 36px; font-weight: 900; color: #276749; line-height: 1.1; margin-top: 4px; }
+.supp-total-sub { font-size: 12px; color: #a0aec0; margin-top: 6px; }
+.supp-empty { text-align: center; color: #a0aec0; font-size: 14px; padding: 30px 0; }
+.supp-no-supp { color: #a0aec0; font-size: 13px; margin-top: 10px; }
+
+.supp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.supp-table th {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+    color: #718096; padding: 4px 8px 8px; text-align: left; border-bottom: 2px solid #e2e8f0;
+}
+.supp-table td { padding: 8px; border-bottom: 1px solid #f0f4f8; }
+.supp-td-val { font-weight: 700; color: #276749; text-align: right; }
 
 @media (max-width: 620px) {
     /* Header compact */

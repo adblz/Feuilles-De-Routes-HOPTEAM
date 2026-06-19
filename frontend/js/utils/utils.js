@@ -1,8 +1,5 @@
-// ══════════════════════════════════════════════════════════════
-//  UTILS — Fonctions utilitaires transverses
-// ══════════════════════════════════════════════════════════════
-
 let toastTimer = null;
+
 export function showToast(msg, type = '', duration = 3000) {
     const el = document.getElementById('toast');
     el.textContent = msg;
@@ -26,4 +23,10 @@ export function setBusy(busy, msg = 'Génération du PDF en cours…') {
     document.getElementById('loading-msg').textContent = msg;
     document.getElementById('btn-pdf').disabled   = busy;
     document.getElementById('btn-email').disabled = busy;
+}
+
+export function parseDuree(str) {
+    if (!str) return 0;
+    const parts = str.split('h');
+    return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
 }

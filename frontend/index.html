@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -24,14 +24,15 @@
         </div>
     </div>
     <div style="display:flex;gap:8px;">
-        <button class="btn-settings" onclick="ouvrirHistorique()">&#128221; Historique</button>
-        <button class="btn-settings" onclick="openSettings()">&#9881; ParamÃ¨tres</button>
+        <button class="btn-settings" id="btn-open-supp">&#128200; Supp</button>
+        <button class="btn-settings" id="btn-open-historique">&#128221; Historique</button>
+        <button class="btn-settings" id="btn-open-settings">&#9881; Param&#232;tres</button>
     </div>
 </header>
 
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <span id="loading-msg">GÃ©nÃ©ration du PDF en coursâ€¦</span>
+    <span id="loading-msg">Génération du PDF en cours…</span>
 </div>
 
 <div id="toast"></div>
@@ -39,46 +40,56 @@
 <div class="container">
 
     <div class="notice" id="setup-notice">
-        PremiÃ¨re utilisation ? Cliquez sur <strong>ParamÃ¨tres</strong> (en haut Ã  droite) pour renseigner votre entreprise et l'email de votre responsable.
+        Première utilisation ? Cliquez sur <strong>Paramètres</strong> (en haut à droite) pour renseigner votre entreprise et l'email de votre responsable.
     </div>
 
-    <!-- Infos gÃ©nÃ©rales -->
+    <!-- Infos générales -->
     <div class="card">
-        <h2>Informations gÃ©nÃ©rales</h2>
+        <h2>Informations générales</h2>
         <div class="form-grid">
             <div class="form-group">
                 <label>Date</label>
-                <input type="date" id="date" oninput="calcHeures(); sauvegarderBrouillon()">
+                <input type="date" id="date">
             </div>
             <div class="form-group">
                 <label>Nom du technicien</label>
-                <input type="text" id="technicien" placeholder="PrÃ©nom Nom"
-                    oninput="this.value=this.value.toUpperCase(); sauvegarderBrouillon()">
+                <input type="text" id="technicien" placeholder="Prénom Nom">
             </div>
             <div class="form-group">
-                <label>Heure dÃ©but de journÃ©e</label>
-                <input type="time" id="heure-debut" oninput="calcHeures(); sauvegarderBrouillon()">
+                <label>Heure début de journée</label>
+                <input type="time" id="heure-debut">
             </div>
             <div class="form-group">
-                <label>Heure fin de journÃ©e</label>
-                <input type="time" id="heure-fin" oninput="calcHeures(); sauvegarderBrouillon()">
+                <label>Heure fin de journée</label>
+                <input type="time" id="heure-fin">
             </div>
             <div class="form-group">
-                <label>Pause repas (minutes)</label>
-                <input type="number" id="repas" placeholder="ex: 30" min="0" max="180"
-                    oninput="calcHeures(); sauvegarderBrouillon()">
+                <label>Pause repas</label>
+                <select id="repas">
+                    <option value="0">Aucune</option>
+                    <option value="15">15 min</option>
+                    <option value="30">30 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60">1h00</option>
+                    <option value="75">1h15</option>
+                    <option value="90">1h30</option>
+                    <option value="105">1h45</option>
+                    <option value="120">2h00</option>
+                    <option value="135">2h15</option>
+                    <option value="150">2h30</option>
+                    <option value="165">2h45</option>
+                    <option value="180">3h00</option>
+                </select>
             </div>
             <div class="form-group">
-                <label>Heures travaillÃ©es (âˆ’1h trajet)</label>
-                <input type="text" id="heures-travail" class="auto-field" readonly placeholder="CalculÃ© auto">
+                <label>Heures travaillées (−1h trajet)</label>
+                <input type="text" id="heures-travail" class="auto-field" readonly placeholder="Calculé auto">
             </div>
             <div class="form-group">
-                <label>Heures supplÃ©mentaires <span id="seuil-label" style="font-weight:400;color:#718096;font-size:11px;text-transform:none;letter-spacing:0;"></span></label>
+                <label>Heures supplémentaires <span id="seuil-label" style="font-weight:400;color:#718096;font-size:11px;text-transform:none;letter-spacing:0;"></span></label>
                 <div style="display:flex;gap:6px;align-items:stretch;">
-                    <input type="text" id="heures-supp" class="auto-field" placeholder="CalculÃ© auto"
-                        oninput="onSuppInput(); sauvegarderBrouillon()" style="flex:1">
-                    <button type="button" id="btn-supp-auto" class="btn-supp-auto"
-                        onclick="resetSuppAuto()" title="Revenir au calcul automatique">â†º Auto</button>
+                    <input type="text" id="heures-supp" class="auto-field" placeholder="Calculé auto" style="flex:1">
+                    <button type="button" id="btn-supp-auto" class="btn-supp-auto" title="Revenir au calcul automatique">↺ Auto</button>
                 </div>
             </div>
         </div>
@@ -89,16 +100,16 @@
         <h2>Interventions &amp; Pauses</h2>
         <div id="interventions-list"></div>
         <div class="add-buttons-row">
-            <button class="btn-add-int"   onclick="ajouterIntervention()">+ Ajouter une intervention</button>
-            <button class="btn-add-pause" onclick="ajouterPause()">&#9208; Pause</button>
+            <button class="btn-add-int"   id="btn-add-int">+ Ajouter une intervention</button>
+            <button class="btn-add-pause" id="btn-add-pause">&#9208; Pause</button>
         </div>
     </div>
 
     <!-- Boutons principaux -->
     <div class="actions">
-        <button class="btn-pdf"   id="btn-pdf"   onclick="genererPDF()">TÃ©lÃ©charger le PDF</button>
-        <button class="btn-email" id="btn-email" onclick="envoyerMail()">Envoyer par mail</button>
-        <button class="btn-new"                  onclick="nouvelleFeuille()">Nouvelle feuille</button>
+        <button class="btn-pdf"   id="btn-pdf">Télécharger le PDF</button>
+        <button class="btn-email" id="btn-email">Envoyer par mail</button>
+        <button class="btn-new"   id="btn-new-feuille">Nouvelle feuille</button>
     </div>
 
 </div>
@@ -108,16 +119,43 @@
     <div class="modal modal-histo">
         <div class="modal-histo-header">
             <h3 id="histo-title">Historique</h3>
-            <button class="btn-histo-close" onclick="fermerModal('modal-historique')">&#10005;</button>
+            <select id="histo-filtre-annee" class="histo-filtre-select">
+                <option value="">Toutes</option>
+            </select>
+            <button class="btn-histo-close" id="btn-close-historique">&#10005;</button>
         </div>
         <div class="modal-histo-body" id="histo-body"></div>
     </div>
 </div>
 
-<!-- Modal paramÃ¨tres -->
+<!-- Modal recap heures supp -->
+<div class="modal-overlay" id="modal-supp">
+    <div class="modal modal-histo">
+        <div class="modal-histo-header">
+            <h3>Heures suppl&#233;mentaires</h3>
+            <button class="btn-histo-close" id="btn-close-supp">&#10005;</button>
+        </div>
+        <div class="modal-histo-body">
+            <div class="supp-filters">
+                <div class="supp-filter-group">
+                    <label>Du</label>
+                    <input type="date" id="supp-date-debut">
+                </div>
+                <div class="supp-filter-group">
+                    <label>Au</label>
+                    <input type="date" id="supp-date-fin">
+                </div>
+                <button class="btn-supp-calc" id="btn-supp-calc">Calculer</button>
+            </div>
+            <div id="supp-result"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal paramètres -->
 <div class="modal-overlay" id="modal-settings">
     <div class="modal">
-        <h3>ParamÃ¨tres</h3>
+        <h3>Paramètres</h3>
         <div class="form-group">
             <label>Nom de l'entreprise</label>
             <input type="text" id="s-company" placeholder="Mon Entreprise SARL">
@@ -133,22 +171,22 @@
         <div class="form-group">
             <label>Type de contrat</label>
             <select id="s-contrat">
-                <option value="39">39h â€” 8h (lunâ€“jeu) / 7h (ven)</option>
-                <option value="35">35h â€” 7h/jour</option>
+                <option value="39">39h — 8h (lun–jeu) / 7h (ven)</option>
+                <option value="35">35h — 7h/jour</option>
             </select>
         </div>
         <div class="modal-note">
-            Ces informations sont enregistrÃ©es sur votre appareil. Vous n'aurez Ã  les saisir qu'une seule fois.
+            Ces informations sont enregistrées sur votre appareil. Vous n'aurez à les saisir qu'une seule fois.
         </div>
         <div class="modal-footer">
-            <button class="modal-save"   onclick="sauvegarderParams()">Enregistrer</button>
-            <button class="modal-cancel" onclick="fermerModal('modal-settings')">Annuler</button>
+            <button class="modal-save"   id="btn-settings-save">Enregistrer</button>
+            <button class="modal-cancel" id="btn-settings-cancel">Annuler</button>
         </div>
     </div>
 </div>
 
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/main.js"></script>
 
 </body>
 </html>

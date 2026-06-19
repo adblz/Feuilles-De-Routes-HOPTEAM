@@ -1,9 +1,5 @@
-// ══════════════════════════════════════════════════════════════
-//  PDF — Construction du HTML, rendu hors-écran, téléchargement
-// ══════════════════════════════════════════════════════════════
-
-import { validerFormulaire, setBusy } from './utils.js';
-import { cfg, seuilJour, lireTousLesElements, getLogoBase64, sauvegarderHistorique } from './app.js';
+import { validerFormulaire, setBusy } from '../utils/utils.js';
+import { cfg, seuilJour, lireTousLesElements, getLogoBase64, sauvegarderHistorique } from './fdr.js';
 
 export function construirePDF() {
     const dateVal = document.getElementById('date').value;
@@ -17,7 +13,7 @@ export function construirePDF() {
     const nbInts  = items.filter(i => i.kind === 'intervention').length;
 
     const dateAff = dateVal
-        ? new Date(dateVal + 'T12:00').toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'})
+        ? new Date(dateVal + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
         : '—';
 
     const itemsHTML = items.map(item => {
@@ -145,7 +141,8 @@ export function preparerPdfElement() {
                 clonedDoc.getElementById('loading-overlay').style.display = 'none';
             }
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['.pdf-int', '.pdf-pause'] }
     };
 
     return { el, opts, nettoyer };
