@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f97316">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Connexion — Feuille de Route</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-page-body">
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-logo-row">
+            <img id="login-logo" alt="Logo" class="login-logo">
+        </div>
+        <h1 class="login-title">Feuilles de Route</h1>
+        <p class="login-subtitle">Espace technicien</p>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="prenom.nom@entreprise.fr" autocomplete="email">
+        </div>
+        <div class="form-group">
+            <label>Mot de passe</label>
+            <input type="password" id="login-password" autocomplete="current-password">
+        </div>
+        <div id="login-error" class="login-error"></div>
+        <button class="login-btn" id="btn-login">Se connecter</button>
+    </div>
+</div>
+
+<script type="module" src="js/login.js"></script>
+</body>
+</html>

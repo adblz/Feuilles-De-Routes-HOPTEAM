@@ -1,16 +1,27 @@
+import { getSession } from './auth.js';
+
 const SUPABASE_URL = 'https://zblggovelezxxrkbqbcv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpibGdnb3ZlbGV6eHhya2JxYmN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4OTE0NjcsImV4cCI6MjA5NzQ2NzQ2N30._KORySYHBmQ0aYp97r-6fLEX_4SF8NrbWYJ8fGFpzJM';
 
-const HEADERS = {
-    'apikey':        SUPABASE_KEY,
-    'Authorization': `Bearer ${SUPABASE_KEY}`,
-    'Content-Type':  'application/json',
-};
+function buildHeaders() {
+    const token = getSession()?.access_token;
+    return {
+        'apikey':        SUPABASE_KEY,
+        'Authorization': `Bearer ${token || SUPABASE_KEY}`,
+        'Content-Type':  'application/json',
+    };
+}
+
+async function dbGet(path) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: buildHeaders() });
+    if (!res.ok) throw new Error(`Supabase GET [${path}]: ${await res.text()}`);
+    return res.json();
+}
 
 async function dbDelete(table, filter) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, {
         method:  'DELETE',
-        headers: HEADERS,
+        headers: buildHeaders(),
     });
     if (!res.ok) throw new Error(`Supabase DELETE [${table}]: ${await res.text()}`);
 }
@@ -18,25 +29,53 @@ async function dbDelete(table, filter) {
 async function dbPost(table, body, returnRow = false) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
         method:  'POST',
-        headers: { ...HEADERS, 'Prefer': returnRow ? 'return=representation' : 'return=minimal' },
+        headers: { ...buildHeaders(), 'Prefer': returnRow ? 'return=representation' : 'return=minimal' },
         body:    JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`Supabase [${table}]: ${await res.text()}`);
     return returnRow ? (await res.json())[0] : null;
 }
 
+export async function chargerHistorique() {
+    const user = getSession()?.user;
+    if (!user) return [];
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&select=*&order=date.desc`);
+}
+
+export async function chargerDetailFeuille(id) {
+    const [feuilles, elements] = await Promise.all([
+        dbGet(`feuilles_de_route?id=eq.${id}`),
+        dbGet(`interventions?feuille_id=eq.${id}&order=order_index.asc`),
+    ]);
+    return { feuille: feuilles[0], elements };
+}
+
+export async function supprimerFeuille(id) {
+    await dbDelete('feuilles_de_route', `id=eq.${id}`);
+}
+
+export async function chargerHeuresSupp(debut, fin) {
+    const user = getSession()?.user;
+    if (!user) return [];
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_supp&order=date.asc`);
+}
+
 function toTime(val) { return val || null; }
 function toInt(val)  { return val ? parseInt(val, 10) : null; }
 
 export async function sauvegarderEnBase({ date, tech, company, contrat, heureDebut, heureFin, repasMin, heuresTravail, heuresSupp, mode, elements }) {
-    // Supprimer l'entrée existante pour ce jour/technicien avant réinsertion.
-    // La FK avec ON DELETE CASCADE nettoie automatiquement les interventions liées.
-    if (date && tech) {
-        await dbDelete('feuilles_de_route', `date=eq.${date}&tech=eq.${encodeURIComponent(tech)}`);
+    const user = getSession()?.user;
+    if (!user) throw new Error('Non connecté');
+
+    // Supprimer l'entrée existante pour ce jour/user avant réinsertion (anti-doublon).
+    // ON DELETE CASCADE nettoie automatiquement les interventions liées.
+    if (date) {
+        await dbDelete('feuilles_de_route', `date=eq.${date}&user_id=eq.${user.id}`);
     }
 
     const feuille = await dbPost('feuilles_de_route', {
         date,
+        user_id:        user.id,
         tech:           tech          || null,
         company:        company       || null,
         contrat:        contrat       || null,
@@ -54,8 +93,8 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         feuille_id:    feuille.id,
         order_index:   i,
         kind:          el.kind,
-        heure_arrivee: el.kind === 'intervention' ? toTime(el.arrivee) : null,
-        heure_depart:  el.kind === 'intervention' ? toTime(el.depart)  : null,
+        heure_arrivee: el.kind === 'intervention' ? toTime(el.arrivee)  : null,
+        heure_depart:  el.kind === 'intervention' ? toTime(el.depart)   : null,
         client:        el.kind === 'intervention' ? (el.client  || null) : null,
         ville:         el.kind === 'intervention' ? (el.ville   || null) : null,
         type_int:      el.kind === 'intervention' ? (el.typeInt || null) : null,

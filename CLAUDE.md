@@ -57,33 +57,52 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 feuille-de-route/
-├── frontend/               ← deployed on Netlify
-│   ├── index.html          ← static shell (minimal JS inline)
-│   ├── styles.css          ← all CSS, including .pdf-* print classes
-│   ├── manifest.json       ← PWA manifest
-│   ├── sw.js               ← service worker (cache versioned by Netlify build)
+├── frontend/                    ← deployed on Netlify
+│   ├── index.html               ← app shell (authenticated users)
+│   ├── login.html               ← login page (Supabase Auth)
+│   ├── styles.css               ← all CSS, including .pdf-* print classes
+│   ├── manifest.json            ← PWA manifest
+│   ├── sw.js                    ← service worker (cache versioned by Netlify build)
 │   ├── logo.png / logo-512.png
 │   └── js/
-│       ├── app.js          ← main logic: config, state, interventions, brouillon, historique
-│       ├── api.js          ← email sending via backend (Render.com)
-│       ├── pdf.js          ← PDF generation with html2pdf.js
-│       └── utils.js        ← shared helpers (toast, setBusy, validerFormulaire)
-└── backend/                ← deployed on Render.com (free tier, cold starts)
-    ├── index.js            ← Express server: /ping + /send-email (SendGrid)
-    └── package.json        ← express, cors, multer, express-rate-limit
+│       ├── main.js              ← entry point: auth guard, event wiring, initApp()
+│       ├── login.js             ← login page logic (connexion, redirect)
+│       ├── api/
+│       │   └── api.js           ← email sending via backend (Render.com)
+│       ├── modules/
+│       │   ├── fdr.js           ← core logic: cfg, state, interventions, calcHeures, brouillon
+│       │   ├── ui.js            ← DOM/modals: settings, historique panel, heures-supp recap
+│       │   ├── db.js            ← Supabase REST API: historique & interventions persistence
+│       │   ├── auth.js          ← Supabase Auth: connexion, session, refresh, deconnexion
+│       │   ├── pdf.js           ← PDF generation with html2pdf.js
+│       │   └── autocomplete.js  ← city/client suggestions stored in localStorage
+│       └── utils/
+│           └── utils.js         ← shared helpers: showToast, validerFormulaire, parseDuree
+└── backend/                     ← deployed on Render.com (free tier, cold starts)
+    ├── index.js                 ← Express server: /ping + /send-email (SendGrid)
+    └── package.json             ← express, cors, multer, express-rate-limit
 ```
 
 All JS files use ES modules (`import`/`export`). External dependency: `html2pdf.js` from cdnjs CDN.
 
-## Frontend — app.js key globals
+## Authentication (auth.js + login.js)
 
-- `cfg` — runtime settings persisted in `localStorage` (`cfg_company`, `cfg_email`, `cfg_tech_email`, `cfg_contrat`).
-- `intCount` / `pauseCount` — monotonically incrementing counters used as IDs for intervention and pause cards. IDs are never reassigned after deletion; `rawId` (stripped from the element's `id` attribute) is the stable per-element key used to retrieve child input values.
+- Users must log in via `login.html` before accessing `index.html`.
+- Auth is handled via Supabase Auth REST API (no SDK) — credentials are `email/password`.
+- Session is persisted in `localStorage` under `fdr_session` (JWT access token + expiry).
+- `isSessionValid()` checks token expiry with a 60s safety margin.
+- `refreshSession()` refreshes a stale token via Supabase `/auth/v1/token?grant_type=refresh_token`.
+- `main.js` guards the app: if no valid session → redirects to `login.html`.
+- The technician name field is locked to `user.user_metadata.nom` after login.
+
+## Frontend — fdr.js key globals
+
+- `cfg` — runtime settings persisted in `localStorage` (`cfg_company`, `cfg_email`, `cfg_tech_email`, `cfg_contrat`). `saveCfg()` updates both the object and localStorage.
+- `intCount` / `pauseCount` — monotonically incrementing counters used as IDs for intervention and pause cards. IDs are never reassigned after deletion; `rawId` (stripped from the element's `id` attribute) is the stable per-element key.
 - `lireTousLesElements()` — walks `#interventions-list > div` in DOM order and returns an array of intervention/pause objects. DOM order is the source of truth for the PDF.
 - `sauvegarderBrouillon()` / `restaurerBrouillon()` — auto-save/restore current form state to `localStorage` (`fdr_brouillon`).
-- `sauvegarderHistorique(mode)` — saves a completed feuille to `fdr_historique` (max 30 entries, `MAX_HISTO`).
 
-## Hour calculation logic (app.js)
+## Hour calculation logic (fdr.js)
 
 `seuilJour()` returns the daily threshold in minutes based on `cfg.contrat`:
 - Contrat 35h → 7h always.
@@ -91,7 +110,17 @@ All JS files use ES modules (`import`/`export`). External dependency: `html2pdf.
 
 `calcHeures()` deducts a fixed 1-hour travel allowance plus the lunch break from total worked time. Overtime (`heures-supp`) is auto-computed unless the user has manually overridden it (`suppManuel = true`). `resetSuppAuto()` reverts to automatic calculation.
 
-## Email flow (api.js)
+## Database (db.js — Supabase)
+
+History is stored in Supabase (not localStorage). Two tables:
+- `feuilles_de_route` — one row per daily report (`user_id`, `date`, `tech`, `company`, `contrat`, `heure_debut`, `heure_fin`, `repas_min`, `heures_travail`, `heures_supp`, `mode`).
+- `interventions` — child rows per feuille (`feuille_id`, `order_index`, `kind`, plus intervention or pause fields). ON DELETE CASCADE keeps them in sync.
+
+Key exports: `chargerHistorique()`, `chargerDetailFeuille(id)`, `supprimerFeuille(id)`, `chargerHeuresSupp(debut, fin)`, `sauvegarderEnBase({...})`.
+
+`sauvegarderEnBase()` deletes any existing entry for the same `date/user_id` before reinserting (anti-duplicate strategy).
+
+## Email flow (api/api.js)
 
 1. Pings `/ping` on the Render backend to wake it from cold start (free tier sleeps after inactivity).
 2. Generates a PDF blob via `html2pdf.js` from an offscreen DOM element built by `pdf.js`.

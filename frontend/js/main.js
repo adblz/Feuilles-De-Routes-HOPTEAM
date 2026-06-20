@@ -10,13 +10,16 @@ import {
 } from './modules/ui.js';
 import { genererPDF } from './modules/pdf.js';
 import { envoyerMail } from './api/api.js';
+import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession } from './modules/auth.js';
+import { showToast } from './utils/utils.js';
 
-window.addEventListener('load', () => {
-    document.getElementById('header-logo').src = getLogoBase64();
+// ── Initialisation de l'app après auth ────────────────────────
 
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
+function initApp(user) {
+    const nomTech = user.user_metadata?.nom || '';
+    const techEl  = document.getElementById('technicien');
+    techEl.readOnly = true;
+    techEl.classList.add('locked-field');
 
     if (cfg.company && cfg.email) {
         document.getElementById('setup-notice').style.display = 'none';
@@ -26,12 +29,11 @@ window.addEventListener('load', () => {
 
     if (!restaurerBrouillon()) {
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        const savedName = localStorage.getItem('last_tech');
-        if (savedName) document.getElementById('technicien').value = savedName;
         ajouterIntervention();
     }
+    techEl.value = nomTech;
 
-    // ── Événements formulaire principal ───────────────────────
+    // ── Formulaire principal ───────────────────────────────────
 
     document.getElementById('btn-open-supp').addEventListener('click', ouvrirSuppRecap);
     document.getElementById('btn-open-historique').addEventListener('click', ouvrirHistorique);
@@ -41,17 +43,6 @@ window.addEventListener('load', () => {
         calcHeures();
         sauvegarderBrouillon();
     });
-
-    const techEl = document.getElementById('technicien');
-    techEl.addEventListener('input', () => {
-        techEl.value = techEl.value.toUpperCase();
-        sauvegarderBrouillon();
-    });
-    techEl.addEventListener('blur', () => {
-        localStorage.setItem('last_tech', techEl.value);
-        sauvegarderBrouillon();
-    });
-
     document.getElementById('heure-debut').addEventListener('input', () => {
         calcHeures();
         sauvegarderBrouillon();
@@ -64,7 +55,6 @@ window.addEventListener('load', () => {
         calcHeures();
         sauvegarderBrouillon();
     });
-
     document.getElementById('heures-supp').addEventListener('input', () => {
         onSuppInput();
         sauvegarderBrouillon();
@@ -73,24 +63,70 @@ window.addEventListener('load', () => {
 
     document.getElementById('btn-add-int').addEventListener('click', ajouterIntervention);
     document.getElementById('btn-add-pause').addEventListener('click', ajouterPause);
-
     document.getElementById('btn-pdf').addEventListener('click', genererPDF);
     document.getElementById('btn-email').addEventListener('click', envoyerMail);
     document.getElementById('btn-new-feuille').addEventListener('click', nouvelleFeuille);
 
-    // ── Événements modal historique ────────────────────────────
+    // ── Modal historique ───────────────────────────────────────
 
     initHistoriqueEvents();
     document.getElementById('histo-filtre-annee').addEventListener('change', renderListeHistorique);
     document.getElementById('btn-close-historique').addEventListener('click', () => fermerModal('modal-historique'));
 
-    // ── Événements modal heures supp ───────────────────────────
+    // ── Modal heures supp ──────────────────────────────────────
 
     document.getElementById('btn-close-supp').addEventListener('click', () => fermerModal('modal-supp'));
     document.getElementById('btn-supp-calc').addEventListener('click', calculerSuppRecap);
 
-    // ── Événements modal paramètres ────────────────────────────
+    // ── Modal paramètres ───────────────────────────────────────
 
     document.getElementById('btn-settings-save').addEventListener('click', sauvegarderParams);
     document.getElementById('btn-settings-cancel').addEventListener('click', () => fermerModal('modal-settings'));
+
+    document.getElementById('btn-change-password').addEventListener('click', async () => {
+        const newPass = document.getElementById('s-new-password').value;
+        if (!newPass || newPass.length < 6) {
+            showToast('Le mot de passe doit faire au moins 6 caractères', 'error');
+            return;
+        }
+        try {
+            await changerMotDePasse(newPass);
+            document.getElementById('s-new-password').value = '';
+            showToast('Mot de passe changé avec succès', 'success', 3000);
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+        if (!confirm('Se déconnecter ?')) return;
+        await deconnexion();
+        if (typeof caches !== 'undefined') {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+        }
+        window.location.href = 'login.html';
+    });
+}
+
+// ── Point d'entrée ─────────────────────────────────────────────
+
+window.addEventListener('load', async () => {
+    document.getElementById('header-logo').src = getLogoBase64();
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
+    let session = getSession();
+
+    if (session && !isSessionValid()) {
+        session = await refreshSession();
+    }
+
+    if (session?.user) {
+        initApp(session.user);
+    } else {
+        window.location.href = 'login.html';
+    }
 });

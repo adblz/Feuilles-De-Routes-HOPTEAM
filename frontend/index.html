@@ -53,7 +53,7 @@
             </div>
             <div class="form-group">
                 <label>Nom du technicien</label>
-                <input type="text" id="technicien" placeholder="Prénom Nom">
+                <input type="text" id="technicien" placeholder="Prénom Nom" readonly>
             </div>
             <div class="form-group">
                 <label>Heure début de journée</label>
@@ -178,9 +178,21 @@
         <div class="modal-note">
             Ces informations sont enregistrées sur votre appareil. Vous n'aurez à les saisir qu'une seule fois.
         </div>
-        <div class="modal-footer">
+
+        <hr class="settings-divider">
+
+        <div class="form-group">
+            <label>Changer mon mot de passe</label>
+            <div class="password-change-row">
+                <input type="password" id="s-new-password" placeholder="Nouveau mot de passe (6 car. min.)">
+                <button type="button" class="btn-settings-action" id="btn-change-password">Changer</button>
+            </div>
+        </div>
+
+        <div class="modal-footer settings-footer">
             <button class="modal-save"   id="btn-settings-save">Enregistrer</button>
             <button class="modal-cancel" id="btn-settings-cancel">Annuler</button>
+            <button class="btn-logout"   id="btn-logout">D&#233;connexion</button>
         </div>
     </div>
 </div>

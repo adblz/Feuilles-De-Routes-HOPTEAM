@@ -591,3 +591,157 @@ header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
     /* Toast remonté au-dessus des boutons sticky */
     #toast { bottom: 170px; }
 }
+
+/* ── Auth : Page de connexion plein écran ──────────────────── */
+
+.login-page-body {
+    background: #f1f5f9;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-page {
+    width: 100%;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.login-card {
+    background: white;
+    border-radius: 16px;
+    padding: 44px 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.10);
+    text-align: center;
+    border-top: 4px solid #f97316;
+}
+
+.login-logo-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.login-logo {
+    height: 56px;
+    width: auto;
+}
+
+.login-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+}
+
+.login-subtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 32px;
+}
+
+.login-card .form-group {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.login-error {
+    display: none;
+    color: #dc2626;
+    font-size: 13px;
+    text-align: left;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+}
+.login-error:not(:empty) { display: block; }
+
+.login-btn {
+    width: 100%;
+    padding: 13px;
+    background: #f97316;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 4px;
+}
+.login-btn:hover    { background: #ea580c; }
+.login-btn:active   { transform: scale(0.99); }
+.login-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+@media (max-width: 480px) {
+    .login-card { border-radius: 12px; padding: 36px 24px; }
+    .login-page  { padding: 16px; }
+}
+
+/* ── Auth : champ technicien verrouillé ─────────────────────── */
+
+.locked-field {
+    background: #f7fafc;
+    color: #4a5568;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
+}
+
+/* ── Auth : paramètres — changement mdp & déconnexion ───────── */
+
+.settings-divider {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 20px 0;
+}
+
+.password-change-row {
+    display: flex;
+    gap: 8px;
+}
+
+.password-change-row input {
+    flex: 1;
+}
+
+.btn-settings-action {
+    background: #edf2f7;
+    color: #2d3748;
+    border: 1px solid #e2e8f0;
+    padding: 0 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.btn-settings-action:hover { background: #e2e8f0; }
+
+.settings-footer {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.btn-logout {
+    background: #fff5f5;
+    color: #e53e3e;
+    border: 1px solid #fed7d7;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-logout:hover { background: #fed7d7; }

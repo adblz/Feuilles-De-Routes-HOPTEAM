@@ -2,9 +2,13 @@ import { showToast, parseDuree } from '../utils/utils.js';
 import {
     cfg, saveCfg, calcHeures,
     ajouterIntervention, ajouterPause,
-    sauvegarderBrouillon, effacerBrouillon, sauvegarderHistorique,
+    sauvegarderBrouillon, effacerBrouillon,
     viderInterventions, resetSuppState,
 } from './fdr.js';
+import {
+    chargerHistorique, chargerDetailFeuille,
+    supprimerFeuille, chargerHeuresSupp,
+} from './db.js';
 
 // ── Paramètres ─────────────────────────────────────────────────
 
@@ -34,15 +38,29 @@ export function sauvegarderParams() {
 
 // ── Historique ─────────────────────────────────────────────────
 
+let _histoCache = null;
+
 export function ouvrirHistorique() {
+    _histoCache = null;
     document.getElementById('modal-historique').classList.add('open');
     renderListeHistorique();
 }
 
-export function renderListeHistorique() {
+export async function renderListeHistorique() {
+    const body = document.getElementById('histo-body');
     document.getElementById('histo-title').textContent = 'Historique';
-    const body  = document.getElementById('histo-body');
-    const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
+
+    if (!_histoCache) {
+        body.innerHTML = '<div class="histo-empty">Chargement…</div>';
+        try {
+            _histoCache = await chargerHistorique();
+        } catch (err) {
+            body.innerHTML = '<div class="histo-empty">Erreur de chargement. Vérifiez votre connexion.</div>';
+            return;
+        }
+    }
+
+    const histo = _histoCache;
 
     const sel = document.getElementById('histo-filtre-annee');
     if (sel) {
@@ -74,19 +92,20 @@ export function renderListeHistorique() {
             : 'Date inconnue';
         return `<div class="histo-month-header">${label}</div>` +
             groups[key].map(entry => {
-                const dateAff  = entry.date
+                const dateAff    = entry.date
                     ? new Date(entry.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
                     : '—';
-                const heureAff = new Date(entry.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const heureAff   = entry.created_at
+                    ? new Date(entry.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                    : '—';
                 const badgeClass = entry.mode === 'email' ? 'histo-badge-email' : 'histo-badge-pdf';
                 const badgeLabel = entry.mode === 'email' ? '✉ Email' : '↓ PDF';
-                const nbLabel    = `${entry.nbInterventions} intervention${entry.nbInterventions > 1 ? 's' : ''}`;
                 return `
                 <div class="histo-entry" data-entry-id="${entry.id}">
                     <div class="histo-entry-main">
                         <div class="histo-entry-date">${dateAff}</div>
                         <div class="histo-entry-tech">${entry.tech || '—'}</div>
-                        <div class="histo-entry-meta">${nbLabel} &bull; enregistré à ${heureAff}</div>
+                        <div class="histo-entry-meta">enregistré à ${heureAff}</div>
                     </div>
                     <span class="histo-badge ${badgeClass}">${badgeLabel}</span>
                     <button class="btn-histo-del" data-del-id="${entry.id}" title="Supprimer">&#128465;</button>
@@ -95,45 +114,59 @@ export function renderListeHistorique() {
     }).join('');
 }
 
-export function voirDetailHistorique(id) {
-    const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
-    const entry = histo.find(e => e.id === id);
-    if (!entry) return;
+export async function voirDetailHistorique(id) {
+    const body = document.getElementById('histo-body');
+    document.getElementById('histo-title').textContent = 'Détail';
+    body.innerHTML = '<div class="histo-empty">Chargement…</div>';
 
-    const d       = entry.data;
-    const dateAff = d.date
-        ? new Date(d.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    let feuille, elements;
+    try {
+        ({ feuille, elements } = await chargerDetailFeuille(id));
+    } catch (err) {
+        body.innerHTML = '<div class="histo-empty">Erreur de chargement.</div>';
+        return;
+    }
+
+    if (!feuille) {
+        body.innerHTML = '<div class="histo-empty">Feuille introuvable.</div>';
+        return;
+    }
+
+    const dateAff = feuille.date
+        ? new Date(feuille.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
         : '—';
 
-    document.getElementById('histo-title').textContent = 'Détail';
+    const ints   = elements.filter(e => e.kind === 'intervention');
+    const pauses = elements.filter(e => e.kind === 'pause');
 
-    const ints   = (d.elements || []).filter(e => e.kind === 'intervention');
-    const pauses = (d.elements || []).filter(e => e.kind === 'pause');
-
+    let intNum = 0;
     const intsHtml = ints.length
-        ? ints.map(i => `
+        ? ints.map(i => {
+            intNum++;
+            return `
             <div class="histo-int-item">
-                <div class="histo-int-item-title">#${i.num} — ${i.client || '—'}${i.ville ? ' (' + i.ville + ')' : ''}</div>
-                <div class="histo-int-item-sub">${i.arrivee || '—'} → ${i.depart || '—'}${i.typeInt ? ' &bull; ' + i.typeInt : ''}${i.details ? ' &bull; ' + i.details.slice(0, 60) + (i.details.length > 60 ? '…' : '') : ''}</div>
-            </div>`).join('')
+                <div class="histo-int-item-title">#${intNum} — ${i.client || '—'}${i.ville ? ' (' + i.ville + ')' : ''}</div>
+                <div class="histo-int-item-sub">${i.heure_arrivee || '—'} → ${i.heure_depart || '—'}${i.type_int ? ' &bull; ' + i.type_int : ''}${i.details ? ' &bull; ' + i.details.slice(0, 60) + (i.details.length > 60 ? '…' : '') : ''}</div>
+            </div>`;
+        }).join('')
         : '<div style="color:#a0aec0;font-size:13px;">Aucune intervention</div>';
 
     const pausesHtml = pauses.length
-        ? pauses.map(p => `<div class="histo-int-item"><span style="color:#c05621;">⏸</span> ${p.debut || '—'} → ${p.fin || '—'}</div>`).join('')
+        ? pauses.map(p => `<div class="histo-int-item"><span style="color:#c05621;">⏸</span> ${p.pause_debut || '—'} → ${p.pause_fin || '—'}</div>`).join('')
         : '';
 
-    document.getElementById('histo-body').innerHTML = `
+    body.innerHTML = `
         <button class="histo-detail-back">&#8592; Retour</button>
 
         <div class="histo-detail-section" style="margin-top:12px;">
             <div class="lbl">Informations générales</div>
             <div class="histo-detail-row"><span>Date</span><span><strong>${dateAff}</strong></span></div>
-            <div class="histo-detail-row"><span>Technicien</span><span>${d.tech || '—'}</span></div>
-            <div class="histo-detail-row"><span>Début journée</span><span>${d.debut || '—'}</span></div>
-            <div class="histo-detail-row"><span>Fin journée</span><span>${d.fin || '—'}</span></div>
-            <div class="histo-detail-row"><span>Pause repas</span><span>${d.repas ? d.repas + ' min' : '—'}</span></div>
-            <div class="histo-detail-row"><span>Heures travaillées</span><span><strong>${d.travail || '—'}</strong></span></div>
-            ${d.supp && d.supp !== '0h00' ? `<div class="histo-detail-row"><span>Heures supp.</span><span style="color:#276749;font-weight:700;">${d.supp}</span></div>` : ''}
+            <div class="histo-detail-row"><span>Technicien</span><span>${feuille.tech || '—'}</span></div>
+            <div class="histo-detail-row"><span>Début journée</span><span>${feuille.heure_debut || '—'}</span></div>
+            <div class="histo-detail-row"><span>Fin journée</span><span>${feuille.heure_fin || '—'}</span></div>
+            <div class="histo-detail-row"><span>Pause repas</span><span>${feuille.repas_min ? feuille.repas_min + ' min' : '—'}</span></div>
+            <div class="histo-detail-row"><span>Heures travaillées</span><span><strong>${feuille.heures_travail || '—'}</strong></span></div>
+            ${feuille.heures_supp && feuille.heures_supp !== '0h00' ? `<div class="histo-detail-row"><span>Heures supp.</span><span style="color:#276749;font-weight:700;">${feuille.heures_supp}</span></div>` : ''}
         </div>
 
         <div class="histo-detail-section">
@@ -147,37 +180,60 @@ export function voirDetailHistorique(id) {
         </button>`;
 }
 
-function supprimerHistorique(id) {
+async function supprimerHistorique(id) {
     if (!confirm('Supprimer cette entrée de l\'historique ?')) return;
-    const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
-    localStorage.setItem('fdr_historique', JSON.stringify(histo.filter(e => e.id !== id)));
-    renderListeHistorique();
+    try {
+        await supprimerFeuille(id);
+        if (_histoCache) _histoCache = _histoCache.filter(e => e.id !== id);
+        renderListeHistorique();
+    } catch (err) {
+        showToast('Erreur lors de la suppression', 'error');
+    }
 }
 
-function restaurerDepuisHistorique(id) {
-    const histo = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
-    const entry = histo.find(e => e.id === id);
-    if (!entry) return;
+async function restaurerDepuisHistorique(id) {
     if (!confirm('Restaurer cette feuille ? Le formulaire en cours sera remplacé.')) return;
+
+    let feuille, elements;
+    try {
+        ({ feuille, elements } = await chargerDetailFeuille(id));
+    } catch (err) {
+        showToast('Erreur lors du chargement', 'error');
+        return;
+    }
+
+    if (!feuille) {
+        showToast('Feuille introuvable', 'error');
+        return;
+    }
 
     fermerModal('modal-historique');
 
     viderInterventions();
     resetSuppState();
 
-    const d = entry.data;
-    document.getElementById('date').value        = d.date  || '';
-    document.getElementById('technicien').value  = d.tech  || '';
-    document.getElementById('heure-debut').value = d.debut || '';
-    document.getElementById('heure-fin').value   = d.fin   || '';
-    document.getElementById('repas').value        = d.repas || '';
-    if (d.debut && d.fin) calcHeures();
+    document.getElementById('date').value        = feuille.date         || '';
+    document.getElementById('heure-debut').value = feuille.heure_debut  || '';
+    document.getElementById('heure-fin').value   = feuille.heure_fin    || '';
+    document.getElementById('repas').value        = feuille.repas_min ? String(feuille.repas_min) : '';
+    if (feuille.heure_debut && feuille.heure_fin) calcHeures();
 
-    (d.elements || []).forEach(item => {
-        if (item.kind === 'intervention') ajouterIntervention(item);
-        else if (item.kind === 'pause')   ajouterPause(item);
+    elements.forEach(el => {
+        if (el.kind === 'intervention') {
+            ajouterIntervention({
+                arrivee: el.heure_arrivee || '',
+                depart:  el.heure_depart  || '',
+                client:  el.client        || '',
+                ville:   el.ville         || '',
+                typeInt: el.type_int      || '',
+                mo:      el.mo            || '',
+                details: el.details       || '',
+            });
+        } else if (el.kind === 'pause') {
+            ajouterPause({ debut: el.pause_debut || '', fin: el.pause_fin || '' });
+        }
     });
-    if (!d.elements || d.elements.length === 0) ajouterIntervention();
+    if (!elements.length) ajouterIntervention();
 
     sauvegarderBrouillon();
     showToast('Feuille restaurée depuis l\'historique', 'success', 3000);
@@ -190,7 +246,7 @@ export function initHistoriqueEvents() {
         const delBtn = e.target.closest('.btn-histo-del');
         if (delBtn) {
             e.stopPropagation();
-            supprimerHistorique(parseInt(delBtn.dataset.delId));
+            supprimerHistorique(delBtn.dataset.delId);
             return;
         }
         const backBtn = e.target.closest('.histo-detail-back');
@@ -200,12 +256,12 @@ export function initHistoriqueEvents() {
         }
         const restaurerBtn = e.target.closest('.btn-restaurer');
         if (restaurerBtn) {
-            restaurerDepuisHistorique(parseInt(restaurerBtn.dataset.restaurerId));
+            restaurerDepuisHistorique(restaurerBtn.dataset.restaurerId);
             return;
         }
         const entry = e.target.closest('.histo-entry');
         if (entry) {
-            voirDetailHistorique(parseInt(entry.dataset.entryId));
+            voirDetailHistorique(entry.dataset.entryId);
         }
     });
 }
@@ -221,30 +277,37 @@ export function ouvrirSuppRecap() {
     document.getElementById('modal-supp').classList.add('open');
 }
 
-export function calculerSuppRecap() {
-    const debut   = document.getElementById('supp-date-debut').value;
-    const fin     = document.getElementById('supp-date-fin').value;
-    const histo   = JSON.parse(localStorage.getItem('fdr_historique') || '[]');
-    const affH    = m => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
-    const result  = document.getElementById('supp-result');
+export async function calculerSuppRecap() {
+    const debut  = document.getElementById('supp-date-debut').value;
+    const fin    = document.getElementById('supp-date-fin').value;
+    const result = document.getElementById('supp-result');
+    result.innerHTML = '<div>Calcul en cours…</div>';
 
-    const filtered = histo.filter(e => e.date && e.date >= debut && e.date <= fin);
+    const affH = m => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
 
-    if (!filtered.length) {
+    let histo;
+    try {
+        histo = await chargerHeuresSupp(debut, fin);
+    } catch (err) {
+        result.innerHTML = '<div class="supp-empty">Erreur de chargement. Vérifiez votre connexion.</div>';
+        return;
+    }
+
+    if (!histo.length) {
         result.innerHTML = '<div class="supp-empty">Aucune feuille de route sur cette période.</div>';
         return;
     }
 
     let totalMin = 0;
-    filtered.forEach(e => { totalMin += parseDuree(e.data?.supp); });
+    histo.forEach(e => { totalMin += parseDuree(e.heures_supp); });
 
-    const avecSupp   = filtered.filter(e => parseDuree(e.data?.supp) > 0);
-    const tableHtml  = avecSupp.length ? `
+    const avecSupp  = histo.filter(e => parseDuree(e.heures_supp) > 0);
+    const tableHtml = avecSupp.length ? `
         <table class="supp-table">
             <thead><tr><th>Date</th><th>Technicien</th><th>Supp.</th></tr></thead>
             <tbody>${avecSupp.map(e => {
                 const dateAff = new Date(e.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-                return `<tr><td>${dateAff}</td><td>${e.tech || '—'}</td><td class="supp-td-val">${affH(parseDuree(e.data?.supp))}</td></tr>`;
+                return `<tr><td>${dateAff}</td><td>${e.tech || '—'}</td><td class="supp-td-val">${affH(parseDuree(e.heures_supp))}</td></tr>`;
             }).join('')}</tbody>
         </table>` : '<p class="supp-no-supp">Aucune heure supplémentaire sur cette période.</p>';
 
@@ -252,7 +315,7 @@ export function calculerSuppRecap() {
         <div class="supp-total-block">
             <div class="supp-total-label">Total heures supp.</div>
             <div class="supp-total">${affH(totalMin)}</div>
-            <div class="supp-total-sub">${filtered.length} feuille${filtered.length > 1 ? 's' : ''} sur la période</div>
+            <div class="supp-total-sub">${histo.length} feuille${histo.length > 1 ? 's' : ''} sur la période</div>
         </div>
         ${tableHtml}`;
 }
