@@ -18,8 +18,8 @@ header {
 }
 .header-left { display: flex; align-items: center; gap: 16px; }
 .header-logo { height: 48px; width: auto; }
+.header-logo-reduit { display: none; height: 40px; width: auto; }
 header h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; }
-header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
 
 .btn-settings {
     background: rgba(0,0,0,0.08);
@@ -621,8 +621,8 @@ header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
         position: sticky; top: 0; z-index: 1001;
     }
     .header-logo { display: none; }
+    .header-logo-reduit { display: block; }
     header h1 { font-size: 17px; }
-    header p  { font-size: 11px; }
 
     /* Container */
     .container { margin: 14px auto; padding: 0 12px 170px; }

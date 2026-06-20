@@ -1,9 +1,10 @@
-const CACHE    = 'fdr-v5';
+const CACHE    = 'fdr-v6';
 const PRECACHE = [
   '/',
   '/index.html',
   '/pages/login.html',
   '/assets/images/logo.png',
+  '/assets/images/logo-reduit.png',
   '/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
 ];
