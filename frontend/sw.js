@@ -1,4 +1,4 @@
-const CACHE    = 'fdr-v4';
+const CACHE    = 'fdr-v5';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -25,7 +25,10 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
+  // Ne jamais mettre en cache les appels aux serveurs de données (back-end + Supabase) :
+  // ce sont des données qui changent, elles doivent toujours venir du réseau.
   if (url.hostname.includes('onrender.com')) return;
+  if (url.hostname.includes('supabase.co')) return;
 
   if (event.request.mode === 'navigate') {
     const target = url.pathname === '/pages/login.html' ? '/pages/login.html' : '/index.html';

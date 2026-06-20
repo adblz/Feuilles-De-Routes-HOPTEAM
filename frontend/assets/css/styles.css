@@ -561,8 +561,11 @@ header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
 .supp-td-val { font-weight: 700; color: #276749; text-align: right; }
 
 @media (max-width: 620px) {
-    /* Header compact */
-    header { flex-direction: row; align-items: center; padding: 12px 16px; }
+    /* Header compact + reste visible en haut */
+    header {
+        flex-direction: row; align-items: center; padding: 12px 16px;
+        position: sticky; top: 0; z-index: 1001;
+    }
     .header-logo { display: none; }
     header h1 { font-size: 17px; }
     header p  { font-size: 11px; }
@@ -614,10 +617,15 @@ header p  { font-size: 12px; color: #5c3000; opacity: 0.8; margin-top: 3px; }
         max-height: 90vh;
         overflow-y: auto;
     }
+    /* Historique (supp + feuilles) : s'ouvre sous l'entête, jusqu'en bas */
+    #modal-historique, #modal-supp {
+        top: var(--app-header-h, 64px);
+    }
     .modal-histo {
         padding: 0;
-        max-height: 85vh;
-        border-radius: 20px 20px 0 0;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
     }
     .modal-pdf-box {
         padding: 0;

@@ -116,8 +116,20 @@ function initApp(user) {
 
 // ── Point d'entrée ─────────────────────────────────────────────
 
+// Mesure la hauteur de l'entête pour que les panneaux (historique, heures supp)
+// s'ouvrent pile en dessous sur téléphone.
+function majHauteurHeader() {
+    const header = document.querySelector('header');
+    if (header) {
+        document.documentElement.style.setProperty('--app-header-h', header.offsetHeight + 'px');
+    }
+}
+
+window.addEventListener('resize', majHauteurHeader);
+
 window.addEventListener('load', async () => {
     document.getElementById('header-logo').src = getLogoBase64();
+    majHauteurHeader();
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
