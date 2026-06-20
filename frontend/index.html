@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f97316">
+    <meta name="theme-color" content="#F59D11">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -23,10 +23,15 @@
             <p>Rapport journalier d'interventions</p>
         </div>
     </div>
-    <div style="display:flex;gap:8px;">
-        <button class="btn-settings" id="btn-open-supp">&#128200; Supp</button>
-        <button class="btn-settings" id="btn-open-historique">&#128221; Historique</button>
-        <button class="btn-settings" id="btn-open-settings">&#9881; Param&#232;tres</button>
+    <div class="header-menu">
+        <button class="btn-burger" id="btn-burger" aria-label="Menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="header-dropdown" id="header-dropdown" hidden>
+            <button class="btn-settings" id="btn-open-supp">&#128200; Heures supp</button>
+            <button class="btn-settings" id="btn-open-historique">&#128221; Historique</button>
+            <button class="btn-settings" id="btn-open-settings">&#9881; Param&#232;tres</button>
+        </div>
     </div>
 </header>
 

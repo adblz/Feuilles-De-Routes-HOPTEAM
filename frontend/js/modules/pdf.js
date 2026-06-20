@@ -122,17 +122,25 @@ export function nomFichierPdf() {
     return `feuille-route_${tech.replace(/\s+/g, '-').toLowerCase()}_${date}.pdf`;
 }
 
+// Marges du PDF (en mm) — doivent rester identiques à opts.margin ci-dessous.
+const PDF_MARGIN_MM = 8;
+// Largeur utile d'une page A4 portrait (210 mm) moins les marges gauche/droite,
+// convertie en pixels (96 dpi). Construire la page exactement à cette largeur
+// garantit que le calcul des sauts de page d'html2pdf correspond au découpage
+// réel des pages → une intervention n'est jamais coupée en deux.
+const PDF_CONTENT_WIDTH_PX = Math.floor((210 - 2 * PDF_MARGIN_MM) * 96 / 25.4); // 733
+
 export function preparerPdfElement() {
     const scrollPrev = { x: window.scrollX, y: window.scrollY };
     window.scrollTo(0, 0);
 
     const el = document.createElement('div');
     el.className = 'pdf-wrap';
-    el.style.cssText = 'position:absolute;top:0;left:0;width:794px;background:white;';
+    el.style.cssText = `position:absolute;top:0;left:0;width:${PDF_CONTENT_WIDTH_PX}px;background:white;`;
     el.innerHTML = construirePDF();
     document.body.appendChild(el);
 
-    const w = el.offsetWidth  || 794;
+    const w = el.offsetWidth  || PDF_CONTENT_WIDTH_PX;
     const h = el.offsetHeight;
 
     const nettoyer = () => {
@@ -141,7 +149,7 @@ export function preparerPdfElement() {
     };
 
     const opts = {
-        margin:      [8, 8, 8, 8],
+        margin:      [PDF_MARGIN_MM, PDF_MARGIN_MM, PDF_MARGIN_MM, PDF_MARGIN_MM],
         filename:    nomFichierPdf(),
         image:       { type: 'jpeg', quality: 0.97 },
         html2canvas: {

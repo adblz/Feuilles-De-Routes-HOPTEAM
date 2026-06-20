@@ -14,6 +14,7 @@ import { afficherPdfBase64 } from './pdfviewer.js';
 // ── Paramètres ─────────────────────────────────────────────────
 
 export function openSettings() {
+    fermerTousLesModals();
     document.getElementById('s-company').value    = cfg.company;
     document.getElementById('s-email').value      = cfg.email;
     document.getElementById('s-contrat').value    = cfg.contrat;
@@ -22,6 +23,12 @@ export function openSettings() {
 
 export function fermerModal(id) {
     document.getElementById(id).classList.remove('open');
+}
+
+// Ferme tout panneau (modal) actuellement ouvert, pour éviter qu'ils se superposent.
+export function fermerTousLesModals() {
+    document.querySelectorAll('.modal-overlay.open')
+        .forEach(el => el.classList.remove('open'));
 }
 
 export function sauvegarderParams() {
@@ -40,6 +47,7 @@ export function sauvegarderParams() {
 let _histoCache = null;
 
 export function ouvrirHistorique() {
+    fermerTousLesModals();
     _histoCache = null;
     document.getElementById('modal-historique').classList.add('open');
     renderListeHistorique();
@@ -292,6 +300,7 @@ export function initHistoriqueEvents() {
 // ── Récap heures supplémentaires ───────────────────────────────
 
 export function ouvrirSuppRecap() {
+    fermerTousLesModals();
     const today        = new Date().toISOString().split('T')[0];
     const firstOfMonth = today.slice(0, 8) + '01';
     document.getElementById('supp-date-debut').value = firstOfMonth;

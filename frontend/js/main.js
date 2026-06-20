@@ -36,9 +36,35 @@ function initApp(user) {
 
     // ── Formulaire principal ───────────────────────────────────
 
-    document.getElementById('btn-open-supp').addEventListener('click', ouvrirSuppRecap);
-    document.getElementById('btn-open-historique').addEventListener('click', ouvrirHistorique);
-    document.getElementById('btn-open-settings').addEventListener('click', openSettings);
+    // ── Menu déroulant de l'entête (bouton 3 tirets) ──────────
+    const burger = document.getElementById('btn-burger');
+    const dropdown = document.getElementById('header-dropdown');
+    const headerMenu = burger.closest('.header-menu');
+
+    const fermerMenu = () => {
+        dropdown.setAttribute('hidden', '');
+        burger.classList.remove('open');
+        burger.setAttribute('aria-expanded', 'false');
+    };
+
+    burger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (dropdown.hasAttribute('hidden')) {
+            dropdown.removeAttribute('hidden');
+            burger.classList.add('open');
+            burger.setAttribute('aria-expanded', 'true');
+        } else {
+            fermerMenu();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!headerMenu.contains(e.target)) fermerMenu();
+    });
+
+    document.getElementById('btn-open-supp').addEventListener('click', () => { fermerMenu(); ouvrirSuppRecap(); });
+    document.getElementById('btn-open-historique').addEventListener('click', () => { fermerMenu(); ouvrirHistorique(); });
+    document.getElementById('btn-open-settings').addEventListener('click', () => { fermerMenu(); openSettings(); });
 
     document.getElementById('date').addEventListener('input', () => {
         calcHeures();
