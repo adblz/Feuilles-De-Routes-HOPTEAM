@@ -1,9 +1,10 @@
 import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
-import { preparerPdfElement, nomFichierPdf } from '../modules/pdf.js';
+import { preparerPdfElement, nomFichierPdf, blobToBase64 } from '../modules/pdf.js';
 import { cfg, lireTousLesElements } from '../modules/fdr.js';
 import { openSettings } from '../modules/ui.js';
 import { sauvegarderEnBase } from '../modules/db.js';
 import { memoriserValeurs } from '../modules/autocomplete.js';
+import { getUser } from '../modules/auth.js';
 
 const API = 'https://feuilles-de-routes-hopteam.onrender.com';
 
@@ -43,7 +44,8 @@ export async function envoyerMail() {
             fd.append('file', blob, fname);
             fd.append('to', cfg.email);
             fd.append('techName', tech);
-            if (cfg.techEmail) fd.append('techEmail', cfg.techEmail);
+            const techEmail = getUser()?.email;
+            if (techEmail) fd.append('techEmail', techEmail);
 
             const res = await fetch(`${API}/send-email`, { method: 'POST', body: fd });
             if (!res.ok) {
@@ -56,6 +58,7 @@ export async function envoyerMail() {
 
             setBusy(true, 'Sauvegarde…');
             try {
+                const pdfData = await blobToBase64(blob);
                 await sauvegarderEnBase({
                     date:          document.getElementById('date').value,
                     tech,
@@ -67,6 +70,7 @@ export async function envoyerMail() {
                     heuresTravail: document.getElementById('heures-travail').value,
                     heuresSupp:    document.getElementById('heures-supp').value,
                     mode:          'email',
+                    pdfData,
                     elements,
                 });
             } catch (e) {

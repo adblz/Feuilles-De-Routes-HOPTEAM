@@ -39,15 +39,22 @@ async function dbPost(table, body, returnRow = false) {
 export async function chargerHistorique() {
     const user = getSession()?.user;
     if (!user) return [];
-    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&select=*&order=date.desc`);
+    // On ne récupère PAS pdf_data ici (trop lourd) : seulement les infos de la liste.
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&select=id,date,tech,mode,created_at&order=date.desc`);
 }
 
 export async function chargerDetailFeuille(id) {
     const [feuilles, elements] = await Promise.all([
-        dbGet(`feuilles_de_route?id=eq.${id}`),
+        dbGet(`feuilles_de_route?id=eq.${id}&select=id,date,tech,company,contrat,heure_debut,heure_fin,repas_min,heures_travail,heures_supp,mode,created_at`),
         dbGet(`interventions?feuille_id=eq.${id}&order=order_index.asc`),
     ]);
     return { feuille: feuilles[0], elements };
+}
+
+// Récupère uniquement le PDF (base64) d'une feuille, à la demande.
+export async function chargerPdfFeuille(id) {
+    const rows = await dbGet(`feuilles_de_route?id=eq.${id}&select=pdf_data`);
+    return rows[0]?.pdf_data || null;
 }
 
 export async function supprimerFeuille(id) {
@@ -63,7 +70,7 @@ export async function chargerHeuresSupp(debut, fin) {
 function toTime(val) { return val || null; }
 function toInt(val)  { return val ? parseInt(val, 10) : null; }
 
-export async function sauvegarderEnBase({ date, tech, company, contrat, heureDebut, heureFin, repasMin, heuresTravail, heuresSupp, mode, elements }) {
+export async function sauvegarderEnBase({ date, tech, company, contrat, heureDebut, heureFin, repasMin, heuresTravail, heuresSupp, mode, pdfData, elements }) {
     const user = getSession()?.user;
     if (!user) throw new Error('Non connecté');
 
@@ -73,7 +80,8 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         await dbDelete('feuilles_de_route', `date=eq.${date}&user_id=eq.${user.id}`);
     }
 
-    const feuille = await dbPost('feuilles_de_route', {
+    // ?select=id : on ne se fait pas renvoyer le gros pdf_data inutilement.
+    const feuille = await dbPost('feuilles_de_route?select=id', {
         date,
         user_id:        user.id,
         tech:           tech          || null,
@@ -85,6 +93,7 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         heures_travail: heuresTravail || null,
         heures_supp:    heuresSupp    || null,
         mode,
+        pdf_data:       pdfData       || null,
     }, true);
 
     if (!elements.length) return;

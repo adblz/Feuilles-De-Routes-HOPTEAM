@@ -9,6 +9,7 @@ import {
     nouvelleFeuille,
 } from './modules/ui.js';
 import { genererPDF } from './modules/pdf.js';
+import { fermerPdfViewer } from './modules/pdfviewer.js';
 import { envoyerMail } from './api/api.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession } from './modules/auth.js';
 import { showToast } from './utils/utils.js';
@@ -73,6 +74,10 @@ function initApp(user) {
     document.getElementById('histo-filtre-annee').addEventListener('change', renderListeHistorique);
     document.getElementById('btn-close-historique').addEventListener('click', () => fermerModal('modal-historique'));
 
+    // ── Modal aperçu PDF ───────────────────────────────────────
+
+    document.getElementById('btn-close-pdf').addEventListener('click', fermerPdfViewer);
+
     // ── Modal heures supp ──────────────────────────────────────
 
     document.getElementById('btn-close-supp').addEventListener('click', () => fermerModal('modal-supp'));
@@ -105,7 +110,7 @@ function initApp(user) {
             const keys = await caches.keys();
             await Promise.all(keys.map(k => caches.delete(k)));
         }
-        window.location.href = 'login.html';
+        window.location.href = '/pages/login.html';
     });
 }
 
@@ -127,6 +132,6 @@ window.addEventListener('load', async () => {
     if (session?.user) {
         initApp(session.user);
     } else {
-        window.location.href = 'login.html';
+        window.location.href = '/pages/login.html';
     }
 });

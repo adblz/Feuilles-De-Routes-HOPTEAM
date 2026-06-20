@@ -1,9 +1,9 @@
-const CACHE    = 'fdr-v3';
+const CACHE    = 'fdr-v4';
 const PRECACHE = [
   '/',
   '/index.html',
-  '/login.html',
-  '/logo.png',
+  '/pages/login.html',
+  '/assets/images/logo.png',
   '/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
 ];
@@ -28,7 +28,7 @@ self.addEventListener('fetch', event => {
   if (url.hostname.includes('onrender.com')) return;
 
   if (event.request.mode === 'navigate') {
-    const target = url.pathname === '/login.html' ? '/login.html' : '/index.html';
+    const target = url.pathname === '/pages/login.html' ? '/pages/login.html' : '/index.html';
     event.respondWith(
       caches.match(target).then(cached => cached || fetch(event.request))
     );

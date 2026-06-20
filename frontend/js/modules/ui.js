@@ -7,15 +7,15 @@ import {
 } from './fdr.js';
 import {
     chargerHistorique, chargerDetailFeuille,
-    supprimerFeuille, chargerHeuresSupp,
+    supprimerFeuille, chargerHeuresSupp, chargerPdfFeuille,
 } from './db.js';
+import { afficherPdfBase64 } from './pdfviewer.js';
 
 // ── Paramètres ─────────────────────────────────────────────────
 
 export function openSettings() {
     document.getElementById('s-company').value    = cfg.company;
     document.getElementById('s-email').value      = cfg.email;
-    document.getElementById('s-tech-email').value = cfg.techEmail;
     document.getElementById('s-contrat').value    = cfg.contrat;
     document.getElementById('modal-settings').classList.add('open');
 }
@@ -28,7 +28,6 @@ export function sauvegarderParams() {
     saveCfg(
         document.getElementById('s-company').value.trim(),
         document.getElementById('s-email').value.trim(),
-        document.getElementById('s-tech-email').value.trim(),
         document.getElementById('s-contrat').value
     );
     fermerModal('modal-settings');
@@ -175,9 +174,28 @@ export async function voirDetailHistorique(id) {
             ${pausesHtml}
         </div>
 
+        <button class="btn-voir-pdf" data-pdf-id="${id}">
+            &#128196; Afficher le PDF
+        </button>
+
         <button class="btn-restaurer" data-restaurer-id="${id}">
             &#8635; Restaurer cette feuille
         </button>`;
+}
+
+async function afficherPdfHistorique(id) {
+    let pdf;
+    try {
+        pdf = await chargerPdfFeuille(id);
+    } catch (err) {
+        showToast('Erreur lors du chargement du PDF', 'error');
+        return;
+    }
+    if (!pdf) {
+        showToast('PDF non disponible pour cette feuille (créée avant la mise à jour)', 'warn', 4500);
+        return;
+    }
+    afficherPdfBase64(pdf);
 }
 
 async function supprimerHistorique(id) {
@@ -252,6 +270,11 @@ export function initHistoriqueEvents() {
         const backBtn = e.target.closest('.histo-detail-back');
         if (backBtn) {
             renderListeHistorique();
+            return;
+        }
+        const pdfBtn = e.target.closest('.btn-voir-pdf');
+        if (pdfBtn) {
+            afficherPdfHistorique(pdfBtn.dataset.pdfId);
             return;
         }
         const restaurerBtn = e.target.closest('.btn-restaurer');

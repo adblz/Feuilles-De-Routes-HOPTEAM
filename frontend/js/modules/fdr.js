@@ -12,18 +12,15 @@ export function getLogoBase64() { return LOGO_B64; }
 export let cfg = {
     company:   localStorage.getItem('cfg_company')    || '',
     email:     localStorage.getItem('cfg_email')      || '',
-    techEmail: localStorage.getItem('cfg_tech_email') || '',
     contrat:   localStorage.getItem('cfg_contrat')    || '39',
 };
 
-export function saveCfg(company, email, techEmail, contrat) {
+export function saveCfg(company, email, contrat) {
     cfg.company   = company;
     cfg.email     = email;
-    cfg.techEmail = techEmail;
     cfg.contrat   = contrat;
     localStorage.setItem('cfg_company',    cfg.company);
     localStorage.setItem('cfg_email',      cfg.email);
-    localStorage.setItem('cfg_tech_email', cfg.techEmail);
     localStorage.setItem('cfg_contrat',    cfg.contrat);
 }
 
@@ -105,7 +102,11 @@ export function ajouterIntervention(data = {}) {
     div.innerHTML = `
         <div class="int-header">
             <span class="int-number">Intervention #${n}</span>
-            <button class="btn-remove">&#10005; Supprimer</button>
+            <div class="int-actions">
+                <button class="btn-move btn-move-up" title="Monter">&#9650;</button>
+                <button class="btn-move btn-move-down" title="Descendre">&#9660;</button>
+                <button class="btn-remove">&#10005; Supprimer</button>
+            </div>
         </div>
         <div class="form-grid">
             <div class="form-group">
@@ -173,6 +174,8 @@ export function ajouterIntervention(data = {}) {
     if (data.details) document.getElementById(`i${n}-details`).value = data.details;
 
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`int-card-${n}`));
+    div.querySelector('.btn-move-up').addEventListener('click', () => deplacerElement(div, -1));
+    div.querySelector('.btn-move-down').addEventListener('click', () => deplacerElement(div, 1));
 
     div.querySelectorAll('.uppercase-input').forEach(el => {
         el.addEventListener('input', () => { el.value = el.value.toUpperCase(); });
@@ -196,7 +199,11 @@ export function ajouterPause(data = {}) {
     div.innerHTML = `
         <div class="int-header">
             <span class="pause-number">&#9208; Pause</span>
-            <button class="btn-remove">&#10005; Supprimer</button>
+            <div class="int-actions">
+                <button class="btn-move btn-move-up" title="Monter">&#9650;</button>
+                <button class="btn-move btn-move-down" title="Descendre">&#9660;</button>
+                <button class="btn-remove">&#10005; Supprimer</button>
+            </div>
         </div>
         <div class="form-grid">
             <div class="form-group">
@@ -215,6 +222,8 @@ export function ajouterPause(data = {}) {
     if (data.fin)   document.getElementById(`p${n}-fin`).value   = data.fin;
 
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`pause-card-${n}`));
+    div.querySelector('.btn-move-up').addEventListener('click', () => deplacerElement(div, -1));
+    div.querySelector('.btn-move-down').addEventListener('click', () => deplacerElement(div, 1));
 
     div.querySelectorAll('input').forEach(el => {
         el.addEventListener('input', sauvegarderBrouillon);
@@ -223,7 +232,33 @@ export function ajouterPause(data = {}) {
 
 export function supprimerElement(id) {
     const el = document.getElementById(id);
-    if (el) { el.remove(); sauvegarderBrouillon(); }
+    if (el) { el.remove(); renumeroterInterventions(); sauvegarderBrouillon(); }
+}
+
+// Déplace une carte (intervention ou pause) d'un cran vers le haut (-1) ou le bas (1).
+export function deplacerElement(card, direction) {
+    const list = document.getElementById('interventions-list');
+    if (direction < 0) {
+        const prev = card.previousElementSibling;
+        if (prev) list.insertBefore(card, prev);
+    } else {
+        const next = card.nextElementSibling;
+        if (next) list.insertBefore(next, card);
+    }
+    renumeroterInterventions();
+    sauvegarderBrouillon();
+}
+
+// Remet à jour les numéros « Intervention #N » selon l'ordre affiché.
+function renumeroterInterventions() {
+    let n = 0;
+    document.querySelectorAll('#interventions-list > div').forEach(card => {
+        if (card.dataset.type === 'intervention') {
+            n++;
+            const lbl = card.querySelector('.int-number');
+            if (lbl) lbl.textContent = `Intervention #${n}`;
+        }
+    });
 }
 
 export function lireTousLesElements() {

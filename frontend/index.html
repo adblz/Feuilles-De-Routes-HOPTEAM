@@ -11,7 +11,7 @@
     <link rel="manifest" href="/manifest.json">
     <title>Feuille de Route</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
 
@@ -107,7 +107,7 @@
 
     <!-- Boutons principaux -->
     <div class="actions">
-        <button class="btn-pdf"   id="btn-pdf">Télécharger le PDF</button>
+        <button class="btn-pdf"   id="btn-pdf">Enregistrer le PDF</button>
         <button class="btn-email" id="btn-email">Envoyer par mail</button>
         <button class="btn-new"   id="btn-new-feuille">Nouvelle feuille</button>
     </div>
@@ -152,6 +152,20 @@
     </div>
 </div>
 
+<!-- Modal aperçu PDF -->
+<div class="modal-overlay" id="modal-pdf">
+    <div class="modal modal-pdf-box">
+        <div class="modal-histo-header">
+            <h3>Aper&#231;u du PDF</h3>
+            <button class="btn-histo-close" id="btn-close-pdf">&#10005;</button>
+        </div>
+        <iframe id="pdf-viewer-frame" class="pdf-viewer-frame" title="Aper&#231;u du PDF"></iframe>
+        <div class="pdf-viewer-foot">
+            <a id="pdf-viewer-open" href="#" target="_blank" rel="noopener" class="pdf-viewer-open">Ouvrir en plein &#233;cran</a>
+        </div>
+    </div>
+</div>
+
 <!-- Modal paramètres -->
 <div class="modal-overlay" id="modal-settings">
     <div class="modal">
@@ -163,10 +177,6 @@
         <div class="form-group">
             <label>Email du responsable</label>
             <input type="email" id="s-email" placeholder="responsable@hopteam.fr">
-        </div>
-        <div class="form-group">
-            <label>Votre email (technicien)</label>
-            <input type="email" id="s-tech-email" placeholder="prenom.nom@hopteam.fr">
         </div>
         <div class="form-group">
             <label>Type de contrat</label>

@@ -1,7 +1,18 @@
-import { validerFormulaire, setBusy } from '../utils/utils.js';
+import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
 import { cfg, seuilJour, lireTousLesElements, getLogoBase64 } from './fdr.js';
 import { sauvegarderEnBase } from './db.js';
 import { memoriserValeurs } from './autocomplete.js';
+import { afficherPdfBlob } from './pdfviewer.js';
+
+// Convertit un Blob PDF en chaîne base64 (data URL), pour stockage en base.
+export function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
 
 export function construirePDF() {
     const dateVal = document.getElementById('date').value;
@@ -167,14 +178,19 @@ export function genererPDF() {
             html2pdf()
                 .set(opts)
                 .from(el)
-                .save()
-                .then(async () => {
+                .outputPdf('blob')
+                .then(async (blob) => {
                     nettoyer();
+
+                    // Affichage immédiat à l'écran (aucun téléchargement sur l'appareil).
+                    afficherPdfBlob(blob);
+
                     const elements = lireTousLesElements();
                     memoriserValeurs(elements);
 
-                    setBusy(true, 'Sauvegarde…');
+                    setBusy(true, 'Enregistrement sur le cloud…');
                     try {
+                        const pdfData = await blobToBase64(blob);
                         await sauvegarderEnBase({
                             date:          document.getElementById('date').value,
                             tech:          document.getElementById('technicien').value || '',
@@ -186,13 +202,17 @@ export function genererPDF() {
                             heuresTravail: document.getElementById('heures-travail').value,
                             heuresSupp:    document.getElementById('heures-supp').value,
                             mode:          'pdf',
+                            pdfData,
                             elements,
                         });
+                        setBusy(false);
+                        showToast('PDF enregistré dans l\'historique', 'success', 3000);
                     } catch (e) {
                         console.warn('Supabase save failed:', e);
+                        setBusy(false);
+                        showToast('PDF affiché, mais l\'enregistrement a échoué', 'warn', 4000);
                     }
 
-                    setBusy(false);
                     resolve(nomFichierPdf());
                 })
                 .catch(err => {

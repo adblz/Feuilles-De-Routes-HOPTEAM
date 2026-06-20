@@ -9,7 +9,7 @@ window.addEventListener('load', async () => {
         session = await refreshSession();
     }
     if (session?.user) {
-        window.location.href = 'index.html';
+        window.location.href = '/index.html';
         return;
     }
 
@@ -37,7 +37,7 @@ async function handleLogin() {
 
     try {
         await connexion(email, password);
-        window.location.href = 'index.html';
+        window.location.href = '/index.html';
     } catch (err) {
         errorEl.textContent = err.message;
         btn.disabled    = false;
