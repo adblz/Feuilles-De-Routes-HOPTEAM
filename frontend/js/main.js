@@ -1,6 +1,6 @@
 import {
     cfg, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto,
-    ajouterIntervention, ajouterPause, sauvegarderBrouillon, restaurerBrouillon,
+    ajouterIntervention, ajouterPause, sauvegarderBrouillon,
 } from './modules/fdr.js';
 import {
     openSettings, fermerModal, sauvegarderParams,
@@ -9,6 +9,7 @@ import {
     nouvelleFeuille,
 } from './modules/ui.js';
 import { genererPDF } from './modules/pdf.js';
+import { initDashboard, afficherDashboard } from './modules/dashboard.js';
 import { fermerPdfViewer } from './modules/pdfviewer.js';
 import { envoyerMail } from './api/api.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession } from './modules/auth.js';
@@ -26,13 +27,14 @@ function initApp(user) {
         document.getElementById('setup-notice').style.display = 'none';
     }
 
+    techEl.value = nomTech;
     calcHeures();
 
-    if (!restaurerBrouillon()) {
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        ajouterIntervention();
-    }
-    techEl.value = nomTech;
+    // Au démarrage, on affiche le tableau de bord (pas le formulaire).
+    // Le formulaire est rempli à la demande : « Nouvelle feuille », « Créer »
+    // pour un jour manquant, ou « Reprendre » un brouillon existant.
+    initDashboard(nomTech);
+    afficherDashboard();
 
     // ── Formulaire principal ───────────────────────────────────
 

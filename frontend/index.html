@@ -42,7 +42,41 @@
 
 <div id="toast"></div>
 
-<div class="container">
+<!-- ════════ VUE DASHBOARD ════════ -->
+<div class="container" id="vue-dashboard">
+
+    <div class="dash-greeting" id="dash-greeting">Tableau de bord</div>
+
+    <!-- Récap heures supplémentaires du mois (cliquable → fenêtre dates) -->
+    <button type="button" class="card dash-supp-card" id="btn-dash-supp">
+        <div class="dash-supp-label">Heures supplémentaires — <span id="dash-supp-mois"></span></div>
+        <div class="dash-supp-total" id="dash-supp-total">…</div>
+        <div class="dash-supp-sub" id="dash-supp-sub"></div>
+        <div class="dash-supp-hint">&#9998; Modifier la période</div>
+    </button>
+
+    <!-- Récap feuilles de la semaine -->
+    <div class="card">
+        <h2>Cette semaine</h2>
+        <div class="dash-semaine-chips" id="dash-semaine-chips"></div>
+        <div class="dash-manquantes" id="dash-manquantes"></div>
+    </div>
+
+    <!-- Brouillon en cours (affiché seulement s'il en existe un) -->
+    <button type="button" class="card dash-brouillon-card hidden" id="dash-brouillon">
+        <span class="dash-brouillon-text">&#128221; Vous avez une feuille en cours (brouillon)</span>
+        <span class="dash-brouillon-action">Reprendre &#8594;</span>
+    </button>
+
+    <!-- Créer une feuille (indépendant des jours manquants) -->
+    <button type="button" class="btn-dash-nouvelle" id="btn-dash-nouvelle">+ Nouvelle feuille</button>
+
+</div>
+
+<!-- ════════ VUE FORMULAIRE ════════ -->
+<div class="container hidden" id="vue-formulaire">
+
+    <button type="button" class="btn-retour-dashboard" id="btn-retour-dashboard">&#8592; Tableau de bord</button>
 
     <div class="notice" id="setup-notice">
         Première utilisation ? Cliquez sur <strong>Paramètres</strong> (en haut à droite) pour renseigner votre entreprise et l'email de votre responsable.

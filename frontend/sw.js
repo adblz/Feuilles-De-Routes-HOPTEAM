@@ -1,4 +1,4 @@
-const CACHE    = 'fdr-v6';
+const CACHE    = 'fdr-v8';
 const PRECACHE = [
   '/',
   '/index.html',

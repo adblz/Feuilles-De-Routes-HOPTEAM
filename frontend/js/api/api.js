@@ -79,6 +79,8 @@ export async function envoyerMail() {
 
             setBusy(false);
             showToast('Email envoyé à ' + cfg.email, 'success', 4000);
+            // Prévient le tableau de bord pour qu'il se rafraîchisse.
+            document.dispatchEvent(new CustomEvent('feuille:enregistree'));
         } catch (err) {
             nettoyer();
             setBusy(false);

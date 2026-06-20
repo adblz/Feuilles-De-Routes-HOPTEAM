@@ -215,6 +215,8 @@ export function genererPDF() {
                         });
                         setBusy(false);
                         showToast('PDF enregistré dans l\'historique', 'success', 3000);
+                        // Prévient le tableau de bord pour qu'il se rafraîchisse.
+                        document.dispatchEvent(new CustomEvent('feuille:enregistree'));
                     } catch (e) {
                         console.warn('Supabase save failed:', e);
                         setBusy(false);

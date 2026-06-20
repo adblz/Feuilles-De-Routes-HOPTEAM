@@ -375,6 +375,114 @@ header h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; }
 }
 .btn-new:hover { background: #f7fafc; }
 
+/* ════════ Dashboard ════════ */
+
+.hidden { display: none !important; }
+
+.dash-greeting {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a365d;
+    margin-bottom: 18px;
+}
+
+/* Carte heures supplémentaires (cliquable) */
+.dash-supp-card {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+    border-left: 5px solid #F59D11;
+    transition: box-shadow 0.2s, transform 0.1s;
+    font-family: inherit;
+}
+.dash-supp-card:hover { box-shadow: 0 4px 14px rgba(245,157,17,0.25); }
+.dash-supp-card:active { transform: scale(0.995); }
+.dash-supp-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    color: #718096; letter-spacing: 0.4px;
+}
+.dash-supp-label span { text-transform: capitalize; }
+.dash-supp-total {
+    font-size: 44px; font-weight: 900; color: #c05621;
+    line-height: 1.1; margin-top: 6px;
+}
+.dash-supp-sub { font-size: 13px; color: #a0aec0; margin-top: 4px; }
+.dash-supp-hint {
+    font-size: 12px; font-weight: 600; color: #F59D11; margin-top: 12px;
+}
+
+/* Chips des jours de la semaine */
+.dash-semaine-chips { display: flex; gap: 8px; }
+.dash-jour {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 12px 4px;
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    background: #f7fafc;
+}
+.dash-jour-nom { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #718096; }
+.dash-jour-num { font-size: 16px; font-weight: 800; color: #2d3748; }
+.dash-jour-icone { font-size: 15px; font-weight: 700; }
+.dash-jour-fait     { background: #f0fff4; border-color: #9ae6b4; }
+.dash-jour-fait .dash-jour-icone { color: #276749; }
+.dash-jour-manquant { background: #fffbeb; border-color: #f6ad55; }
+.dash-jour-manquant .dash-jour-icone { color: #c05621; }
+.dash-jour-avenir   { opacity: 0.55; }
+.dash-jour-avenir .dash-jour-icone { color: #a0aec0; }
+
+/* Liste des jours manquants */
+.dash-manquantes { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.dash-manquant-ligne {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: #fffbeb; border: 1.5px solid #f6ad55; border-radius: 10px;
+    padding: 12px 14px;
+}
+.dash-manquant-label { font-size: 13px; font-weight: 600; color: #744210; }
+.dash-jour-creer {
+    flex-shrink: 0;
+    padding: 9px 18px;
+    background: linear-gradient(135deg, #F59D11, #dd6b20);
+    color: white; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+}
+.dash-jour-creer:hover { opacity: 0.9; }
+.dash-tout-ok { font-size: 13px; font-weight: 600; color: #276749; }
+.dash-loading { font-size: 13px; color: #a0aec0; }
+
+/* Carte brouillon en cours */
+.dash-brouillon-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%; text-align: left; cursor: pointer; font-family: inherit;
+    border: none; border-left: 5px solid #3182ce;
+    transition: box-shadow 0.2s;
+}
+.dash-brouillon-card:hover { box-shadow: 0 4px 14px rgba(49,130,206,0.2); }
+.dash-brouillon-text { font-size: 14px; font-weight: 600; color: #2b6cb0; }
+.dash-brouillon-action { font-size: 14px; font-weight: 700; color: #3182ce; white-space: nowrap; }
+
+/* Bouton « Nouvelle feuille » du dashboard */
+.btn-dash-nouvelle {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, #2b6cb0, #3182ce);
+    color: white; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+}
+.btn-dash-nouvelle:hover { opacity: 0.9; }
+
+/* Bouton retour vers le dashboard (vue formulaire) */
+.btn-retour-dashboard {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-bottom: 16px;
+    padding: 9px 16px;
+    background: white; color: #4a5568;
+    border: 1.5px solid #e2e8f0; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+}
+.btn-retour-dashboard:hover { background: #f7fafc; }
+
 /* Modal */
 .modal-overlay {
     display: none; position: fixed; inset: 0;
@@ -629,6 +737,15 @@ header h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; }
 
     /* Cards */
     .card { padding: 16px; }
+
+    /* Dashboard */
+    .dash-greeting { font-size: 19px; }
+    .dash-supp-total { font-size: 38px; }
+    .dash-semaine-chips { gap: 5px; }
+    .dash-jour { padding: 10px 2px; }
+    .dash-jour-nom { font-size: 10px; }
+    .dash-manquant-ligne { flex-direction: column; align-items: stretch; }
+    .dash-jour-creer { width: 100%; padding: 12px; }
 
     /* Form */
     .form-grid { grid-template-columns: 1fr; }

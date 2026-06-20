@@ -212,6 +212,8 @@ async function supprimerHistorique(id) {
         await supprimerFeuille(id);
         if (_histoCache) _histoCache = _histoCache.filter(e => e.id !== id);
         renderListeHistorique();
+        // Prévient le tableau de bord (en arrière-plan) pour qu'il se rafraîchisse.
+        document.dispatchEvent(new CustomEvent('feuille:supprimee'));
     } catch (err) {
         showToast('Erreur lors de la suppression', 'error');
     }
@@ -354,14 +356,15 @@ export async function calculerSuppRecap() {
 
 // ── Nouvelle feuille ───────────────────────────────────────────
 
-export function nouvelleFeuille() {
-    if (!confirm('Effacer la feuille de route en cours et recommencer à zéro ?')) return;
-
+// Remet le formulaire à zéro pour une date donnée (aujourd'hui par défaut).
+// Utilisé par le bouton « Nouvelle feuille » du formulaire ET par le dashboard
+// (boutons « Créer » / « Nouvelle feuille »).
+export function reinitialiserFeuille(dateISO) {
     effacerBrouillon();
     viderInterventions();
     resetSuppState();
 
-    document.getElementById('date').value           = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value           = dateISO || new Date().toISOString().split('T')[0];
     document.getElementById('heure-debut').value    = '';
     document.getElementById('heure-fin').value      = '';
     document.getElementById('repas').value          = '';
@@ -369,4 +372,10 @@ export function nouvelleFeuille() {
     document.getElementById('heures-supp').value    = '';
 
     ajouterIntervention();
+    calcHeures(); // met à jour le libellé du seuil selon la date
+}
+
+export function nouvelleFeuille() {
+    if (!confirm('Effacer la feuille de route en cours et recommencer à zéro ?')) return;
+    reinitialiserFeuille();
 }
