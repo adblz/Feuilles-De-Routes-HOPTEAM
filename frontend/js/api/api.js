@@ -1,6 +1,6 @@
 import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
 import { preparerPdfElement, nomFichierPdf, blobToBase64 } from '../modules/pdf.js';
-import { cfg, lireTousLesElements } from '../modules/fdr.js';
+import { cfg, lireTousLesElements, effacerBrouillon } from '../modules/fdr.js';
 import { openSettings } from '../modules/ui.js';
 import { sauvegarderEnBase } from '../modules/db.js';
 import { memoriserValeurs } from '../modules/autocomplete.js';
@@ -79,7 +79,7 @@ export async function envoyerMail() {
 
             setBusy(false);
             showToast('Email envoyé à ' + cfg.email, 'success', 4000);
-            // Prévient le tableau de bord pour qu'il se rafraîchisse.
+            effacerBrouillon(document.getElementById('date').value);
             document.dispatchEvent(new CustomEvent('feuille:enregistree'));
         } catch (err) {
             nettoyer();

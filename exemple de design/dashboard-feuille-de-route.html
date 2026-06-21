@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau de bord — Feuilles de route</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161B26;
+    --panel:#1F2636;
+    --paper:#F4EFE3;
+    --paper-dim:#EAE3D2;
+    --amber:#E2872E;
+    --amber-soft:#F8E3C4;
+    --teal:#2E8074;
+    --teal-soft:#DCEEE9;
+    --steel:#3D5A99;
+    --steel-soft:#DEE6F4;
+    --muted:#8B8678;
+    --hairline:rgba(255,255,255,.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{
+    font-family:'IBM Plex Sans',sans-serif;
+    background:var(--ink);
+    color:var(--paper);
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit;}
+
+  /* ---------- frame ---------- */
+  .backdrop{min-height:100vh;display:flex;justify-content:center;background:var(--ink);}
+  .phone{width:100%;}
+  .screen{position:relative;width:100%;min-height:100vh;background:var(--ink);display:flex;flex-direction:column;}
+  @media (min-width:600px){
+    .backdrop{align-items:center;padding:40px 16px;background:radial-gradient(circle at 30% 0%, #1c2333 0%, #0c0e14 70%);}
+    .phone{max-width:430px;}
+    .screen{min-height:860px;max-height:860px;overflow-y:auto;border-radius:40px;
+      box-shadow:0 40px 80px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);}
+  }
+
+  /* ---------- header ---------- */
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+    padding:24px 20px 16px;background:linear-gradient(180deg,var(--panel),var(--ink));}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:#9AA4C2;margin-bottom:6px;}
+  .greeting{font-family:'Big Shoulders',sans-serif;font-weight:700;font-size:27px;
+    line-height:1;color:#F7F4EC;}
+  .date-line{font-size:12.5px;color:#8089A8;margin-top:6px;}
+  .avatar{width:42px;height:42px;border-radius:50%;background:var(--steel);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;
+    font-weight:600;font-size:13.5px;flex-shrink:0;}
+
+  /* ---------- alert / confirm bar ---------- */
+  .bar{margin:0 20px 0;border-radius:14px;padding:12px 14px;display:flex;align-items:center;
+    gap:10px;}
+  .alert-bar{background:var(--amber-soft);border:1px solid rgba(226,135,46,.4);color:#5b3a14;}
+  .alert-bar svg{flex-shrink:0;width:20px;height:20px;color:var(--amber);}
+  .confirm-bar{background:var(--teal-soft);border:1px solid rgba(46,128,116,.35);color:#194a42;}
+  .confirm-bar svg{flex-shrink:0;width:18px;height:18px;color:var(--teal);}
+  .bar[hidden]{display:none;}
+  .bar-text{display:flex;flex-direction:column;gap:1px;}
+  .bar-text strong{font-size:13.5px;font-weight:600;}
+  .bar-text span{font-size:11.5px;opacity:.75;}
+  .bar-cta{margin-left:auto;background:var(--amber);color:#1f1208;border:none;
+    padding:8px 13px;border-radius:10px;font-weight:600;font-size:12.5px;
+    white-space:nowrap;cursor:pointer;}
+  .bar-cta:active{transform:scale(.96);}
+
+  /* ---------- content ---------- */
+  .content{flex:1;padding:18px 20px 150px;display:flex;flex-direction:column;gap:16px;}
+  .card{background:var(--paper);color:#2b2719;border-radius:22px;padding:18px 16px 16px;
+    box-shadow:0 10px 24px -14px rgba(0,0,0,.5);}
+  .card .eyebrow{color:var(--muted);}
+  .card-title{font-family:'Big Shoulders',sans-serif;font-size:21px;font-weight:700;
+    color:#22201a;margin-top:1px;}
+  .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+
+  /* ---------- gauge card ---------- */
+  .gauge-figure{display:flex;align-items:baseline;gap:8px;margin:12px 0 4px;}
+  .gauge-number{font-family:'Big Shoulders',sans-serif;font-weight:800;font-size:42px;
+    color:#1c1a12;letter-spacing:-.01em;}
+  .gauge-number small{font-size:.48em;font-weight:600;margin:0 1px;}
+  .gauge-cap{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);}
+  .route{position:relative;height:58px;margin:6px 2px 0;}
+  .route-track{position:absolute;left:2px;right:2px;top:50%;height:6px;border-radius:4px;
+    transform:translateY(-50%);background:#272B23;overflow:hidden;}
+  .route-track::before{content:"";position:absolute;inset:0;
+    background-image:repeating-linear-gradient(90deg,#ECE7D8 0 7px, transparent 7px 15px);
+    opacity:.55;}
+  .route-fill{position:absolute;top:0;left:0;height:100%;z-index:1;border-radius:4px;
+    background:linear-gradient(90deg,var(--steel),#5577C2);}
+  .route-marker{position:absolute;top:50%;transform:translate(-50%,-50%);z-index:2;}
+  .route-marker .dot{display:block;width:8px;height:8px;border-radius:50%;background:#EDEAE0;
+    border:2px solid var(--steel);}
+  .route-marker label{position:absolute;top:13px;left:50%;transform:translateX(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--muted);white-space:nowrap;}
+  .route-marker.current{z-index:3;}
+  .route-marker.current .dot{width:14px;height:14px;background:var(--steel);
+    border:3px solid var(--paper);box-shadow:0 0 0 4px rgba(61,90,153,.22);}
+  .route-marker.current label{top:16px;font-weight:600;color:var(--steel);}
+  .route-flag{position:absolute;top:50%;right:0;transform:translate(50%,-50%);z-index:2;
+    color:var(--muted);}
+  .route-flag svg{width:14px;height:14px;display:block;}
+  .route-flag label{position:absolute;top:15px;left:50%;transform:translateX(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--muted);white-space:nowrap;}
+  .gauge-delta{margin-top:22px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5c5840;}
+
+  /* ---------- stat chips ---------- */
+  .chips{display:flex;gap:10px;}
+  .chip{flex:1;background:var(--panel);border:1px solid rgba(255,255,255,.05);
+    border-radius:16px;padding:12px 10px;display:flex;flex-direction:column;gap:4px;}
+  .chip-num{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:16.5px;color:#EDEAE0;}
+  .chip-alert .chip-num{color:var(--amber);}
+  .chip-label{font-size:10.5px;color:#8089A8;line-height:1.25;}
+
+  /* ---------- calendar ---------- */
+  .weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-top:14px;}
+  .weekdays span{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    color:var(--muted);text-transform:uppercase;}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px;}
+  .day{position:relative;aspect-ratio:1/1;border-radius:10px;display:flex;align-items:center;
+    justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12.5px;
+    cursor:pointer;border:1.5px solid transparent;background:var(--paper-dim);
+    color:#4b4636;transition:transform .12s ease;}
+  .day:active{transform:scale(.92);}
+  .day:focus-visible{outline:2px solid var(--steel);outline-offset:1px;}
+  .day .stamp{position:absolute;bottom:4px;width:6px;height:6px;border-radius:50%;}
+  .day.filled{background:var(--teal-soft);color:#1f5147;}
+  .day.filled .stamp{background:var(--teal);}
+  .day.missing{background:var(--amber-soft);color:#6b4015;border-color:rgba(226,135,46,.55);}
+  .day.missing .stamp{background:var(--amber);}
+  .day.pending{background:var(--paper-dim);color:#22201a;border:1.5px dashed var(--steel);}
+  .day.pending .stamp{background:var(--steel);}
+  .day.off{background:transparent;color:#b9b29c;cursor:default;}
+  .day.off .num{opacity:.55;}
+  .day.future{background:transparent;color:#cfc8b2;opacity:.5;cursor:default;}
+  .day.outside{visibility:hidden;cursor:default;}
+  .day.today{box-shadow:0 0 0 2px var(--steel) inset;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:12px 14px;margin-top:14px;font-size:10.5px;color:var(--muted);}
+  .legend span{display:flex;align-items:center;gap:5px;}
+  .ldot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .ldot.filled{background:var(--teal);}
+  .ldot.missing{background:var(--amber);}
+  .ldot.pending{background:var(--steel);}
+  .ldot.off{background:#cfc8b2;}
+
+  .day-detail{margin-top:14px;padding:11px 14px;background:var(--paper-dim);border-radius:12px;
+    font-size:12.5px;color:#4b4636;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .day-detail button{background:var(--steel);color:#fff;border:none;padding:7px 12px;
+    border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .day-detail button:focus-visible, .bar-cta:focus-visible, .fab:focus-visible,
+  .nav-item:focus-visible, .action-row button:focus-visible{outline:2px solid var(--steel);outline-offset:2px;}
+
+  /* ---------- action list ---------- */
+  .action-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .action-row{display:flex;align-items:center;gap:10px;padding:10px 12px;
+    background:var(--paper-dim);border-radius:12px;}
+  .action-row .ico{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;flex-shrink:0;}
+  .action-row .ico svg{width:16px;height:16px;}
+  .action-row.is-pending .ico{background:var(--steel-soft);color:var(--steel);}
+  .action-row.is-missing .ico{background:var(--amber-soft);color:var(--amber);}
+  .action-row .info{flex:1;}
+  .action-row .info strong{display:block;font-size:13px;color:#2b2719;}
+  .action-row .info span{font-size:11px;color:var(--muted);}
+  .action-row button{background:var(--ink);color:#fff;border:none;padding:7px 12px;
+    border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;}
+  .action-empty{text-align:center;padding:18px 10px;color:var(--muted);font-size:12.5px;}
+
+  /* ---------- fab + nav ---------- */
+  .fab{position:sticky;bottom:78px;left:20px;right:20px;margin:0 20px;
+    background:linear-gradient(90deg,var(--steel),#4d6cb0);color:#fff;border:none;
+    border-radius:16px;padding:14px;font-weight:600;font-size:13.5px;display:flex;
+    align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 14px 24px -10px rgba(61,90,153,.6);cursor:pointer;z-index:5;}
+  .fab svg{width:17px;height:17px;}
+  .fab.done{background:var(--teal);box-shadow:none;opacity:.92;cursor:default;}
+  .fab:disabled{pointer-events:none;}
+
+  .bottom-nav{position:sticky;bottom:0;display:flex;background:var(--panel);
+    border-top:1px solid var(--hairline);padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+    z-index:4;margin-top:auto;}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:none;border:none;color:#7C84A0;font-family:'IBM Plex Mono',monospace;
+    font-size:9.5px;padding:4px;cursor:pointer;}
+  .nav-item svg{width:19px;height:19px;}
+  .nav-item.active{color:#EDEAE0;}
+  .nav-item.active svg{color:var(--steel);}
+
+  .toast{position:fixed;left:50%;bottom:100px;transform:translate(-50%,12px);
+    background:#11141c;color:#fff;padding:10px 16px;border-radius:30px;font-size:12.5px;
+    opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
+    box-shadow:0 10px 20px -8px rgba(0,0,0,.5);z-index:10;display:flex;align-items:center;gap:6px;
+    max-width:88%;}
+  .toast svg{width:15px;height:15px;color:var(--teal);flex-shrink:0;}
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="backdrop">
+  <div class="phone">
+    <div class="screen" id="screen">
+
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Tableau de bord</p>
+          <h1 class="greeting">Bonjour, Camille</h1>
+          <p class="date-line">Samedi 20 juin 2026 · Équipe Logistique Nord</p>
+        </div>
+        <div class="avatar" aria-hidden="true">CM</div>
+      </header>
+
+      <div class="bar alert-bar" id="alertBar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4 21 19H3Z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="16.7" r=".6" fill="currentColor" stroke="none"/>
+        </svg>
+        <div class="bar-text">
+          <strong>Feuille du jour non remplie</strong>
+          <span>Sam. 20 juin — il est encore temps</span>
+        </div>
+        <button class="bar-cta" onclick="markFilled('2026-06-20')">Remplir</button>
+      </div>
+
+      <div class="bar confirm-bar" id="confirmBar" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 12 9 17 20 6"/>
+        </svg>
+        <div class="bar-text"><strong>Feuille du jour enregistrée</strong></div>
+      </div>
+
+      <main class="content">
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Heures supplémentaires</p>
+              <h2 class="card-title">Juin 2026</h2>
+            </div>
+          </div>
+
+          <div class="gauge-figure">
+            <span class="gauge-number">12<small>h</small>30</span>
+            <span class="gauge-cap">/ 20h plafond mensuel</span>
+          </div>
+
+          <div class="route">
+            <div class="route-track">
+              <div class="route-fill" style="width:62.5%"></div>
+            </div>
+            <div class="route-marker" style="left:15%"><span class="dot"></span><label>S1</label></div>
+            <div class="route-marker" style="left:33.75%"><span class="dot"></span><label>S2</label></div>
+            <div class="route-marker" style="left:49.2%"><span class="dot"></span><label>S3</label></div>
+            <div class="route-marker current" style="left:62.5%"><span class="dot"></span><label>Aujourd'hui</label></div>
+            <div class="route-flag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 21V4"/><path d="M6 4h12l-3.5 4L18 12H6"/>
+              </svg>
+              <label>20h</label>
+            </div>
+          </div>
+
+          <p class="gauge-delta">▲ +2 h 15 vs mai dernier</p>
+        </section>
+
+        <section class="chips">
+          <div class="chip"><span class="chip-num" id="chipRatio">14/17</span><span class="chip-label">jours remplis</span></div>
+          <div class="chip chip-alert"><span class="chip-num" id="chipToFix">3</span><span class="chip-label">à régulariser</span></div>
+          <div class="chip"><span class="chip-num">+0h54</span><span class="chip-label">moy. / jour sup.</span></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Carnet de route</p>
+              <h2 class="card-title">Juin 2026</h2>
+            </div>
+          </div>
+
+          <div class="weekdays">
+            <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+          </div>
+          <div class="grid" id="calGrid"></div>
+
+          <div class="legend">
+            <span><i class="ldot filled"></i>Rempli</span>
+            <span><i class="ldot missing"></i>Manquant</span>
+            <span><i class="ldot pending"></i>En attente</span>
+            <span><i class="ldot off"></i>Repos</span>
+          </div>
+
+          <div class="day-detail" id="dayDetail"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">À régulariser</p>
+              <h2 class="card-title" id="actionTitle">3 feuilles en attente</h2>
+            </div>
+          </div>
+          <ul class="action-list" id="actionList"></ul>
+        </section>
+
+      </main>
+
+      <button class="fab" id="fabBtn" onclick="markFilled('2026-06-20')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Remplir ma feuille du jour
+      </button>
+
+      <nav class="bottom-nav">
+        <button class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg>
+          Accueil
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+          Carnet
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3.5 2"/></svg>
+          Heures
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>
+          Profil
+        </button>
+      </nav>
+
+      <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+        <span id="toastMsg">Feuille enregistrée</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const TODAY_KEY = '2026-06-20';
+  const YEAR = 2026, MONTH = 5; // juin (0-indexé)
+
+  const statusMap = {
+    '2026-06-01':'filled','2026-06-02':'filled','2026-06-03':'filled','2026-06-04':'filled',
+    '2026-06-05':'filled','2026-06-06':'filled','2026-06-07':'off',
+    '2026-06-08':'filled','2026-06-09':'filled','2026-06-10':'missing','2026-06-11':'filled',
+    '2026-06-12':'filled','2026-06-13':'off','2026-06-14':'off',
+    '2026-06-15':'filled','2026-06-16':'filled','2026-06-17':'filled','2026-06-18':'missing',
+    '2026-06-19':'filled','2026-06-20':'pending','2026-06-21':'off',
+    '2026-06-22':'future','2026-06-23':'future','2026-06-24':'future','2026-06-25':'future',
+    '2026-06-26':'future','2026-06-27':'future','2026-06-28':'future',
+    '2026-06-29':'future','2026-06-30':'future'
+  };
+
+  const JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const STATUS_LABEL = {
+    filled:'Rempli', missing:'Manquant, à régulariser', pending:"En attente de saisie",
+    off:'Jour de repos', future:'Jour à venir'
+  };
+
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+  function dateKey(y,m,d){ return `${y}-${pad(m+1)}-${pad(d)}`; }
+  function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+  function formatDateFR(key){
+    const [y,m,d] = key.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    return `${JOURS[dt.getDay()]} ${d} ${MOIS[m-1]}`;
+  }
+
+  function buildCalendar(){
+    const firstDay = new Date(YEAR, MONTH, 1);
+    const leading = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = new Date(YEAR, MONTH + 1, 0).getDate();
+    const trailing = (7 - ((leading + daysInMonth) % 7)) % 7;
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < leading; i++){
+      const c = document.createElement('div');
+      c.className = 'day outside';
+      grid.appendChild(c);
+    }
+    for (let d = 1; d <= daysInMonth; d++){
+      const key = dateKey(YEAR, MONTH, d);
+      const status = statusMap[key] || 'future';
+      const cell = document.createElement('div');
+      cell.className = 'day ' + status + (key === TODAY_KEY ? ' today' : '');
+      cell.dataset.key = key;
+      if (status !== 'off' && status !== 'future'){
+        cell.tabIndex = 0;
+        cell.setAttribute('role','button');
+      }
+      cell.setAttribute('aria-label', `${formatDateFR(key)} — ${STATUS_LABEL[status]}`);
+      cell.innerHTML = `<span class="num">${d}</span>` +
+        (status !== 'off' && status !== 'future' ? '<span class="stamp"></span>' : '');
+      cell.addEventListener('click', () => selectDay(key));
+      cell.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); selectDay(key); }
+      });
+      grid.appendChild(cell);
+    }
+    for (let i = 0; i < trailing; i++){
+      const c = document.createElement('div');
+      c.className = 'day outside';
+      grid.appendChild(c);
+    }
+  }
+
+  function selectDay(key){
+    const status = statusMap[key];
+    const detail = document.getElementById('dayDetail');
+    const label = cap(formatDateFR(key));
+
+    if (status === 'off'){
+      detail.innerHTML = `<span>${label} — Jour de repos</span>`;
+    } else if (status === 'future'){
+      detail.innerHTML = `<span>${label} — Pas encore ouvert</span>`;
+    } else if (status === 'filled'){
+      detail.innerHTML = `<span>${label} — Rempli ✓</span>`;
+    } else {
+      const tag = status === 'missing' ? 'Non rempli' : 'En attente';
+      detail.innerHTML = `<span>${label} — ${tag}</span><button onclick="markFilled('${key}')">Remplir</button>`;
+    }
+  }
+
+  function renderActionList(){
+    const list = document.getElementById('actionList');
+    const title = document.getElementById('actionTitle');
+    const keys = Object.keys(statusMap)
+      .filter(k => statusMap[k] === 'missing' || statusMap[k] === 'pending')
+      .sort();
+
+    if (keys.length === 0){
+      title.textContent = 'Tout est à jour ✓';
+      list.innerHTML = '<li class="action-empty">Aucune feuille en attente. Bon travail.</li>';
+      return;
+    }
+    title.textContent = keys.length === 1 ? '1 feuille en attente' : `${keys.length} feuilles en attente`;
+
+    list.innerHTML = keys.map(key => {
+      const status = statusMap[key];
+      const isPending = status === 'pending';
+      const icon = isPending
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3.5 2"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 21 19H3Z"/><line x1="12" y1="9.5" x2="12" y2="14"/></svg>';
+      return `
+        <li class="action-row ${isPending ? 'is-pending' : 'is-missing'}">
+          <span class="ico">${icon}</span>
+          <span class="info">
+            <strong>${cap(formatDateFR(key))}</strong>
+            <span>${isPending ? 'En attente de saisie' : 'Non rempli'}</span>
+          </span>
+          <button onclick="markFilled('${key}')">Remplir</button>
+        </li>`;
+    }).join('');
+  }
+
+  function updateChips(){
+    let workDays = 0, filledDays = 0, toFix = 0;
+    Object.values(statusMap).forEach(s => {
+      if (s === 'filled'){ workDays++; filledDays++; }
+      else if (s === 'missing' || s === 'pending'){ workDays++; toFix++; }
+    });
+    document.getElementById('chipRatio').textContent = `${filledDays}/${workDays}`;
+    document.getElementById('chipToFix').textContent = toFix;
+  }
+
+  function updateFab(){
+    const fab = document.getElementById('fabBtn');
+    const filled = statusMap[TODAY_KEY] === 'filled';
+    fab.classList.toggle('done', filled);
+    fab.disabled = filled;
+    fab.innerHTML = filled
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg> Feuille du jour enregistrée'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Remplir ma feuille du jour';
+  }
+
+  function showToast(msg){
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function markFilled(key){
+    if (statusMap[key] === 'filled') return;
+    statusMap[key] = 'filled';
+
+    buildCalendar();
+    selectDay(key);
+    renderActionList();
+    updateChips();
+    updateFab();
+
+    if (key === TODAY_KEY){
+      document.getElementById('alertBar').hidden = true;
+      document.getElementById('confirmBar').hidden = false;
+    }
+    showToast(key === TODAY_KEY ? 'Feuille du jour enregistrée' : 'Feuille enregistrée');
+  }
+
+  // init
+  buildCalendar();
+  selectDay(TODAY_KEY);
+  renderActionList();
+  updateChips();
+  updateFab();
+  document.getElementById('alertBar').hidden = statusMap[TODAY_KEY] === 'filled';
+  document.getElementById('confirmBar').hidden = statusMap[TODAY_KEY] !== 'filled';
+</script>
+</body>
+</html>

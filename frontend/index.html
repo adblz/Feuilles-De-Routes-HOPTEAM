@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#F59D11">
+    <meta name="theme-color" content="#161B26">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -11,6 +11,9 @@
     <link rel="manifest" href="/manifest.json">
     <title>Feuille de Route</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -45,21 +48,67 @@
 <!-- ════════ VUE DASHBOARD ════════ -->
 <div class="container" id="vue-dashboard">
 
-    <div class="dash-greeting" id="dash-greeting">Tableau de bord</div>
+    <div class="dash-hero">
+        <p class="dash-eyebrow">Tableau de bord</p>
+        <h1 class="dash-hero-name" id="dash-greeting">Bonjour, …</h1>
+        <p class="dash-hero-sub" id="dash-hero-sub">…</p>
+    </div>
 
-    <!-- Récap heures supplémentaires du mois (cliquable → fenêtre dates) -->
-    <button type="button" class="card dash-supp-card" id="btn-dash-supp">
-        <div class="dash-supp-label">Heures supplémentaires — <span id="dash-supp-mois"></span></div>
+    <!-- Récap heures supplémentaires -->
+    <div class="card dash-supp-card">
+        <p class="dash-eyebrow">Heures supplémentaires — Pour la période :</p>
+        <p class="dash-supp-periode" id="dash-supp-periode-txt">…</p>
         <div class="dash-supp-total" id="dash-supp-total">…</div>
         <div class="dash-supp-sub" id="dash-supp-sub"></div>
-        <div class="dash-supp-hint">&#9998; Modifier la période</div>
-    </button>
 
-    <!-- Récap feuilles de la semaine -->
+        <!-- Éditeur de période (caché par défaut) -->
+        <div class="dash-supp-edit hidden" id="dash-supp-edit">
+            <div class="dash-supp-edit-fields">
+                <div class="form-group">
+                    <label>Du</label>
+                    <input type="date" id="supp-inline-debut">
+                </div>
+                <div class="form-group">
+                    <label>Au</label>
+                    <input type="date" id="supp-inline-fin">
+                </div>
+            </div>
+            <button class="dash-supp-calc-btn" id="btn-supp-inline-calc">Calculer</button>
+        </div>
+
+        <div class="dash-supp-btns">
+            <button class="dash-supp-edit-btn" id="btn-dash-supp-edit">&#9998; Modifier la période</button>
+            <button class="dash-supp-reset-btn" id="btn-dash-supp-reset">&#8635; Réinitialiser</button>
+        </div>
+    </div>
+
+    <!-- Carnet du mois -->
     <div class="card">
-        <h2>Cette semaine</h2>
-        <div class="dash-semaine-chips" id="dash-semaine-chips"></div>
-        <div class="dash-manquantes" id="dash-manquantes"></div>
+        <p class="dash-eyebrow">Carnet de route</p>
+        <h2 id="dash-cal-titre">…</h2>
+        <div class="dash-cal-weekdays">
+            <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+        </div>
+        <div class="dash-cal-grid" id="dash-cal-grid"></div>
+        <div class="dash-cal-selected hidden" id="dash-cal-selected">
+            <span class="dash-cal-selected-label" id="dash-cal-selected-label"></span>
+            <button class="dash-cal-selected-btn" id="dash-cal-selected-btn"></button>
+        </div>
+        <div class="dash-cal-legend">
+            <span><i class="ldot ldot-filled"></i>Rempli</span>
+            <span><i class="ldot ldot-missing"></i>Manquant</span>
+            <span><i class="ldot ldot-pending"></i>Brouillon</span>
+            <span><i class="ldot ldot-off"></i>Repos</span>
+        </div>
+    </div>
+
+    <!-- À régulariser -->
+    <div class="card">
+        <div class="dash-card-head">
+            <p class="dash-eyebrow">À régulariser</p>
+            <p class="dash-section-title" id="dash-action-titre">…</p>
+        </div>
+        <ul class="dash-action-list" id="dash-action-list"></ul>
     </div>
 
     <!-- Brouillon en cours (affiché seulement s'il en existe un) -->

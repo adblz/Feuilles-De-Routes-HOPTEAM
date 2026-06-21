@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feuille du jour — Saisie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161B26;
+    --panel:#1F2636;
+    --paper:#F4EFE3;
+    --paper-dim:#EAE3D2;
+    --input-bg:#FBF8EF;
+    --amber:#E2872E;
+    --amber-soft:#F8E3C4;
+    --teal:#2E8074;
+    --teal-soft:#DCEEE9;
+    --steel:#3D5A99;
+    --steel-soft:#DEE6F4;
+    --muted:#8B8678;
+    --hairline:rgba(255,255,255,.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{
+    font-family:'IBM Plex Sans',sans-serif;
+    background:var(--ink);
+    color:var(--paper);
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit;}
+
+  /* ---------- frame ---------- */
+  .backdrop{min-height:100vh;display:flex;justify-content:center;background:var(--ink);}
+  .phone{width:100%;}
+  .screen{position:relative;width:100%;min-height:100vh;background:var(--ink);display:flex;flex-direction:column;}
+  @media (min-width:600px){
+    .backdrop{align-items:center;padding:40px 16px;background:radial-gradient(circle at 30% 0%, #1c2333 0%, #0c0e14 70%);}
+    .phone{max-width:430px;}
+    .screen{min-height:860px;max-height:860px;overflow-y:auto;border-radius:40px;
+      box-shadow:0 40px 80px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);}
+  }
+
+  /* ---------- header ---------- */
+  .topbar{display:flex;align-items:flex-start;gap:12px;
+    padding:24px 20px 16px;background:linear-gradient(180deg,var(--panel),var(--ink));}
+  .back-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.06);
+    border:none;color:#EDEAE0;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;cursor:pointer;}
+  .back-btn svg{width:18px;height:18px;}
+  .topbar-text{flex:1;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:#9AA4C2;margin-bottom:6px;}
+  .greeting{font-family:'Big Shoulders',sans-serif;font-weight:700;font-size:25px;
+    line-height:1;color:#F7F4EC;}
+  .date-line{font-size:12.5px;color:#8089A8;margin-top:6px;}
+  .avatar{width:40px;height:40px;border-radius:50%;background:var(--steel);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;
+    font-weight:600;font-size:13px;flex-shrink:0;}
+
+  /* ---------- content ---------- */
+  .content{flex:1;padding:18px 20px 16px;display:flex;flex-direction:column;gap:16px;}
+  .card{background:var(--paper);color:#2b2719;border-radius:22px;padding:18px 16px 16px;
+    box-shadow:0 10px 24px -14px rgba(0,0,0,.5);}
+  .card .eyebrow{color:var(--muted);}
+  .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:14px;}
+  .card-title{font-family:'Big Shoulders',sans-serif;font-size:19px;font-weight:700;color:#22201a;}
+  .count-pill{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);
+    background:var(--paper-dim);padding:4px 9px;border-radius:20px;white-space:nowrap;}
+
+  /* ---------- fields ---------- */
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:5px;}
+  .field label svg{width:11px;height:11px;}
+  .field input, .field select, .field textarea{
+    font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#22201a;
+    background:var(--input-bg);border:1px solid rgba(0,0,0,.1);border-radius:10px;
+    padding:10px 12px;width:100%;}
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:2px solid var(--steel);outline-offset:1px;border-color:var(--steel);}
+  .field input[readonly]{background:var(--paper-dim);color:#5c5840;cursor:not-allowed;}
+  .field textarea{resize:none;min-height:64px;font-size:13.5px;line-height:1.4;}
+  .field-row{display:flex;align-items:flex-end;gap:8px;}
+  .field-row .field{flex:1;}
+  .suffix-wrap{position:relative;}
+  .suffix-wrap input{padding-right:30px;}
+  .suffix{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);pointer-events:none;}
+  .helper{font-size:10.5px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:6px;}
+  .reset-link{background:none;border:none;color:var(--steel);font-weight:600;font-size:10.5px;
+    cursor:pointer;display:flex;align-items:center;gap:3px;padding:0;}
+  .reset-link svg{width:11px;height:11px;}
+
+  /* ---------- chips ---------- */
+  .chip-group{display:flex;gap:7px;flex-wrap:wrap;}
+  .chip-option{padding:8px 12px;border-radius:20px;border:1.5px solid rgba(0,0,0,.12);
+    background:var(--input-bg);font-size:12px;font-weight:600;color:#4b4636;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;}
+  .chip-option.selected{background:var(--steel);color:#fff;border-color:var(--steel);}
+
+  /* ---------- sub-cards (interventions / pauses) ---------- */
+  .sub-card{background:var(--paper-dim);border-radius:16px;padding:14px;margin-top:12px;
+    position:relative;display:flex;flex-direction:column;gap:12px;}
+  .sub-card-head{display:flex;justify-content:space-between;align-items:center;}
+  .sub-card-head h3{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;
+    letter-spacing:.08em;color:#5c5840;}
+  .mini-delete{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;
+    display:flex;align-items:center;}
+  .mini-delete svg{width:16px;height:16px;}
+  .mini-delete:hover{color:var(--amber);}
+
+  .pause-row{background:var(--paper-dim);border-radius:14px;padding:12px;margin-top:10px;
+    display:flex;align-items:flex-end;gap:8px;}
+  .pause-row .field{flex:1;}
+
+  .empty-note{font-size:12px;color:var(--muted);text-align:center;padding:14px 6px;}
+
+  .btn-add{margin-top:12px;width:100%;background:transparent;border:1.5px dashed var(--steel);
+    color:var(--steel);border-radius:14px;padding:12px;font-weight:600;font-size:13px;
+    display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;}
+  .btn-add svg{width:16px;height:16px;}
+  .btn-add:active{transform:scale(.98);}
+
+  /* ---------- bottom actions ---------- */
+  .bottom-actions{position:sticky;bottom:70px;padding:14px 20px 6px;
+    background:linear-gradient(180deg, rgba(22,27,38,0) 0%, var(--ink) 40%);
+    display:flex;flex-direction:column;gap:8px;z-index:5;margin-top:auto;}
+  .btn-primary{background:linear-gradient(90deg,var(--steel),#4d6cb0);color:#fff;border:none;
+    border-radius:16px;padding:14px;font-weight:600;font-size:14px;display:flex;align-items:center;
+    justify-content:center;gap:8px;box-shadow:0 14px 24px -10px rgba(61,90,153,.6);cursor:pointer;}
+  .btn-secondary{background:var(--paper);color:#22201a;border:1px solid rgba(0,0,0,.08);
+    border-radius:16px;padding:13px;font-weight:600;font-size:14px;display:flex;align-items:center;
+    justify-content:center;gap:8px;cursor:pointer;box-shadow:0 6px 16px -10px rgba(0,0,0,.4);}
+  .btn-primary svg, .btn-secondary svg{width:17px;height:17px;}
+  .btn-primary:disabled, .btn-secondary:disabled{opacity:.65;pointer-events:none;}
+  .spin{animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .bottom-nav{position:sticky;bottom:0;display:flex;background:var(--panel);
+    border-top:1px solid var(--hairline);padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+    z-index:4;}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:none;border:none;color:#7C84A0;font-family:'IBM Plex Mono',monospace;
+    font-size:9.5px;padding:4px;cursor:pointer;}
+  .nav-item svg{width:19px;height:19px;}
+  .nav-item.active{color:#EDEAE0;}
+  .nav-item.active svg{color:var(--steel);}
+
+  .toast{position:fixed;left:50%;bottom:150px;transform:translate(-50%,12px);
+    background:#11141c;color:#fff;padding:10px 16px;border-radius:30px;font-size:12.5px;
+    opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
+    box-shadow:0 10px 20px -8px rgba(0,0,0,.5);z-index:10;display:flex;align-items:center;gap:6px;
+    max-width:88%;}
+  .toast svg{width:15px;height:15px;color:var(--teal);flex-shrink:0;}
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  button:focus-visible, input:focus-visible, .chip-option:focus-visible, .nav-item:focus-visible{
+    outline:2px solid var(--steel);outline-offset:2px;}
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important;animation:none !important;} }
+</style>
+</head>
+<body>
+<div class="backdrop">
+  <div class="phone">
+    <div class="screen" id="screen">
+
+      <header class="topbar">
+        <button class="back-btn" onclick="window.history.back()" aria-label="Retour">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="topbar-text">
+          <p class="eyebrow">Feuille du jour</p>
+          <h1 class="greeting">20 juin 2026</h1>
+          <p class="date-line">Camille Moreau · Équipe Logistique Nord</p>
+        </div>
+        <div class="avatar" aria-hidden="true">CM</div>
+      </header>
+
+      <main class="content">
+
+        <!-- ===== Ma journée ===== -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">Ma journée</h2>
+          </div>
+
+          <div class="row-2">
+            <div class="field">
+              <label for="theDate">Date</label>
+              <input type="date" id="theDate" value="2026-06-20">
+            </div>
+            <div class="field">
+              <label>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                Nom
+              </label>
+              <input type="text" value="Camille Moreau" readonly>
+            </div>
+          </div>
+
+          <div class="row-2" style="margin-top:12px">
+            <div class="field">
+              <label for="dayStart">Début de journée</label>
+              <input type="time" id="dayStart" value="08:00">
+            </div>
+            <div class="field">
+              <label for="dayEnd">Fin de journée</label>
+              <input type="time" id="dayEnd" value="17:30">
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:12px">
+            <label for="overtimeInput">Heures supplémentaires</label>
+            <div class="suffix-wrap">
+              <input type="number" id="overtimeInput" step="0.25" min="0" value="0">
+              <span class="suffix">h</span>
+            </div>
+            <p class="helper">
+              <span id="overtimeMode">Calcul automatique</span>
+              <button class="reset-link" id="resetOvertime" onclick="resetOvertimeAuto()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2-9.5L1 10"/></svg>
+                Recalculer
+              </button>
+            </p>
+          </div>
+        </section>
+
+        <!-- ===== Pauses ===== -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">Pauses</h2>
+            <span class="count-pill" id="pauseCount">1 pause</span>
+          </div>
+          <div id="pauseList"></div>
+          <button class="btn-add" onclick="addPause()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter une pause
+          </button>
+        </section>
+
+        <!-- ===== Interventions ===== -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">Interventions</h2>
+            <span class="count-pill" id="interCount">1 intervention</span>
+          </div>
+          <div id="interList"></div>
+          <button class="btn-add" onclick="addIntervention()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter une intervention
+          </button>
+        </section>
+
+      </main>
+
+      <div class="bottom-actions">
+        <button class="btn-primary" id="saveBtn" onclick="saveSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5Z"/><path d="M8 4v5h8V4"/><path d="M8 14h8v6H8Z"/></svg>
+          Enregistrer la feuille
+        </button>
+        <button class="btn-secondary" id="sendBtn" onclick="sendSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3Z"/><path d="m3 6 9 7 9-7"/></svg>
+          Envoyer la feuille
+        </button>
+      </div>
+
+      <nav class="bottom-nav">
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg>
+          Accueil
+        </button>
+        <button class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+          Carnet
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3.5 2"/></svg>
+          Heures
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>
+          Profil
+        </button>
+      </nav>
+
+      <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+        <span id="toastMsg">Feuille enregistrée</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const INTER_TYPES = ['Sanit','Dépannage','Installation','Devis'];
+  let pauseSeq = 0;
+  let interSeq = 0;
+  let overtimeDirty = false;
+
+  function timeToMin(t){
+    if(!t) return null;
+    const [h,m] = t.split(':').map(Number);
+    return h*60+m;
+  }
+
+  function showToast(msg){
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  /* ---------- pauses ---------- */
+  function addPause(start, end){
+    pauseSeq++;
+    const id = 'p' + pauseSeq;
+    const row = document.createElement('div');
+    row.className = 'pause-row';
+    row.dataset.id = id;
+    row.innerHTML = `
+      <div class="field">
+        <label>Début pause</label>
+        <input type="time" class="pause-start" value="${start || ''}">
+      </div>
+      <div class="field">
+        <label>Fin pause</label>
+        <input type="time" class="pause-end" value="${end || ''}">
+      </div>
+      <button class="mini-delete" aria-label="Supprimer la pause" onclick="removePause('${id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>
+      </button>`;
+    document.getElementById('pauseList').appendChild(row);
+    row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', recalcOvertime));
+    updatePauseCount();
+    recalcOvertime();
+  }
+  function removePause(id){
+    const row = document.querySelector(`.pause-row[data-id="${id}"]`);
+    if (row) row.remove();
+    updatePauseCount();
+    recalcOvertime();
+  }
+  function updatePauseCount(){
+    const n = document.querySelectorAll('.pause-row').length;
+    document.getElementById('pauseCount').textContent = n === 1 ? '1 pause' : `${n} pauses`;
+  }
+
+  /* ---------- interventions ---------- */
+  function chipGroup(groupId, selected){
+    return INTER_TYPES.map(type => `
+      <button type="button" class="chip-option ${type === selected ? 'selected' : ''}"
+        onclick="selectChip('${groupId}', this, '${type}')">${type}</button>
+    `).join('');
+  }
+  function selectChip(groupId, el, type){
+    document.querySelectorAll(`.sub-card[data-id="${groupId}"] .chip-option`).forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function addIntervention(data){
+    data = data || {};
+    interSeq++;
+    const id = 'i' + interSeq;
+    const card = document.createElement('div');
+    card.className = 'sub-card';
+    card.dataset.id = id;
+    card.innerHTML = `
+      <div class="sub-card-head">
+        <h3>Intervention</h3>
+        <button class="mini-delete" aria-label="Supprimer l'intervention" onclick="removeIntervention('${id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>
+        </button>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Heure d'arrivée</label>
+          <input type="time" value="${data.arrival || ''}">
+        </div>
+        <div class="field">
+          <label>Heure de départ</label>
+          <input type="time" value="${data.departure || ''}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Nom du client</label>
+        <input type="text" placeholder="Ex. SARL Dupont" value="${data.client || ''}">
+      </div>
+      <div class="field">
+        <label>Ville</label>
+        <input type="text" placeholder="Ex. Lille" value="${data.city || ''}">
+      </div>
+      <div class="field">
+        <label>Type d'intervention</label>
+        <div class="chip-group">${chipGroup(id, data.type)}</div>
+      </div>
+      <div class="field">
+        <label>Main d'œuvre</label>
+        <div class="suffix-wrap">
+          <input type="number" step="0.25" min="0" value="${data.labor || ''}">
+          <span class="suffix">h</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Descriptif</label>
+        <textarea placeholder="Décrire l'intervention…">${data.desc || ''}</textarea>
+      </div>`;
+    document.getElementById('interList').appendChild(card);
+    renumberInterventions();
+  }
+  function removeIntervention(id){
+    const card = document.querySelector(`.sub-card[data-id="${id}"]`);
+    if (card) card.remove();
+    renumberInterventions();
+  }
+  function renumberInterventions(){
+    const cards = document.querySelectorAll('#interList .sub-card');
+    cards.forEach((c, i) => { c.querySelector('h3').textContent = `Intervention ${i + 1}`; });
+    document.getElementById('interCount').textContent =
+      cards.length === 0 ? '0 intervention' : cards.length === 1 ? '1 intervention' : `${cards.length} interventions`;
+
+    const list = document.getElementById('interList');
+    let empty = list.querySelector('.empty-note');
+    if (cards.length === 0){
+      if (!empty){
+        empty = document.createElement('p');
+        empty.className = 'empty-note';
+        empty.textContent = 'Aucune intervention pour le moment.';
+        list.appendChild(empty);
+      }
+    } else if (empty){
+      empty.remove();
+    }
+  }
+
+  /* ---------- heures supplémentaires ---------- */
+  function recalcOvertime(){
+    if (overtimeDirty) return;
+    const start = timeToMin(document.getElementById('dayStart').value);
+    const end = timeToMin(document.getElementById('dayEnd').value);
+    const field = document.getElementById('overtimeInput');
+    if (start === null || end === null || end <= start){
+      field.value = 0;
+      return;
+    }
+    let worked = end - start;
+    document.querySelectorAll('.pause-row').forEach(row => {
+      const s = timeToMin(row.querySelector('.pause-start').value);
+      const e = timeToMin(row.querySelector('.pause-end').value);
+      if (s !== null && e !== null && e > s) worked -= (e - s);
+    });
+    const STANDARD_DAY = 480; // 8h
+    const overtimeMin = Math.max(0, worked - STANDARD_DAY);
+    field.value = Math.round((overtimeMin / 60) * 4) / 4;
+  }
+  function resetOvertimeAuto(){
+    overtimeDirty = false;
+    document.getElementById('overtimeMode').textContent = 'Calcul automatique';
+    recalcOvertime();
+  }
+  document.getElementById('overtimeInput').addEventListener('input', () => {
+    overtimeDirty = true;
+    document.getElementById('overtimeMode').textContent = 'Modifié manuellement';
+  });
+  document.getElementById('dayStart').addEventListener('input', recalcOvertime);
+  document.getElementById('dayEnd').addEventListener('input', recalcOvertime);
+
+  /* ---------- save / send ---------- */
+  function saveSheet(){
+    const btn = document.getElementById('saveBtn');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" stroke-dasharray="40" stroke-dashoffset="15"/></svg> Enregistrement…`;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = original;
+      showToast('Feuille enregistrée ✓');
+    }, 700);
+  }
+  function sendSheet(){
+    const btn = document.getElementById('sendBtn');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" stroke-dasharray="40" stroke-dashoffset="15"/></svg> Envoi en cours…`;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = original;
+      showToast('Feuille envoyée par e-mail ✓');
+    }, 900);
+  }
+
+  /* ---------- init ---------- */
+  addPause('12:00', '12:30');
+  addIntervention({
+    arrival:'08:15', departure:'10:00', client:'SARL Dupont Toiture', city:'Lille',
+    type:'Dépannage', labor:'1.5', desc:'Remplacement vanne défectueuse + purge du circuit.'
+  });
+  recalcOvertime();
+</script>
+</body>
+</html>

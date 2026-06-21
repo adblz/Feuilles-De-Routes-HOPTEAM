@@ -360,11 +360,12 @@ export async function calculerSuppRecap() {
 // Utilisé par le bouton « Nouvelle feuille » du formulaire ET par le dashboard
 // (boutons « Créer » / « Nouvelle feuille »).
 export function reinitialiserFeuille(dateISO) {
-    effacerBrouillon();
+    const targetDate = dateISO || new Date().toISOString().split('T')[0];
+    effacerBrouillon(targetDate);
     viderInterventions();
     resetSuppState();
 
-    document.getElementById('date').value           = dateISO || new Date().toISOString().split('T')[0];
+    document.getElementById('date').value           = targetDate;
     document.getElementById('heure-debut').value    = '';
     document.getElementById('heure-fin').value      = '';
     document.getElementById('repas').value          = '';
@@ -377,5 +378,5 @@ export function reinitialiserFeuille(dateISO) {
 
 export function nouvelleFeuille() {
     if (!confirm('Effacer la feuille de route en cours et recommencer à zéro ?')) return;
-    reinitialiserFeuille();
+    reinitialiserFeuille(document.getElementById('date').value || undefined);
 }

@@ -15,6 +15,26 @@ Toujours respecter une structure logique et me la montrer
 Ne pas éparpiller les fichiers n'importe où
 Me demander si tu n'es pas sûr où mettre quelque chose
 
+## Taille des fichiers et découpage
+
+- Maximum 150 lignes par fichier JS
+- Si tu dois dépasser, STOP : crée un nouveau fichier et dis-moi pourquoi
+- Un fichier = une seule responsabilité (ex: pas calendrier + heures supp dans le même fichier)
+
+## Avant de coder : toujours expliquer le plan
+
+Avant chaque modification ou nouvelle fonctionnalité :
+1. Dis-moi dans quel(s) fichier(s) tu vas écrire
+2. Dis-moi pourquoi ce fichier et pas un autre
+3. Si tu crées un nouveau fichier, dis-moi comment il s'appellera et où
+4. Attends ma validation avant de commencer
+
+## Ne jamais mélanger dans le même fichier
+
+- La logique de calcul et l'affichage à l'écran
+- Les appels Supabase et les événements de l'interface
+- Deux fonctionnalités indépendantes
+
 ## Architecture générale
 
 Toujours respecter cette structure de dossiers :
@@ -47,8 +67,8 @@ feuille-de-route/
 ## Organisation du code
 
 - Séparer clairement :
-  - logique métier → js/modules/
-  - manipulation DOM → js/modules/
+  - logique métier (calculs, règles) → js/modules/
+  - manipulation DOM (affichage, événements clics) → js/modules/
   - appels API → js/api/
   - fonctions utilitaires → js/utils/
   - génération PDF → js/modules/

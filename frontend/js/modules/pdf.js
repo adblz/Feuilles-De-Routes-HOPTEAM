@@ -1,5 +1,5 @@
 import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
-import { cfg, seuilJour, lireTousLesElements, getLogoBase64 } from './fdr.js';
+import { cfg, seuilJour, lireTousLesElements, getLogoBase64, effacerBrouillon } from './fdr.js';
 import { sauvegarderEnBase } from './db.js';
 import { memoriserValeurs } from './autocomplete.js';
 import { afficherPdfBlob } from './pdfviewer.js';
@@ -215,7 +215,7 @@ export function genererPDF() {
                         });
                         setBusy(false);
                         showToast('PDF enregistré dans l\'historique', 'success', 3000);
-                        // Prévient le tableau de bord pour qu'il se rafraîchisse.
+                        effacerBrouillon(document.getElementById('date').value);
                         document.dispatchEvent(new CustomEvent('feuille:enregistree'));
                     } catch (e) {
                         console.warn('Supabase save failed:', e);
