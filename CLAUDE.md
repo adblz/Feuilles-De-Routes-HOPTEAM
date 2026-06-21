@@ -101,3 +101,8 @@ Quand on déplace ou réorganise des fichiers :
 - Pas de fonctions inutilisées
 - Pas de logique complexe dans index.html
 - Pas de sections vides dans ce fichier
+
+## Projet complet
+- application metier pour une equipe de 10 techniciens environ
+- les techniciens seront les utilisateurs principaux de l'appli
+- roles : les techniciens auront quasi tout les droits en ce qui concerne leurs informations, mais pas celles des autres; un ou plusieurs responsable auront un acces a toutes les pdf des feuilles de routes de chaque techniciens mais en lecture seule

@@ -9,7 +9,7 @@ import {
     chargerHistorique, chargerDetailFeuille,
     supprimerFeuille, chargerHeuresSupp, chargerPdfFeuille,
 } from './db.js';
-import { afficherPdfBase64 } from './pdfviewer.js';
+import { afficherPdfUrl } from './pdfviewer.js';
 
 // ── Paramètres ─────────────────────────────────────────────────
 
@@ -203,7 +203,7 @@ async function afficherPdfHistorique(id) {
         showToast('PDF non disponible pour cette feuille (créée avant la mise à jour)', 'warn', 4500);
         return;
     }
-    afficherPdfBase64(pdf);
+    await afficherPdfUrl(pdf);
 }
 
 async function supprimerHistorique(id) {

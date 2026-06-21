@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -49,9 +49,11 @@
 <div class="container" id="vue-dashboard">
 
     <div class="dash-hero">
-        <p class="dash-eyebrow">Tableau de bord</p>
-        <h1 class="dash-hero-name" id="dash-greeting">Bonjour, …</h1>
-        <p class="dash-hero-sub" id="dash-hero-sub">…</p>
+        <div class="dash-hero-top">
+            <p class="dash-eyebrow">Tableau de bord</p>
+            <p class="dash-hero-sub" id="dash-hero-sub">…</p>
+        </div>
+        <h1 class="dash-hero-name" id="dash-greeting">…</h1>
     </div>
 
     <!-- Récap heures supplémentaires -->
@@ -246,6 +248,9 @@
         <div class="modal-histo-header">
             <h3>Aper&#231;u du PDF</h3>
             <button class="btn-histo-close" id="btn-close-pdf">&#10005;</button>
+        </div>
+        <div class="pdf-mobile-placeholder">
+            <p>L'aper&#231;u PDF n'est pas disponible sur mobile.</p>
         </div>
         <iframe id="pdf-viewer-frame" class="pdf-viewer-frame" title="Aper&#231;u du PDF"></iframe>
         <div class="pdf-viewer-foot">

@@ -2,7 +2,7 @@ import { chargerHeuresSupp, chargerHistorique, chargerPdfFeuille } from './db.js
 import { parseDuree, showToast } from '../utils/utils.js';
 import { restaurerBrouillon, viderInterventions, cfg, getBrouillonsDates } from './fdr.js';
 import { reinitialiserFeuille } from './ui.js';
-import { afficherPdfBase64 } from './pdfviewer.js';
+import { afficherPdfUrl } from './pdfviewer.js';
 
 // ── Petits utilitaires ─────────────────────────────────────────
 
@@ -263,7 +263,7 @@ async function visionnerPdfJour(id) {
     try {
         const pdf = await chargerPdfFeuille(id);
         if (!pdf) { showToast('PDF non disponible pour cette feuille', 'warn', 4500); return; }
-        afficherPdfBase64(pdf);
+        await afficherPdfUrl(pdf);
     } catch {
         showToast('Erreur lors du chargement du PDF', 'error');
     }
@@ -308,7 +308,7 @@ function _rendreActionList(items) {
 
 export function initDashboard(nomTech) {
     const greeting = document.getElementById('dash-greeting');
-    if (greeting) greeting.textContent = nomTech ? `Bonjour, ${nomTech}` : 'Tableau de bord';
+    if (greeting) greeting.textContent = nomTech || 'Mon espace';
 
     // Sous-titre : date du jour + nom de l'entreprise
     const subEl = document.getElementById('dash-hero-sub');

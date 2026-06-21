@@ -1,5 +1,5 @@
 import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
-import { preparerPdfElement, nomFichierPdf, blobToBase64 } from '../modules/pdf.js';
+import { preparerPdfElement, nomFichierPdf } from '../modules/pdf.js';
 import { cfg, lireTousLesElements, effacerBrouillon } from '../modules/fdr.js';
 import { openSettings } from '../modules/ui.js';
 import { sauvegarderEnBase } from '../modules/db.js';
@@ -58,7 +58,6 @@ export async function envoyerMail() {
 
             setBusy(true, 'Sauvegarde…');
             try {
-                const pdfData = await blobToBase64(blob);
                 await sauvegarderEnBase({
                     date:          document.getElementById('date').value,
                     tech,
@@ -70,7 +69,8 @@ export async function envoyerMail() {
                     heuresTravail: document.getElementById('heures-travail').value,
                     heuresSupp:    document.getElementById('heures-supp').value,
                     mode:          'email',
-                    pdfData,
+                    pdfBlob:     blob,
+                    pdfFileName: nomFichierPdf(),
                     elements,
                 });
             } catch (e) {

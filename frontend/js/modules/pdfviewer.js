@@ -28,6 +28,12 @@ export function afficherPdfBase64(b64) {
     afficherPdfBlob(base64ToBlob(b64));
 }
 
+export async function afficherPdfUrl(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Impossible de charger le PDF');
+    afficherPdfBlob(await res.blob());
+}
+
 export function fermerPdfViewer() {
     const modal = document.getElementById('modal-pdf');
     const frame = document.getElementById('pdf-viewer-frame');

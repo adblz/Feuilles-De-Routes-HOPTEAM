@@ -446,14 +446,24 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 
 .dash-hero {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
     margin-bottom: 18px;
 }
+.dash-hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+.dash-hero-top .dash-hero-sub,
+.dash-hero-top .dash-eyebrow {
+    margin: 0;
+}
 .dash-hero-name {
-    font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif;
-    font-size: 27px;
-    font-weight: 700;
+    font-family: 'Bebas Neue', 'Big Shoulders', sans-serif;
+    font-size: 32px;
+    font-weight: 400;
     color: var(--cream);
     margin: 2px 0 0;
 }
@@ -809,6 +819,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .pdf-viewer-foot { padding: 10px 16px; border-top: 1px solid var(--border); text-align: center; flex-shrink: 0; }
 .pdf-viewer-open { color: var(--blue-dark); font-size: 13px; font-weight: 600; text-decoration: none; }
 .pdf-viewer-open:hover { text-decoration: underline; }
+.pdf-mobile-placeholder { display: none; }
 
 /* Overlay chargement */
 #loading-overlay {
@@ -1057,9 +1068,31 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
         padding: 0;
         width: 100%;
         max-width: 100%;
-        height: 92vh;
-        max-height: 92vh;
+        height: auto;
+        max-height: 80vh;
         border-radius: 20px 20px 0 0;
+        overflow: hidden;
+    }
+    .pdf-viewer-frame { display: none; }
+    .pdf-mobile-placeholder {
+        display: block;
+        padding: 28px 24px 12px;
+        text-align: center;
+        color: var(--gray);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .pdf-viewer-foot { padding: 16px 20px calc(20px + env(safe-area-inset-bottom)); }
+    .pdf-viewer-open {
+        display: block;
+        background: linear-gradient(135deg, var(--amber-login), #F7C72E);
+        color: white;
+        text-decoration: none;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
     }
 
     /* Toast remonté au-dessus des boutons sticky */
@@ -1069,7 +1102,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 /* ── Auth : Page de connexion plein écran ──────────────────── */
 
 .login-page-body {
-    background: #f1f5f9;
+    background: linear-gradient(180deg, var(--panel), var(--ink));
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -1086,12 +1119,12 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 }
 
 .login-card {
-    background: white;
+    background: var(--panel);
     border-radius: 16px;
     padding: 44px 40px;
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.10);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.4);
     text-align: center;
     border-top: 4px solid var(--amber-login);
 }
@@ -1110,13 +1143,13 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .login-title {
     font-size: 22px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--cream);
     margin-bottom: 6px;
     letter-spacing: -0.3px;
 }
 
 .login-subtitle {
-    color: #64748b;
+    color: var(--muted);
     font-size: 14px;
     margin-bottom: 32px;
 }
@@ -1125,14 +1158,22 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     text-align: left;
     margin-bottom: 16px;
 }
+.login-card .form-group input {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--hairline);
+    color: var(--cream);
+}
+.login-card .form-group input::placeholder {
+    color: var(--muted);
+}
 
 .login-error {
     display: none;
-    color: #dc2626;
+    color: #fca5a5;
     font-size: 13px;
     text-align: left;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
+    background: rgba(220,38,38,0.15);
+    border: 1px solid rgba(220,38,38,0.35);
     border-radius: 8px;
     padding: 10px 12px;
     margin-bottom: 14px;

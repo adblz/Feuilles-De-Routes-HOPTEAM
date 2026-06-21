@@ -4,16 +4,6 @@ import { sauvegarderEnBase } from './db.js';
 import { memoriserValeurs } from './autocomplete.js';
 import { afficherPdfBlob } from './pdfviewer.js';
 
-// Convertit un Blob PDF en chaîne base64 (data URL), pour stockage en base.
-export function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload  = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
-
 export function construirePDF() {
     const dateVal = document.getElementById('date').value;
     const tech    = document.getElementById('technicien').value || '—';
@@ -198,7 +188,6 @@ export function genererPDF() {
 
                     setBusy(true, 'Enregistrement sur le cloud…');
                     try {
-                        const pdfData = await blobToBase64(blob);
                         await sauvegarderEnBase({
                             date:          document.getElementById('date').value,
                             tech:          document.getElementById('technicien').value || '',
@@ -210,7 +199,8 @@ export function genererPDF() {
                             heuresTravail: document.getElementById('heures-travail').value,
                             heuresSupp:    document.getElementById('heures-supp').value,
                             mode:          'pdf',
-                            pdfData,
+                            pdfBlob:     blob,
+                            pdfFileName: nomFichierPdf(),
                             elements,
                         });
                         setBusy(false);
