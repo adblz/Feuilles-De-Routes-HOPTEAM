@@ -1,9 +1,10 @@
-const CACHE    = 'fdr-v18';
+const CACHE    = 'fdr-v19';
 const PRECACHE = [
   '/',
   '/index.html',
   '/pages/login.html',
   '/pages/responsable.html',
+  '/pages/admin.html',
   '/assets/images/logo.png',
   '/assets/images/logo-reduit.png',
   '/manifest.json',
@@ -33,7 +34,7 @@ self.addEventListener('fetch', event => {
   if (url.hostname.includes('supabase.co')) return;
 
   if (event.request.mode === 'navigate') {
-    const PAGES_DIRECTES = ['/pages/login.html', '/pages/responsable.html'];
+    const PAGES_DIRECTES = ['/pages/login.html', '/pages/responsable.html', '/pages/admin.html'];
     const target = PAGES_DIRECTES.includes(url.pathname) ? url.pathname : '/index.html';
     event.respondWith(
       caches.match(target).then(cached => cached || fetch(event.request))

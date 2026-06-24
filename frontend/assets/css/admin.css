@@ -1,0 +1,163 @@
+/* admin.css — styles de la page Administration */
+
+.admin-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--amber);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.admin-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-user-nom {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--paper-dim);
+}
+
+/* En-tête de section avec bouton "+" */
+.admin-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.admin-section-header h2 {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.btn-admin-nouveau {
+    background: var(--amber);
+    color: var(--ink);
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+.btn-admin-nouveau:hover { background: var(--amber-light); }
+
+/* Tableau utilisateurs */
+.admin-table-wrapper { overflow-x: auto; }
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.admin-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.admin-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    color: var(--ink-body);
+    vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: rgba(0,0,0,0.02); }
+.admin-table-vide { text-align: center; padding: 28px; color: var(--muted); }
+
+/* Badges de rôle */
+.role-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.role-technicien  { background: var(--steel-soft); color: var(--steel); }
+.role-responsable { background: var(--teal-soft);  color: var(--teal); }
+.role-admin       { background: var(--amber-soft); color: var(--amber-deep); }
+
+/* Bouton Modifier dans le tableau */
+.btn-admin-modifier {
+    background: var(--surface-mid);
+    border: 1px solid var(--border);
+    color: var(--gray-mid);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-admin-modifier:hover { background: var(--border-mid); }
+
+/* Modals */
+.admin-modal { max-width: 480px; width: 90%; padding: 0; }
+.admin-modal-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.admin-email-display {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 8px 12px;
+    background: var(--surface-light);
+    border-radius: 8px;
+    margin: 0;
+}
+.admin-modal-footer {
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.btn-admin-annuler {
+    background: transparent;
+    border: 1px solid var(--border-mid);
+    color: var(--gray-mid);
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-admin-annuler:hover { background: var(--surface-mid); }
+.btn-admin-valider {
+    background: var(--amber);
+    border: none;
+    color: var(--ink);
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-admin-valider:hover { background: var(--amber-light); }
+.req { color: var(--amber); font-weight: 700; }
+
+/* Page "Accès refusé" */
+.admin-acces-refuse { text-align: center; padding: 80px 20px; }
+.admin-acces-refuse h2 {
+    font-family: 'Big Shoulders', sans-serif;
+    color: var(--amber);
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+.admin-acces-refuse p  { color: var(--paper-dim); margin-bottom: 20px; }
+.admin-acces-refuse a  { color: var(--amber); }

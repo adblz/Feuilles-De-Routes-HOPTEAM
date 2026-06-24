@@ -4,7 +4,9 @@ import { chargerMonProfil } from './modules/db_responsable.js';
 
 async function redirigerSelonRole() {
     const profil = await chargerMonProfil();
-    window.location.href = profil?.role === 'responsable' ? '/pages/responsable.html' : '/index.html';
+    if (profil?.role === 'admin')        window.location.href = '/pages/admin.html';
+    else if (profil?.role === 'responsable') window.location.href = '/pages/responsable.html';
+    else                                 window.location.href = '/index.html';
 }
 
 window.addEventListener('load', async () => {

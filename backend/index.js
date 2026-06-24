@@ -2,6 +2,7 @@ const express      = require('express');
 const cors         = require('cors');
 const path         = require('path');
 const emailRoutes  = require('./routes/email');
+const adminRoutes  = require('./routes/admin');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 app.use('/', emailRoutes);
+app.use('/admin', adminRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));

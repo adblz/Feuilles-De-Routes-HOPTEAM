@@ -27,7 +27,8 @@ export function construirePDF() {
                     <div class="pdf-field"><div class="lbl">Arrivée</div><div class="val">${item.arrivee || '—'}</div></div>
                     <div class="pdf-field"><div class="lbl">Départ</div><div class="val">${item.depart || '—'}</div></div>
                     <div class="pdf-field"><div class="lbl">Type</div><div class="val">${item.typeInt || '—'}</div></div>
-                    <div class="pdf-field"><div class="lbl">Main d'oeuvre</div><div class="val">${item.mo || '—'}</div></div>
+                    ${item.mo ? `<div class="pdf-field"><div class="lbl">Main d'oeuvre</div><div class="val">${item.mo}</div></div>` : ''}
+                    ${item.becs ? `<div class="pdf-field"><div class="lbl">Nb. becs</div><div class="val">${item.becs}</div></div>` : ''}
                     ${item.details ? `<div class="pdf-details-row"><div class="lbl">Détails</div>${item.details}</div>` : ''}
                 </div>
             </div>`;

@@ -12,9 +12,11 @@ import {
 const aujourdhui = () => isoLocal(new Date());
 
 function montrerFormulaire() {
+    document.getElementById('vue-resume')?.classList.add('hidden');
     document.getElementById('vue-dashboard').classList.add('hidden');
     document.getElementById('vue-formulaire').classList.remove('hidden');
     window.scrollTo(0, 0);
+    document.dispatchEvent(new CustomEvent('nav:formulaire'));
 }
 
 export function afficherDashboard() {
@@ -25,19 +27,21 @@ export function afficherDashboard() {
     if (chev) chev.textContent = '▼';
 
     document.getElementById('vue-formulaire').classList.add('hidden');
+    document.getElementById('vue-resume')?.classList.add('hidden');
     document.getElementById('vue-dashboard').classList.remove('hidden');
     window.scrollTo(0, 0);
+    document.dispatchEvent(new CustomEvent('nav:dashboard'));
     rafraichirDashboard();
 }
 
-function ouvrirNouvelleFeuille(dateISO) {
+export function ouvrirNouvelleFeuille(dateISO) {
     const date = dateISO || aujourdhui();
     if (getBrouillonsDates().has(date) && !confirm('Un brouillon existe pour ce jour. L\'effacer et recommencer à zéro ?')) return;
     reinitialiserFeuille(date);
     montrerFormulaire();
 }
 
-function finaliserBrouillon(dateISO) {
+export function finaliserBrouillon(dateISO) {
     viderInterventions();
     restaurerBrouillon(dateISO);
     montrerFormulaire();

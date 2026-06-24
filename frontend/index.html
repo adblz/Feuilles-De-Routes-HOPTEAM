@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/toolbar.css">
 </head>
 <body>
 
@@ -24,16 +25,6 @@
         <img class="header-logo-reduit" src="/assets/images/logo-reduit.png" alt="Logo">
         <div>
             <h1>FEUILLES DE ROUTES</h1>
-        </div>
-    </div>
-    <div class="header-menu">
-        <button class="btn-burger" id="btn-burger" aria-label="Menu" aria-expanded="false">
-            <span></span><span></span><span></span>
-        </button>
-        <div class="header-dropdown" id="header-dropdown" hidden>
-            <button class="btn-settings" id="btn-open-supp">&#128200; Heures supp</button>
-            <button class="btn-settings" id="btn-open-historique">&#128221; Historique</button>
-            <button class="btn-settings" id="btn-open-settings">&#9881; Param&#232;tres</button>
         </div>
     </div>
 </header>
@@ -137,7 +128,7 @@
     <button type="button" class="btn-retour-dashboard" id="btn-retour-dashboard">&#8592; Tableau de bord</button>
 
     <div class="notice" id="setup-notice">
-        Première utilisation ? Cliquez sur <strong>Paramètres</strong> (en haut à droite) pour renseigner votre entreprise et l'email de votre responsable.
+        Première utilisation ? Appuie sur <strong>Profil</strong> (en bas à droite) pour renseigner ton entreprise et l'email de ton responsable.
     </div>
 
     <!-- Infos générales -->
@@ -325,6 +316,52 @@
         </div>
     </div>
 </div>
+
+<!-- ════════ VUE RÉSUMÉ FEUILLE DU JOUR ════════ -->
+<div class="container hidden" id="vue-resume">
+    <div id="resume-content"></div>
+</div>
+
+<!-- ════════ TOOLBAR BAS DE PAGE ════════ -->
+<nav class="bottom-toolbar" id="bottom-toolbar">
+
+    <button class="toolbar-btn active" id="btn-toolbar-accueil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9,22 9,12 15,12 15,22"/>
+        </svg>
+        <span>Accueil</span>
+    </button>
+
+    <button class="toolbar-btn" id="btn-toolbar-feuille">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <line x1="10" y1="9" x2="8" y2="9"/>
+        </svg>
+        <span>Feuille du jour</span>
+    </button>
+
+    <button class="toolbar-btn toolbar-btn--placeholder" id="btn-toolbar-extra" disabled>
+        <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="12" r="2"/>
+            <circle cx="12" cy="12" r="2"/>
+            <circle cx="19" cy="12" r="2"/>
+        </svg>
+        <span>···</span>
+    </button>
+
+    <button class="toolbar-btn" id="btn-toolbar-profil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span>Profil</span>
+    </button>
+
+</nav>
 
 <script type="module" src="js/main.js"></script>
 
