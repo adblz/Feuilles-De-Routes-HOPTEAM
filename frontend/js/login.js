@@ -1,5 +1,11 @@
 import { getSession, isSessionValid, connexion, refreshSession } from './modules/auth.js';
 import { getLogoBase64 } from './modules/fdr.js';
+import { chargerMonProfil } from './modules/db_responsable.js';
+
+async function redirigerSelonRole() {
+    const profil = await chargerMonProfil();
+    window.location.href = profil?.role === 'responsable' ? '/pages/responsable.html' : '/index.html';
+}
 
 window.addEventListener('load', async () => {
     document.getElementById('login-logo').src = getLogoBase64();
@@ -9,7 +15,7 @@ window.addEventListener('load', async () => {
         session = await refreshSession();
     }
     if (session?.user) {
-        window.location.href = '/index.html';
+        await redirigerSelonRole();
         return;
     }
 
@@ -37,7 +43,7 @@ async function handleLogin() {
 
     try {
         await connexion(email, password);
-        window.location.href = '/index.html';
+        await redirigerSelonRole();
     } catch (err) {
         errorEl.textContent = err.message;
         btn.disabled    = false;

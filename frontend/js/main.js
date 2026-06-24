@@ -13,12 +13,13 @@ import { initDashboard, afficherDashboard } from './modules/dashboard.js';
 import { fermerPdfViewer } from './modules/pdfviewer.js';
 import { envoyerMail } from './api/api.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession } from './modules/auth.js';
+import { chargerContratProfil, sauvegarderContratProfil } from './modules/db.js';
 import { showToast } from './utils/utils.js';
 
 // ── Initialisation de l'app après auth ────────────────────────
 
-function initApp(user) {
-    const nomTech = user.user_metadata?.nom || '';
+function initApp(user, nomProfil) {
+    const nomTech = nomProfil || user.user_metadata?.nom || '';
     const techEl  = document.getElementById('technicien');
     techEl.readOnly = true;
     techEl.classList.add('locked-field');
@@ -159,7 +160,7 @@ window.addEventListener('load', async () => {
     document.getElementById('header-logo').src = getLogoBase64();
     majHauteurHeader();
 
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
 
@@ -169,9 +170,44 @@ window.addEventListener('load', async () => {
         session = await refreshSession();
     }
 
-    if (session?.user) {
-        initApp(session.user);
-    } else {
+    if (!session?.user) {
         window.location.href = '/pages/login.html';
+        return;
+    }
+
+    try {
+        const profil = await chargerContratProfil();
+        if (profil?.role === 'responsable') {
+            window.location.href = '/pages/responsable.html';
+            return;
+        }
+        if (profil?.contrat) {
+            cfg.contrat = profil.contrat;
+            localStorage.setItem('cfg_contrat', profil.contrat);
+            initApp(session.user, profil.nom || '');
+        } else {
+            afficherModalPremierContrat(session.user, profil?.nom || '');
+        }
+    } catch {
+        initApp(session.user, '');
     }
 });
+
+function afficherModalPremierContrat(user, nomProfil) {
+    document.getElementById('modal-first-contrat').classList.add('open');
+    document.getElementById('btn-contrat-35').addEventListener('click', () => choisirContrat('35', user, nomProfil));
+    document.getElementById('btn-contrat-39').addEventListener('click', () => choisirContrat('39', user, nomProfil));
+}
+
+async function choisirContrat(valeur, user, nomProfil) {
+    try {
+        await sauvegarderContratProfil(valeur);
+    } catch (err) {
+        showToast('Impossible de sauvegarder le contrat : ' + err.message, 'error');
+        return;
+    }
+    cfg.contrat = valeur;
+    localStorage.setItem('cfg_contrat', valeur);
+    document.getElementById('modal-first-contrat').classList.remove('open');
+    initApp(user, nomProfil);
+}

@@ -105,7 +105,7 @@
     </div>
 
     <!-- À régulariser -->
-    <div class="card">
+    <div class="card" id="dash-action-card">
         <div class="dash-card-head">
             <p class="dash-eyebrow">À régulariser</p>
             <p class="dash-section-title" id="dash-action-titre">…</p>
@@ -114,10 +114,17 @@
     </div>
 
     <!-- Brouillon en cours (affiché seulement s'il en existe un) -->
-    <button type="button" class="card dash-brouillon-card hidden" id="dash-brouillon">
-        <span class="dash-brouillon-text">&#128221; Vous avez une feuille en cours (brouillon)</span>
-        <span class="dash-brouillon-action">Reprendre &#8594;</span>
-    </button>
+    <div class="card dash-brouillon-card hidden" id="dash-brouillon">
+        <div class="dash-brouillon-header" id="dash-brouillon-header" role="button" tabindex="0">
+            <span class="dash-brouillon-icon">📝</span>
+            <span class="dash-brouillon-body">
+                <span class="dash-brouillon-text">Brouillon non finalisé</span>
+                <span class="dash-brouillon-sub" id="dash-brouillon-sub">Appuie pour voir</span>
+            </span>
+            <span class="dash-brouillon-chevron" id="dash-brouillon-chevron">▼</span>
+        </div>
+        <ul class="dash-brouillon-list hidden" id="dash-brouillon-list"></ul>
+    </div>
 
     <!-- Créer une feuille (indépendant des jours manquants) -->
     <button type="button" class="btn-dash-nouvelle" id="btn-dash-nouvelle">+ Nouvelle feuille</button>
@@ -136,7 +143,7 @@
     <!-- Infos générales -->
     <div class="card">
         <h2>Informations générales</h2>
-        <div class="form-grid">
+        <div class="form-grid form-grid-2col">
             <div class="form-group">
                 <label>Date</label>
                 <input type="date" id="date">
@@ -171,14 +178,14 @@
                     <option value="180">3h00</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display:none;">
                 <label>Heures travaillées (−1h trajet)</label>
                 <input type="text" id="heures-travail" class="auto-field" readonly placeholder="Calculé auto">
             </div>
             <div class="form-group">
                 <label>Heures supplémentaires <span id="seuil-label" style="font-weight:400;color:#718096;font-size:11px;text-transform:none;letter-spacing:0;"></span></label>
-                <div style="display:flex;gap:6px;align-items:stretch;">
-                    <input type="text" id="heures-supp" class="auto-field" placeholder="Calculé auto" style="flex:1">
+                <div class="supp-input-row">
+                    <input type="text" id="heures-supp" class="auto-field" placeholder="Calculé auto">
                     <button type="button" id="btn-supp-auto" class="btn-supp-auto" title="Revenir au calcul automatique">↺ Auto</button>
                 </div>
             </div>
@@ -300,6 +307,24 @@
     </div>
 </div>
 
+
+<!-- Modal première connexion — choix du type de contrat -->
+<div class="modal-overlay" id="modal-first-contrat">
+    <div class="modal">
+        <h3>Bienvenue !</h3>
+        <p style="margin-bottom:20px;color:#718096;font-size:14px;">Avant de commencer, choisis ton type de contrat. Tu pourras le modifier plus tard dans les Paramètres.</p>
+        <div class="first-contrat-choices">
+            <button id="btn-contrat-39" class="btn-contrat-choice">
+                <strong>39h</strong>
+                <span>8h lun–jeu / 7h ven</span>
+            </button>
+            <button id="btn-contrat-35" class="btn-contrat-choice">
+                <strong>35h</strong>
+                <span>7h / jour</span>
+            </button>
+        </div>
+    </div>
+</div>
 
 <script type="module" src="js/main.js"></script>
 

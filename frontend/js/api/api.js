@@ -78,7 +78,7 @@ export async function envoyerMail() {
             }
 
             setBusy(false);
-            showToast('Email envoyé à ' + cfg.email, 'success', 4000);
+            showToast('Email envoyé à ' + cfg.email, 'success', 5000);
             effacerBrouillon(document.getElementById('date').value);
             document.dispatchEvent(new CustomEvent('feuille:enregistree'));
         } catch (err) {

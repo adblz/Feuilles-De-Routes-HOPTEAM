@@ -30,3 +30,14 @@ export function parseDuree(str) {
     const parts = str.split('h');
     return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
 }
+
+export function affH(m) {
+    return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
+}
+
+export function isoLocal(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}

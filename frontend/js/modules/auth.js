@@ -1,5 +1,4 @@
-const SUPABASE_URL = 'https://zblggovelezxxrkbqbcv.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpibGdnb3ZlbGV6eHhya2JxYmN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4OTE0NjcsImV4cCI6MjA5NzQ2NzQ2N30._KORySYHBmQ0aYp97r-6fLEX_4SF8NrbWYJ8fGFpzJM';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 
 const SESSION_KEY = 'fdr_session';
 

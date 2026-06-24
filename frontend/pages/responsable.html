@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#161B26">
+    <title>Vue responsable — Feuilles de route</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/responsable.css">
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <img id="header-logo" class="header-logo" alt="Logo">
+        <img class="header-logo-reduit" src="/assets/images/logo-reduit.png" alt="Logo">
+        <div>
+            <h1>FEUILLES DE ROUTES</h1>
+            <span class="resp-badge-lecture">Lecture seule</span>
+        </div>
+    </div>
+    <div class="resp-header-right">
+        <div class="resp-user-avatar" id="resp-user-avatar">??</div>
+        <button class="resp-btn-logout" id="btn-resp-logout">Déconnexion</button>
+    </div>
+</header>
+
+<div id="toast"></div>
+
+<div class="container">
+
+    <div class="card resp-compteur-card">
+        <p class="dash-eyebrow">Feuilles du mois en cours</p>
+        <div class="resp-compteur-nb" id="resp-compteur-nb">…</div>
+        <div class="resp-compteur-texte" id="resp-compteur-texte"></div>
+    </div>
+
+    <div id="resp-list">
+        <div class="resp-loading">Chargement…</div>
+    </div>
+
+</div>
+
+<div class="modal-overlay" id="modal-pdf">
+    <div class="modal modal-pdf-box">
+        <div class="modal-histo-header">
+            <h3>Aper&#231;u du PDF</h3>
+            <button class="btn-histo-close" id="btn-close-pdf">&#10005;</button>
+        </div>
+        <div class="pdf-mobile-placeholder">
+            <p>L'aper&#231;u PDF n'est pas disponible sur mobile.</p>
+        </div>
+        <iframe id="pdf-viewer-frame" class="pdf-viewer-frame" title="Aper&#231;u du PDF"></iframe>
+        <div class="pdf-viewer-foot">
+            <a id="pdf-viewer-open" href="#" target="_blank" rel="noopener" class="pdf-viewer-open">Ouvrir en plein &#233;cran</a>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="../js/responsable.js"></script>
+</body>
+</html>

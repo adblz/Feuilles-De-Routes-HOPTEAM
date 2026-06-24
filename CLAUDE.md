@@ -106,3 +106,6 @@ Quand on déplace ou réorganise des fichiers :
 - application metier pour une equipe de 10 techniciens environ
 - les techniciens seront les utilisateurs principaux de l'appli
 - roles : les techniciens auront quasi tout les droits en ce qui concerne leurs informations, mais pas celles des autres; un ou plusieurs responsable auront un acces a toutes les pdf des feuilles de routes de chaque techniciens mais en lecture seule
+- l'index.html doit etre optimisés pour les telephones 
+- responsables.html doit etre optimsés pour la version ordinateur
+- le login.html doit etre optimisé pour telephones et ordinateur

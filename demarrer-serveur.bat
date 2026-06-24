@@ -4,30 +4,38 @@ title Lanceur - Feuille de Route
 cd /d "%~dp0"
 
 echo ================================================
-echo   DEMARRAGE DU SERVEUR LOCAL + LIEN TELEPHONE
+echo   DEMARRAGE DU SERVEUR LOCAL
 echo ================================================
 echo.
-echo Deux fenetres vont s'ouvrir :
-echo   - "SERVEUR"        : laisse-la ouverte (c'est le moteur)
-echo   - "LIEN TELEPHONE" : l'adresse https s'affichera dedans
-echo.
 
-REM 1) Le serveur local (sert le dossier frontend)
-start "SERVEUR" cmd /k npx --yes http-server frontend -p 3000 -a 0.0.0.0 -c-1
+REM Recupere l'adresse Tailscale du PC
+for /f "tokens=1" %%i in ('"C:\Program Files\Tailscale\tailscale.exe" ip 2^>nul') do set TAILSCALE_IP=%%i
 
-REM On laisse 3 secondes au serveur pour demarrer
-timeout /t 3 >nul
+REM Lance le serveur (accessible sur tout le reseau, pas seulement localhost)
+start "SERVEUR FEUILLE DE ROUTE" cmd /k npx --yes http-server frontend -p 3000 -a 0.0.0.0 -c-1
 
-REM 2) Le tunnel public https (pour iPhone et amis a distance)
-start "LIEN TELEPHONE" cmd /k npx --yes cloudflared tunnel --url http://localhost:3000
+timeout /t 2 >nul
 
 echo.
-echo C'est parti !
+echo ================================================
+echo   OU SE CONNECTER ?
+echo ================================================
 echo.
-echo  - Sur ton PC / Samsung (meme wifi) :  http://localhost:3000
-echo  - Sur iPhone ou pour un ami :  cherche l'adresse "https://....trycloudflare.com"
-echo    dans la fenetre "LIEN TELEPHONE".
+echo   Sur ce PC :
+echo     http://localhost:3000
 echo.
-echo Pour TOUT ARRETER : ferme simplement les deux fenetres noires.
+if defined TAILSCALE_IP (
+    echo   Sur ton telephone avec Tailscale :
+    echo     http://%TAILSCALE_IP%:3000
+    echo.
+    echo   CONDITION : Tailscale doit etre installe et connecte
+    echo   sur ton telephone avec le meme compte.
+) else (
+    echo   Tailscale non detecte. Lance Tailscale d'abord.
+)
+echo.
+echo ================================================
+echo   Pour ARRETER : ferme la fenetre noire "SERVEUR"
+echo ================================================
 echo.
 pause

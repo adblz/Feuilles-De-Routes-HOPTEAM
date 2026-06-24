@@ -1,9 +1,7 @@
 import { getSession, isSessionValid, refreshSession } from './auth.js';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 
-const SUPABASE_URL = 'https://zblggovelezxxrkbqbcv.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpibGdnb3ZlbGV6eHhya2JxYmN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4OTE0NjcsImV4cCI6MjA5NzQ2NzQ2N30._KORySYHBmQ0aYp97r-6fLEX_4SF8NrbWYJ8fGFpzJM';
-
-function buildHeaders() {
+export function buildHeaders() {
     const token = getSession()?.access_token;
     return {
         'apikey':        SUPABASE_KEY,
@@ -85,6 +83,22 @@ export async function chargerHeuresSupp(debut, fin) {
 
 function toTime(val) { return val || null; }
 function toInt(val)  { return val ? parseInt(val, 10) : null; }
+
+export async function chargerContratProfil() {
+    const user = getSession()?.user;
+    if (!user) return null;
+    const rows = await dbGet(`profiles?id=eq.${user.id}&select=contrat,nom,role`);
+    return rows[0] || null;
+}
+
+export async function sauvegarderContratProfil(contrat) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/set_mon_contrat`, {
+        method: 'POST',
+        headers: buildHeaders(),
+        body: JSON.stringify({ nouveau_contrat: contrat }),
+    });
+    if (!res.ok) throw new Error(`Erreur sauvegarde contrat : ${await res.text()}`);
+}
 
 export async function sauvegarderEnBase({ date, tech, company, contrat, heureDebut, heureFin, repasMin, heuresTravail, heuresSupp, mode, pdfBlob, pdfFileName, elements }) {
     if (!isSessionValid()) await refreshSession();
