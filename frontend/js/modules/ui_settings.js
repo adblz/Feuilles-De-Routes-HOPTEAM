@@ -13,19 +13,14 @@ export function fermerTousLesModals() {
 
 export function openSettings() {
     fermerTousLesModals();
-    document.getElementById('s-company').value = cfg.company;
-    document.getElementById('s-email').value   = cfg.email;
+    document.getElementById('s-email-display').textContent = cfg.email || '—';
     document.getElementById('s-contrat').value = cfg.contrat;
     document.getElementById('modal-settings').classList.add('open');
 }
 
 export async function sauvegarderParams() {
     const contrat = document.getElementById('s-contrat').value;
-    saveCfg(
-        document.getElementById('s-company').value.trim(),
-        document.getElementById('s-email').value.trim(),
-        contrat
-    );
+    saveCfg(cfg.company, cfg.email, contrat);
     try {
         await sauvegarderContratProfil(contrat);
     } catch {
@@ -33,5 +28,4 @@ export async function sauvegarderParams() {
     }
     fermerModal('modal-settings');
     calcHeures();
-    if (cfg.company && cfg.email) document.getElementById('setup-notice').style.display = 'none';
 }

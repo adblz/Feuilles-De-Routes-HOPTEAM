@@ -59,7 +59,7 @@ function labelRole(role) {
 }
 
 export function ouvrirModalCreer() {
-    ['form-creer-email', 'form-creer-nom', 'form-creer-password'].forEach(id => {
+    ['form-creer-email', 'form-creer-nom', 'form-creer-password', 'form-creer-company', 'form-creer-email-resp'].forEach(id => {
         document.getElementById(id).value = '';
     });
     document.getElementById('form-creer-contrat').value = '39';
@@ -68,35 +68,41 @@ export function ouvrirModalCreer() {
 
 function ouvrirModalModifier(profil) {
     if (!profil) return;
-    document.getElementById('modifier-id').value          = profil.id;
-    document.getElementById('modifier-nom').value         = profil.nom || '';
-    document.getElementById('modifier-contrat').value     = profil.contrat || '39';
-    document.getElementById('modifier-role').value        = profil.role || 'technicien';
-    document.getElementById('modifier-email').textContent = profil.email || '—';
+    document.getElementById('modifier-id').value            = profil.id;
+    document.getElementById('modifier-nom').value           = profil.nom || '';
+    document.getElementById('modifier-contrat').value       = profil.contrat || '39';
+    document.getElementById('modifier-role').value          = profil.role || 'technicien';
+    document.getElementById('modifier-email').textContent   = profil.email || '—';
+    document.getElementById('modifier-company').value       = profil.company || '';
+    document.getElementById('modifier-email-resp').value    = profil.email_responsable || '';
     document.getElementById('modal-modifier').classList.add('open');
 }
 
 async function soumettreCreer() {
-    const email    = document.getElementById('form-creer-email').value.trim();
-    const nom      = document.getElementById('form-creer-nom').value.trim();
-    const contrat  = document.getElementById('form-creer-contrat').value;
-    const password = document.getElementById('form-creer-password').value;
+    const email     = document.getElementById('form-creer-email').value.trim();
+    const nom       = document.getElementById('form-creer-nom').value.trim();
+    const contrat   = document.getElementById('form-creer-contrat').value;
+    const password  = document.getElementById('form-creer-password').value;
+    const company   = document.getElementById('form-creer-company').value.trim();
+    const emailResp = document.getElementById('form-creer-email-resp').value.trim();
 
     if (!email || !nom || !password) {
         alert('Veuillez remplir tous les champs obligatoires (*)');
         return;
     }
     fermerModal('modal-creer');
-    if (_onCreer) await _onCreer(email, nom, contrat, password);
+    if (_onCreer) await _onCreer(email, nom, contrat, password, company, emailResp);
 }
 
 async function soumettreModifier() {
-    const id      = document.getElementById('modifier-id').value;
-    const nom     = document.getElementById('modifier-nom').value.trim();
-    const contrat = document.getElementById('modifier-contrat').value;
-    const role    = document.getElementById('modifier-role').value;
+    const id               = document.getElementById('modifier-id').value;
+    const nom              = document.getElementById('modifier-nom').value.trim();
+    const contrat          = document.getElementById('modifier-contrat').value;
+    const role             = document.getElementById('modifier-role').value;
+    const company          = document.getElementById('modifier-company').value.trim();
+    const email_responsable = document.getElementById('modifier-email-resp').value.trim();
 
     if (!nom) { alert('Le nom est obligatoire'); return; }
     fermerModal('modal-modifier');
-    if (_onModifier) await _onModifier(id, { nom, contrat, role });
+    if (_onModifier) await _onModifier(id, { nom, contrat, role, company, email_responsable });
 }

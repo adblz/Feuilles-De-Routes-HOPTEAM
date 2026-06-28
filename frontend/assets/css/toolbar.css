@@ -165,3 +165,10 @@
     padding: 8px 0;
     font-style: italic;
 }
+
+@media (max-width: 620px) {
+    body.clavier-ouvert .bottom-toolbar,
+    body.clavier-ouvert .actions {
+        display: none;
+    }
+}

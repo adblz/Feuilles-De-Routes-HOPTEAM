@@ -87,7 +87,7 @@ function toInt(val)  { return val ? parseInt(val, 10) : null; }
 export async function chargerContratProfil() {
     const user = getSession()?.user;
     if (!user) return null;
-    const rows = await dbGet(`profiles?id=eq.${user.id}&select=contrat,nom,role`);
+    const rows = await dbGet(`profiles?id=eq.${user.id}&select=contrat,nom,role,company,email_responsable`);
     return rows[0] || null;
 }
 

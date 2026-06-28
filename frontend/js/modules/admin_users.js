@@ -57,9 +57,9 @@ async function onModifier(id, data) {
     }
 }
 
-async function onCreer(email, nom, contrat, password) {
+async function onCreer(email, nom, contrat, password, company, emailResp) {
     try {
-        await creerUtilisateur(email, nom, contrat, password);
+        await creerUtilisateur(email, nom, contrat, password, company, emailResp);
         showToast('Compte créé avec succès', 'success');
         await chargerEtAfficher();
     } catch (e) {

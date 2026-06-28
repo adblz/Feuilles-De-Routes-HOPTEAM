@@ -29,7 +29,7 @@ exports.handleCreateUser = async (req, res) => {
     const isAdmin = await verifierAdmin(token).catch(() => false);
     if (!isAdmin) return res.status(403).json({ error: 'Accès refusé : rôle admin requis' });
 
-    const { email, nom, contrat, password } = req.body;
+    const { email, nom, contrat, password, company, email_responsable } = req.body;
     if (!email || !nom || !contrat || !password) {
         return res.status(400).json({ error: 'Données manquantes : email, nom, contrat, password' });
     }
@@ -61,7 +61,7 @@ exports.handleCreateUser = async (req, res) => {
             'Content-Type':  'application/json',
             'Prefer':        'return=minimal',
         },
-        body: JSON.stringify({ id: newUser.id, email, nom, contrat, role: 'technicien' }),
+        body: JSON.stringify({ id: newUser.id, email, nom, contrat, role: 'technicien', company: company || '', email_responsable: email_responsable || '' }),
     });
 
     if (!profileRes.ok) {

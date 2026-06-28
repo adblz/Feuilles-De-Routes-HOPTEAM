@@ -1,111 +1,121 @@
 # CLAUDE.md
 
-## Qui je suis
-Je ne suis pas développeur, je n'ai pas de connaissances 
-techniques. Adapte ton langage en conséquence.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Comment me parler
-- Langage simple, pas de jargon
-- Explique ce que tu fais et pourquoi
-- Si plusieurs choix possibles : recommande le plus simple
-- Dis-moi toujours quel fichier tu touches
+## À propos de l'utilisateur
 
-## Organisation des fichiers
-Toujours respecter une structure logique et me la montrer
-Ne pas éparpiller les fichiers n'importe où
-Me demander si tu n'es pas sûr où mettre quelque chose
+- Pas de connaissances techniques — utiliser un langage simple, sans jargon
+- Toujours expliquer ce que tu fais et pourquoi
+- Si plusieurs choix : recommander le plus simple
+- Toujours nommer le fichier touché avant de modifier
+- Attendre la validation avant de commencer à coder
 
-## Taille des fichiers et découpage
+## Commandes utiles
 
-- Maximum 150 lignes par fichier JS
-- Si tu dois dépasser, STOP : crée un nouveau fichier et dis-moi pourquoi
-- Un fichier = une seule responsabilité (ex: pas calendrier + heures supp dans le même fichier)
+**Lancer l'app en local :**
+```
+demarrer-serveur.bat
+```
+Ouvre `http://localhost:3000` dans le navigateur. Utilise Tailscale pour accès téléphone.
 
-## Avant de coder : toujours expliquer le plan
+**Lancer le backend (si nécessaire séparément) :**
+```
+cd backend
+npm install    ← une seule fois
+npm start      ← démarre le serveur Express sur le port 3000
+```
 
-Avant chaque modification ou nouvelle fonctionnalité :
-1. Dis-moi dans quel(s) fichier(s) tu vas écrire
-2. Dis-moi pourquoi ce fichier et pas un autre
-3. Si tu crées un nouveau fichier, dis-moi comment il s'appellera et où
-4. Attends ma validation avant de commencer
-
-## Ne jamais mélanger dans le même fichier
-
-- La logique de calcul et l'affichage à l'écran
-- Les appels Supabase et les événements de l'interface
-- Deux fonctionnalités indépendantes
+**Déploiement :** automatique via Netlify (push sur `main` = déploiement du frontend). Le backend est sur Render.com (déploiement séparé, manuel).
 
 ## Architecture générale
 
-Toujours respecter cette structure de dossiers :
+Application web sans framework, vanilla HTML / CSS / JS avec modules ES natifs. Pas de bundler, pas de compilation.
 
-feuille-de-route/
-├── frontend/
-│   ├── assets/
-│   │   ├── css/          ← tous les fichiers CSS
-│   │   └── images/       ← logos, icônes, images
-│   ├── js/
-│   │   ├── api/          ← appels API
-│   │   ├── modules/      ← modules fonctionnels
-│   │   └── utils/        ← fonctions utilitaires
-│   ├── pages/            ← pages HTML secondaires (login.html, etc.)
-│   ├── index.html        ← page principale
-│   ├── manifest.json
-│   └── sw.js
-├── backend/
-│   └── index.js
-└── netlify.toml
+**Flux de données :**
+1. L'utilisateur se connecte via `pages/login.html` → `js/login.js` → Supabase Auth
+2. La session est stockée dans `localStorage` (clé `fdr_session`)
+3. `main.js` vérifie la session au chargement et redirige selon le rôle :
+   - `role = 'responsable'` → `pages/responsable.html`
+   - sinon → formulaire technicien (`index.html`)
 
-## Frontend (OBLIGATOIRE)
+**Services externes :**
+- **Supabase** : authentification + base de données + stockage PDF. URL et clé anon dans `frontend/js/modules/config.js`
+- **Backend Express** (Render) : `https://feuilles-de-routes-hopteam.onrender.com` — sert uniquement à envoyer les emails via `/send-email` (multer + SendGrid)
+- **html2pdf.js** : chargé depuis CDN dans `index.html`, utilisé par `pdf.js`
 
-- Le CSS doit être séparé dans des fichiers dédiés dans assets/css/
-- Le JS doit être dans js/ avec les sous-dossiers appropriés
-- Les images dans assets/images/
-- Les pages HTML secondaires dans pages/
-- Jamais de style inline ou de script inline dans le HTML
+**Tables Supabase :**
+- `profiles` : `id, nom, role, contrat` (35 ou 39)
+- `feuilles_de_route` : en-tête de la feuille du jour (date, tech, heures…)
+- `interventions` : lignes détail liées à une feuille (`feuille_id`)
 
-## Organisation du code
+## Structure des fichiers JS (frontend)
 
-- Séparer clairement :
-  - logique métier (calculs, règles) → js/modules/
-  - manipulation DOM (affichage, événements clics) → js/modules/
-  - appels API → js/api/
-  - fonctions utilitaires → js/utils/
-  - génération PDF → js/modules/
+```
+frontend/js/
+├── main.js              ← point d'entrée technicien (events DOM, init app)
+├── login.js             ← point d'entrée login
+├── api/
+│   └── api.js           ← envoi email + sauvegarde Supabase après envoi
+├── modules/
+│   ├── config.js        ← URL et clé Supabase
+│   ├── auth.js          ← session localStorage, connexion/déconnexion Supabase Auth
+│   ├── db.js            ← toutes les requêtes Supabase REST (feuilles, interventions, profils)
+│   ├── db_responsable.js ← requêtes Supabase spécifiques vue responsable
+│   ├── fdr.js           ← barrel file : réexporte tout depuis fdr_config, fdr_calculs, fdr_form, fdr_brouillon
+│   ├── fdr_config.js    ← configuration locale (email responsable, company, logo, contrat)
+│   ├── fdr_calculs.js   ← calcul des heures travaillées et heures supp
+│   ├── fdr_form.js      ← ajout/suppression/déplacement d'interventions et pauses dans le DOM
+│   ├── fdr_brouillon.js ← sauvegarde/restauration brouillon dans localStorage
+│   ├── pdf.js           ← génération PDF (téléchargement local)
+│   ├── pdf_layout.js    ← mise en page du document PDF
+│   ├── pdfviewer.js     ← aperçu PDF dans la page
+│   ├── dashboard.js     ← barrel : réexporte dashboard_calendar et dashboard_stats
+│   ├── dashboard_calendar.js ← calendrier du tableau de bord
+│   ├── dashboard_stats.js    ← statistiques heures du tableau de bord
+│   ├── ui.js            ← barrel UI : réexporte ui_form, ui_history, ui_settings, ui_heures
+│   ├── ui_form.js       ← actions formulaire (nouvelle feuille, réinitialiser)
+│   ├── ui_history.js    ← modal historique des feuilles
+│   ├── ui_settings.js   ← modal paramètres
+│   ├── ui_heures.js     ← modal récap heures supp
+│   ├── autocomplete.js  ← mémorisation et suggestion des champs client/ville
+│   ├── toolbar.js       ← barre d'outils bas de page
+│   ├── responsable.js   ← logique page responsable
+│   ├── responsable_render.js ← rendu HTML page responsable
+│   ├── admin_users.js   ← gestion des utilisateurs (admin)
+│   ├── admin_users_ui.js ← rendu HTML gestion utilisateurs
+│   └── resume.js        ← module résumé/récap
+└── utils/
+    └── utils.js         ← fonctions partagées (showToast, setBusy, validerFormulaire…)
+```
 
-## Réorganisation de projet
+## Règles de code
 
-Quand on déplace ou réorganise des fichiers :
-1. Déplacer le fichier dans le bon dossier
-2. Mettre à jour IMMÉDIATEMENT tous les chemins/imports/liens
-   dans TOUS les fichiers du projet
-3. Vérifier manifest.json et sw.js si des assets sont déplacés
-4. Vérifier netlify.toml si la structure racine change
-5. Procéder fichier par fichier, pas tout en même temps
+- Maximum 150 lignes par fichier JS — si dépassement, créer un nouveau fichier
+- Un fichier = une seule responsabilité
+- Jamais de style inline ni de script inline dans le HTML
+- Séparer : logique métier → `modules/`, appels Supabase → `db.js` ou `db_responsable.js`, appels backend → `api/api.js`
+- Les fichiers "barrel" (`fdr.js`, `dashboard.js`, `ui.js`) ne contiennent que des réexports — ne pas y mettre de logique
 
-## Calcul des heures (fdr.js)
+## Calcul des heures
 
-- Contrat 35h → 7h par jour toujours
+- Contrat 35h → 7h par jour
 - Contrat 39h → 8h les jours normaux, 7h le vendredi
 
-## Cohérence du projet
+## Pages et optimisation
 
-- Toujours respecter la structure existante
-- Ne pas recréer une nouvelle architecture sans raison
-- S'intégrer proprement dans les fichiers existants
+- `index.html` → optimisé téléphone (techniciens)
+- `pages/responsable.html` → optimisé ordinateur (lecture seule)
+- `pages/login.html` → optimisé téléphone et ordinateur
 
-## Interdictions
+## Réorganisation de fichiers
 
-- Pas de mélange HTML / JS / CSS
-- Pas de duplication de code
-- Pas de fonctions inutilisées
-- Pas de logique complexe dans index.html
-- Pas de sections vides dans ce fichier
+Quand on déplace un fichier :
+1. Déplacer le fichier
+2. Mettre à jour immédiatement TOUS les imports/liens dans tout le projet
+3. Vérifier `manifest.json` et `sw.js` si un asset est déplacé
+4. Vérifier `netlify.toml` si la structure racine change
+5. Procéder fichier par fichier
 
-## Projet complet
-- application metier pour une equipe de 10 techniciens environ
-- les techniciens seront les utilisateurs principaux de l'appli
-- roles : les techniciens auront quasi tout les droits en ce qui concerne leurs informations, mais pas celles des autres; un ou plusieurs responsable auront un acces a toutes les pdf des feuilles de routes de chaque techniciens mais en lecture seule
-- l'index.html doit etre optimisés pour les telephones 
-- responsables.html doit etre optimsés pour la version ordinateur
-- le login.html doit etre optimisé pour telephones et ordinateur
+## Déploiement Netlify
+
+Le build Netlify (voir `netlify.toml`) exécute un `sed` pour injecter l'ID de déploiement dans `sw.js` afin de forcer le rechargement du cache service worker à chaque déploiement.

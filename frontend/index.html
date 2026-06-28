@@ -42,9 +42,9 @@
     <div class="dash-hero">
         <div class="dash-hero-top">
             <p class="dash-eyebrow">Tableau de bord</p>
-            <p class="dash-hero-sub" id="dash-hero-sub">…</p>
         </div>
         <h1 class="dash-hero-name" id="dash-greeting">…</h1>
+        <p class="dash-hero-sub" id="dash-hero-sub">…</p>
     </div>
 
     <!-- Récap heures supplémentaires -->
@@ -117,8 +117,6 @@
         <ul class="dash-brouillon-list hidden" id="dash-brouillon-list"></ul>
     </div>
 
-    <!-- Créer une feuille (indépendant des jours manquants) -->
-    <button type="button" class="btn-dash-nouvelle" id="btn-dash-nouvelle">+ Nouvelle feuille</button>
 
 </div>
 
@@ -126,10 +124,6 @@
 <div class="container hidden" id="vue-formulaire">
 
     <button type="button" class="btn-retour-dashboard" id="btn-retour-dashboard">&#8592; Tableau de bord</button>
-
-    <div class="notice" id="setup-notice">
-        Première utilisation ? Appuie sur <strong>Profil</strong> (en bas à droite) pour renseigner ton entreprise et l'email de ton responsable.
-    </div>
 
     <!-- Infos générales -->
     <div class="card">
@@ -197,7 +191,6 @@
     <div class="actions">
         <button class="btn-pdf"   id="btn-pdf">Enregistrer le PDF</button>
         <button class="btn-email" id="btn-email">Envoyer par mail</button>
-        <button class="btn-new"   id="btn-new-feuille">Nouvelle feuille</button>
     </div>
 
 </div>
@@ -260,14 +253,13 @@
 <!-- Modal paramètres -->
 <div class="modal-overlay" id="modal-settings">
     <div class="modal">
-        <h3>Paramètres</h3>
-        <div class="form-group">
-            <label>Nom de l'entreprise</label>
-            <input type="text" id="s-company" placeholder="Mon Entreprise SARL">
+        <div class="modal-title-row">
+            <h3>Paramètres</h3>
+            <button type="button" id="btn-refresh-app" class="btn-refresh-app">↻ Mettre à jour</button>
         </div>
         <div class="form-group">
             <label>Email du responsable</label>
-            <input type="email" id="s-email" placeholder="responsable@hopteam.fr">
+            <p class="settings-readonly" id="s-email-display">—</p>
         </div>
         <div class="form-group">
             <label>Type de contrat</label>
@@ -275,9 +267,6 @@
                 <option value="39">39h — 8h (lun–jeu) / 7h (ven)</option>
                 <option value="35">35h — 7h/jour</option>
             </select>
-        </div>
-        <div class="modal-note">
-            Ces informations sont enregistrées sur votre appareil. Vous n'aurez à les saisir qu'une seule fois.
         </div>
 
         <hr class="settings-divider">

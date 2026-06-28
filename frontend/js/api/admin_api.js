@@ -14,7 +14,7 @@ function buildHeaders() {
 
 export async function chargerTousLesProfils() {
     const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/profiles?select=id,email,nom,contrat,role&order=nom.asc`,
+        `${SUPABASE_URL}/rest/v1/profiles?select=id,email,nom,contrat,role,company,email_responsable&order=nom.asc`,
         { headers: buildHeaders() }
     );
     if (!res.ok) throw new Error(`Chargement utilisateurs : ${await res.text()}`);
@@ -30,7 +30,7 @@ export async function modifierProfil(id, data) {
     if (!res.ok) throw new Error(`Modification profil : ${await res.text()}`);
 }
 
-export async function creerUtilisateur(email, nom, contrat, password) {
+export async function creerUtilisateur(email, nom, contrat, password, company, emailResp) {
     const token = getSession()?.access_token;
     const res = await fetch(`${BACKEND}/admin/create-user`, {
         method:  'POST',
@@ -38,7 +38,7 @@ export async function creerUtilisateur(email, nom, contrat, password) {
             'Content-Type':  'application/json',
             'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ email, nom, contrat, password }),
+        body: JSON.stringify({ email, nom, contrat, password, company: company || '', email_responsable: emailResp || '' }),
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));

@@ -487,12 +487,6 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .btn-email:active { transform: scale(0.99); }
 .btn-email:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-new {
-    padding: 15px 22px; background: var(--paper); color: var(--ink-title);
-    border: 1px solid rgba(0,0,0,0.08); border-radius: 16px;
-    font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;
-}
-.btn-new:hover { background: var(--paper-dim); }
 
 /* ════════ Dashboard ════════ */
 
@@ -828,16 +822,6 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 }
 .dash-action-toggle:hover { color: var(--steel-light); }
 
-/* Bouton « Nouvelle feuille » du dashboard */
-.btn-dash-nouvelle {
-    width: 100%; padding: 16px;
-    background: linear-gradient(90deg, var(--steel), var(--steel-light));
-    color: white; border: none; border-radius: 16px;
-    font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s;
-    box-shadow: 0 14px 24px -12px rgba(61,90,153,0.6);
-}
-.btn-dash-nouvelle:hover { opacity: 0.92; }
-.btn-dash-nouvelle:active { transform: scale(0.99); }
 
 /* Bouton retour vers le dashboard (vue formulaire) */
 .btn-retour-dashboard {
@@ -863,6 +847,22 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 .modal h3 { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 20px; }
+.modal-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
+.modal-title-row h3 { margin-bottom: 0; }
+.btn-refresh-app {
+    background: var(--steel-soft);
+    color: var(--steel);
+    border: 1.5px solid var(--border-mid);
+    border-radius: 8px;
+    padding: 7px 13px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.btn-refresh-app:hover { background: var(--steel); color: white; }
 .modal .form-group { margin-bottom: 14px; }
 .modal-footer { display: flex; gap: 10px; margin-top: 22px; }
 .modal-footer button { flex: 1; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
@@ -873,6 +873,10 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .modal-note {
     background: var(--blue-pale); border-radius: 8px; padding: 10px 14px;
     font-size: 12px; color: var(--blue-darker); margin-top: 16px; line-height: 1.5;
+}
+.settings-readonly {
+    color: var(--muted); font-size: 14px; padding: 6px 0; font-style: italic;
+    margin: 0;
 }
 
 /* Historique */
@@ -1101,7 +1105,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     header h1 { font-size: 17px; }
 
     /* Container */
-    .container { margin: 14px auto; padding: 0 12px 170px; }
+    .container { margin: 14px auto; padding: 0 12px 150px; }
 
     /* Cards */
     .card { padding: 16px; }
@@ -1144,23 +1148,19 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     .add-buttons-row { flex-direction: column; }
     .btn-add-int, .btn-add-pause { padding: 16px; }
 
-    /* Boutons d'action — sticky en bas */
+    /* Boutons d'action — flottants au-dessus de la toolbar */
     .actions {
         position: fixed;
-        bottom: 0; left: 0; right: 0;
-        background: var(--panel);
-        border-top: 1px solid var(--hairline);
-        padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.45);
+        bottom: calc(var(--toolbar-h) + env(safe-area-inset-bottom, 0px));
+        left: 0; right: 0;
+        padding: 10px 16px 10px;
         z-index: 100;
         margin: 0;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
-        flex-wrap: unset;
     }
     .btn-pdf, .btn-email { min-width: unset; padding: 13px 8px; font-size: 14px; }
-    .btn-new { grid-column: 1 / -1; padding: 11px; font-size: 13px; }
 
     /* Modal bottom sheet */
     .modal-overlay { align-items: flex-end; }
@@ -1212,8 +1212,8 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
         text-align: center;
     }
 
-    /* Toast remonté au-dessus des boutons sticky */
-    #toast { bottom: 170px; }
+    /* Toast remonté au-dessus des boutons et de la toolbar */
+    #toast { bottom: 130px; }
 }
 
 /* ── Auth : Page de connexion plein écran ──────────────────── */

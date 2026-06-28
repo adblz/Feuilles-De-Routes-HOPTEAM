@@ -44,4 +44,17 @@ export function initToolbar() {
     document.getElementById('btn-toolbar-accueil').addEventListener('click', afficherDashboard);
     document.getElementById('btn-toolbar-feuille').addEventListener('click', ouvrirFeuilleduJour);
     document.getElementById('btn-toolbar-profil').addEventListener('click', openSettings);
+
+    document.addEventListener('focusin', (e) => {
+        if (e.target.matches('input, textarea, select')) {
+            document.body.classList.add('clavier-ouvert');
+        }
+    });
+    document.addEventListener('focusout', () => {
+        setTimeout(() => {
+            if (!document.activeElement?.matches('input, textarea, select')) {
+                document.body.classList.remove('clavier-ouvert');
+            }
+        }, 150);
+    });
 }

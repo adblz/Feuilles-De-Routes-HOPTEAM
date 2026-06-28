@@ -67,8 +67,6 @@ export function initDashboard(nomTech) {
         subEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1) + (company ? ` · ${company}` : '');
     }
 
-    document.getElementById('btn-dash-nouvelle').addEventListener('click', () => ouvrirNouvelleFeuille());
-
     document.getElementById('btn-dash-supp-edit').addEventListener('click', () => {
         const panel  = document.getElementById('dash-supp-edit');
         const btn    = document.getElementById('btn-dash-supp-edit');

@@ -6,7 +6,6 @@ import {
     openSettings, fermerModal, sauvegarderParams,
     ouvrirHistorique, renderListeHistorique, initHistoriqueEvents,
     ouvrirSuppRecap, calculerSuppRecap,
-    nouvelleFeuille,
 } from './modules/ui.js';
 import { genererPDF } from './modules/pdf.js';
 import { initDashboard, afficherDashboard } from './modules/dashboard.js';
@@ -24,10 +23,6 @@ function initApp(user, nomProfil) {
     const techEl  = document.getElementById('technicien');
     techEl.readOnly = true;
     techEl.classList.add('locked-field');
-
-    if (cfg.company && cfg.email) {
-        document.getElementById('setup-notice').style.display = 'none';
-    }
 
     techEl.value = nomTech;
     calcHeures();
@@ -67,7 +62,6 @@ function initApp(user, nomProfil) {
     document.getElementById('btn-add-pause').addEventListener('click', ajouterPause);
     document.getElementById('btn-pdf').addEventListener('click', genererPDF);
     document.getElementById('btn-email').addEventListener('click', envoyerMail);
-    document.getElementById('btn-new-feuille').addEventListener('click', nouvelleFeuille);
 
     // ── Modal historique ───────────────────────────────────────
 
@@ -88,6 +82,18 @@ function initApp(user, nomProfil) {
 
     document.getElementById('btn-settings-save').addEventListener('click', sauvegarderParams);
     document.getElementById('btn-settings-cancel').addEventListener('click', () => fermerModal('modal-settings'));
+
+    document.getElementById('btn-refresh-app').addEventListener('click', async () => {
+        if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const reg of regs) await reg.unregister();
+        }
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+        }
+        location.reload(true);
+    });
 
     document.getElementById('btn-change-password').addEventListener('click', async () => {
         const newPass = document.getElementById('s-new-password').value;
@@ -155,7 +161,11 @@ window.addEventListener('load', async () => {
         }
         if (profil?.contrat) {
             cfg.contrat = profil.contrat;
+            cfg.company = profil.company || '';
+            cfg.email   = profil.email_responsable || '';
             localStorage.setItem('cfg_contrat', profil.contrat);
+            localStorage.setItem('cfg_company', cfg.company);
+            localStorage.setItem('cfg_email',   cfg.email);
             initApp(session.user, profil.nom || '');
         } else {
             afficherModalPremierContrat(session.user, profil?.nom || '');
