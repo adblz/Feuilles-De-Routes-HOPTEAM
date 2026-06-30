@@ -25,7 +25,7 @@ npm install    ← une seule fois
 npm start      ← démarre le serveur Express sur le port 3000
 ```
 
-**Déploiement :** automatique via Netlify (push sur `main` = déploiement du frontend). Le backend est sur Render.com (déploiement séparé, manuel).
+**Déploiement :** automatique via Vercel (push sur `main` = déploiement du frontend, dossier racine `frontend/`). Le backend est sur Render.com (déploiement séparé, manuel).
 
 ## Architecture générale
 
@@ -113,9 +113,9 @@ Quand on déplace un fichier :
 1. Déplacer le fichier
 2. Mettre à jour immédiatement TOUS les imports/liens dans tout le projet
 3. Vérifier `manifest.json` et `sw.js` si un asset est déplacé
-4. Vérifier `netlify.toml` si la structure racine change
+4. Vérifier `vercel.json` si la structure racine change
 5. Procéder fichier par fichier
 
-## Déploiement Netlify
+## Déploiement Vercel
 
-Le build Netlify (voir `netlify.toml`) exécute un `sed` pour injecter l'ID de déploiement dans `sw.js` afin de forcer le rechargement du cache service worker à chaque déploiement.
+Le build Vercel (voir `vercel.json`) exécute une commande `node` qui injecte l'ID de déploiement dans `sw.js` afin de forcer le rechargement du cache service worker à chaque déploiement. Le « Root Directory » du projet Vercel est réglé sur `frontend/`.

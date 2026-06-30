@@ -45,6 +45,6 @@ feuille-de-route
 │  ├─ pages
 │  │  └─ login.html
 │  └─ sw.js
-└─ netlify.toml
+└─ vercel.json
 
 ```
