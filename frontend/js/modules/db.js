@@ -142,6 +142,7 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         ville:         el.kind === 'intervention' ? (el.ville   || null) : null,
         type_int:      el.kind === 'intervention' ? (el.typeInt || null) : null,
         mo:            el.kind === 'intervention' ? (el.mo      || null) : null,
+        becs:          el.kind === 'intervention' ? toInt(el.becs)       : null,
         details:       el.kind === 'intervention' ? (el.details || null) : null,
         pause_debut:   el.kind === 'pause' ? toTime(el.debut) : null,
         pause_fin:     el.kind === 'pause' ? toTime(el.fin)   : null,
