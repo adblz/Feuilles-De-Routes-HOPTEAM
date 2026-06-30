@@ -1,4 +1,4 @@
 {
-  "buildCommand": "sed -i \"s/fdr-v[0-9a-z]*/fdr-$VERCEL_DEPLOYMENT_ID/g\" frontend/sw.js",
+  "buildCommand": "node -e \"const fs=require('fs');const id=process.env.VERCEL_DEPLOYMENT_ID||'local';const c=fs.readFileSync('frontend/sw.js','utf8').replace(/fdr-v[0-9a-z]*/,'fdr-'+id.slice(0,16));fs.writeFileSync('frontend/sw.js',c);\"",
   "outputDirectory": "frontend"
 }
