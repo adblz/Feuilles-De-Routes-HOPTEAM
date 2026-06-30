@@ -1,0 +1,4 @@
+{
+  "buildCommand": "sed -i \"s/fdr-v[0-9a-z]*/fdr-$VERCEL_DEPLOYMENT_ID/g\" frontend/sw.js",
+  "outputDirectory": "frontend"
+}

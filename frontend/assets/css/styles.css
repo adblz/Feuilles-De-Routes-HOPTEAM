@@ -951,6 +951,10 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     color: var(--black-soft);
     background: white;
     font-size: 13px;
+    /* Empêche les navigateurs mobiles de "gonfler" le texte automatiquement,
+       pour un PDF identique qu'il soit généré depuis un téléphone ou un PC. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 .pdf-top {
@@ -978,6 +982,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     border-radius: 8px; padding: 10px 12px; text-align: center;
 }
 .pdf-hour-box.supp { background: var(--green-supp); }
+.pdf-hour-box.repas { background: var(--amber-deep); }
 .pdf-hour-box .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.8; }
 .pdf-hour-box .val { font-size: 18px; font-weight: 900; margin-top: 3px; }
 
@@ -1002,7 +1007,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .pdf-int-head {
     background: var(--navy); color: white; padding: 8px 14px;
     display: flex; justify-content: space-between;
-    font-size: 12px; font-weight: 700;
+    font-size: 13px; font-weight: 700;
 }
 .pdf-int-badge {
     background: rgba(255,255,255,0.25); border-radius: 4px;
@@ -1023,24 +1028,18 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .pdf-pause-head {
     background: var(--amber-deep); color: white; padding: 8px 14px;
     display: flex; justify-content: space-between;
-    font-size: 12px; font-weight: 700;
+    font-size: 13px; font-weight: 700;
 }
 .pdf-pause-body { padding: 10px 14px; display: flex; gap: 32px; }
 
-.pdf-field .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-pdf); font-weight: 700; }
-.pdf-field .val { font-size: 13px; color: var(--black-soft); margin-top: 2px; }
+.pdf-field .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-pdf); font-weight: 700; }
+.pdf-field .val { font-size: 14px; color: var(--black-soft); margin-top: 2px; }
 
 .pdf-details-row {
     grid-column: 1 / -1; background: var(--surface-light); border-radius: 5px;
-    padding: 8px 10px; font-size: 12px; color: var(--gray-heavy); line-height: 1.5;
+    padding: 8px 10px; font-size: 14px; color: var(--gray-heavy); line-height: 1.5;
 }
-.pdf-details-row .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-pdf); font-weight: 700; margin-bottom: 3px; }
-
-.pdf-footer {
-    margin-top: 24px; padding-top: 12px;
-    border-top: 1px solid var(--border);
-    font-size: 10px; color: #aaa; text-align: center;
-}
+.pdf-details-row .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-pdf); font-weight: 700; margin-bottom: 3px; }
 
 /* Filtre année dans l'historique */
 .histo-filtre-select {

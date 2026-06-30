@@ -78,7 +78,7 @@ export async function supprimerFeuille(id) {
 export async function chargerHeuresSupp(debut, fin) {
     const user = getSession()?.user;
     if (!user) return [];
-    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_supp&order=date.asc`);
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_supp,heure_debut,heure_fin&order=date.asc`);
 }
 
 function toTime(val) { return val || null; }

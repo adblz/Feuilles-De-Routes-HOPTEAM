@@ -77,18 +77,14 @@ export function construirePDF() {
         <div class="pdf-hours-row">
             <div class="pdf-hour-box"><div class="lbl">Début journée</div><div class="val">${debut}</div></div>
             <div class="pdf-hour-box"><div class="lbl">Fin journée</div><div class="val">${fin}</div></div>
-            <div class="pdf-hour-box"><div class="lbl">Pause repas</div><div class="val">${repas}</div></div>
+            <div class="pdf-hour-box repas"><div class="lbl">Pause repas</div><div class="val">${repas}</div></div>
             <div class="pdf-hour-box supp"><div class="lbl">Heures trav. (−1h trajet)</div><div class="val">${travail}</div></div>
         </div>
 
         ${suppBanner}
 
         <div class="pdf-section-title">Interventions &amp; Pauses (${nbInts} intervention${nbInts > 1 ? 's' : ''})</div>
-        ${itemsHTML}
-
-        <div class="pdf-footer">
-            ${cfg.company ? cfg.company + ' &mdash; ' : ''}Feuille de route du ${dateAff} &mdash; ${tech}
-        </div>`;
+        ${itemsHTML}`;
 }
 
 export function nomFichierPdf() {

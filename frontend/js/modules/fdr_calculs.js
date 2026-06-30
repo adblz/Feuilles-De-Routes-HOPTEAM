@@ -1,5 +1,6 @@
 import { affH } from '../utils/utils.js';
 import { cfg } from './fdr_config.js';
+import { calcHeuresNuit } from './heures_calculs.js';
 
 // ── État heures supplémentaires ────────────────────────────────
 
@@ -42,6 +43,14 @@ export function calcHeures() {
     document.getElementById('heures-travail').value = affH(totalMin);
     if (!suppManuel) {
         document.getElementById('heures-supp').value = affH(Math.max(0, totalMin - sMin));
+    }
+
+    const nuitMin  = calcHeuresNuit(debut, fin);
+    const nuitEl   = document.getElementById('heures-nuit');
+    const nuitGrp  = document.getElementById('heures-nuit-group');
+    if (nuitEl && nuitGrp) {
+        nuitEl.value = nuitMin > 0 ? affH(nuitMin) : '';
+        nuitGrp.style.display = nuitMin > 0 ? '' : 'none';
     }
 }
 

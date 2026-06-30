@@ -1,4 +1,5 @@
-import { chargerDetailFeuille } from './db.js';
+import { chargerDetailFeuille, chargerPdfFeuille } from './db.js';
+import { afficherPdfUrl } from './pdfviewer.js';
 import { showToast } from '../utils/utils.js';
 
 export function cacherResume() {
@@ -14,6 +15,16 @@ export async function afficherResumeFeuille(feuilleId) {
         document.getElementById('vue-resume').classList.remove('hidden');
         window.scrollTo(0, 0);
         document.dispatchEvent(new CustomEvent('nav:resume'));
+
+        document.getElementById('btn-resume-pdf')?.addEventListener('click', async () => {
+            try {
+                const url = await chargerPdfFeuille(feuilleId);
+                if (!url) { showToast('Aucun PDF disponible', 'warn'); return; }
+                await afficherPdfUrl(url);
+            } catch {
+                showToast('Impossible de charger le PDF', 'error');
+            }
+        });
     } catch {
         showToast('Erreur lors du chargement du résumé', 'error');
     }
@@ -43,6 +54,7 @@ function buildResumeHTML(feuille, elements) {
             <h2 class="resume-date-titre">${formatDateLong(feuille.date)}</h2>
             ${timeRange ? `<p class="resume-time-range">${timeRange}</p>` : ''}
             ${totaux    ? `<p class="resume-totaux">${totaux}</p>`        : ''}
+            <button class="resume-btn-pdf" id="btn-resume-pdf">📄 Afficher le PDF</button>
         </div>
         <div class="card">
             <h3 class="resume-section-title">Interventions (${interventions.length})</h3>

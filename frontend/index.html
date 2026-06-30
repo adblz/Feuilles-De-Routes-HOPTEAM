@@ -174,6 +174,10 @@
                     <button type="button" id="btn-supp-auto" class="btn-supp-auto" title="Revenir au calcul automatique">↺ Auto</button>
                 </div>
             </div>
+            <div class="form-group" id="heures-nuit-group" style="display:none;">
+                <label>Heures de nuit (21h–6h)</label>
+                <input type="text" id="heures-nuit" class="auto-field" readonly placeholder="—">
+            </div>
         </div>
     </div>
 
@@ -306,6 +310,18 @@
     </div>
 </div>
 
+<!-- ════════ VUE HEURES PAR SEMAINE ════════ -->
+<div class="container hidden" id="vue-heures">
+    <h2 class="vue-heures-titre">Heures par semaine</h2>
+    <div class="heures-period-row">
+        <input type="date" id="heures-date-debut" class="heures-date-input">
+        <span class="heures-period-sep">→</span>
+        <input type="date" id="heures-date-fin" class="heures-date-input">
+        <button class="btn-secondary" id="btn-heures-calc">Calculer</button>
+    </div>
+    <div id="heures-tableau"></div>
+</div>
+
 <!-- ════════ VUE RÉSUMÉ FEUILLE DU JOUR ════════ -->
 <div class="container hidden" id="vue-resume">
     <div id="resume-content"></div>
@@ -333,13 +349,12 @@
         <span>Feuille du jour</span>
     </button>
 
-    <button class="toolbar-btn toolbar-btn--placeholder" id="btn-toolbar-extra" disabled>
-        <svg viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="5" cy="12" r="2"/>
-            <circle cx="12" cy="12" r="2"/>
-            <circle cx="19" cy="12" r="2"/>
+    <button class="toolbar-btn" id="btn-toolbar-extra">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
         </svg>
-        <span>···</span>
+        <span>Heures</span>
     </button>
 
     <button class="toolbar-btn" id="btn-toolbar-profil">

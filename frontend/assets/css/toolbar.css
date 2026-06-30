@@ -47,11 +47,6 @@
     color: var(--amber);
 }
 
-.toolbar-btn--placeholder {
-    opacity: 0.25;
-    cursor: default;
-    pointer-events: none;
-}
 
 .toolbar-btn:not(.toolbar-btn--placeholder):active {
     opacity: 0.6;
@@ -115,7 +110,7 @@
     align-items: flex-start;
     gap: 12px;
     padding: 12px 0;
-    border-bottom: 1px solid var(--hairline);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
 .resume-item:last-child { border-bottom: none; }
@@ -130,7 +125,7 @@
 .resume-item-client {
     font-weight: 700;
     font-size: 14px;
-    color: var(--cream);
+    color: var(--ink-title);
 }
 
 .resume-item-details {
@@ -166,9 +161,110 @@
     font-style: italic;
 }
 
+.resume-btn-pdf {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    padding: 8px 16px;
+    background: var(--steel);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 @media (max-width: 620px) {
     body.clavier-ouvert .bottom-toolbar,
     body.clavier-ouvert .actions {
         display: none;
     }
 }
+
+/* ════════ VUE HEURES ════════ */
+
+.vue-heures-titre {
+    font-family: 'Big Shoulders', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 20px;
+}
+
+.heures-period-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.heures-date-input {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    color: var(--cream);
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.heures-period-sep {
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.heures-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: var(--cream);
+}
+
+.heures-table thead th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 8px 10px 0;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.heures-table tbody td {
+    padding: 10px 8px 10px 0;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: middle;
+}
+
+.heures-semaine {
+    color: var(--paper);
+    font-size: 12px;
+}
+
+.heures-mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+}
+
+.heures-25 { color: var(--amber); }
+.heures-50 { color: #f87171; }
+
+.heures-total td {
+    font-weight: 700;
+    color: var(--cream);
+    border-top: 2px solid var(--hairline);
+    border-bottom: none;
+    padding-top: 12px;
+}
+
+.heures-loading, .heures-vide, .heures-error {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 16px 0;
+}
+
+.heures-error { color: #f87171; }

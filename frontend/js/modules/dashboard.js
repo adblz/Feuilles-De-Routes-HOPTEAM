@@ -14,6 +14,7 @@ const aujourdhui = () => isoLocal(new Date());
 function montrerFormulaire() {
     document.getElementById('vue-resume')?.classList.add('hidden');
     document.getElementById('vue-dashboard').classList.add('hidden');
+    document.getElementById('vue-heures')?.classList.add('hidden');
     document.getElementById('vue-formulaire').classList.remove('hidden');
     window.scrollTo(0, 0);
     document.dispatchEvent(new CustomEvent('nav:formulaire'));
@@ -28,6 +29,7 @@ export function afficherDashboard() {
 
     document.getElementById('vue-formulaire').classList.add('hidden');
     document.getElementById('vue-resume')?.classList.add('hidden');
+    document.getElementById('vue-heures')?.classList.add('hidden');
     document.getElementById('vue-dashboard').classList.remove('hidden');
     window.scrollTo(0, 0);
     document.dispatchEvent(new CustomEvent('nav:dashboard'));
