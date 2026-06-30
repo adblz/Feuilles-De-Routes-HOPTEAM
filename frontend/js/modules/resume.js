@@ -1,6 +1,6 @@
 import { chargerDetailFeuille, chargerPdfFeuille } from './db.js';
 import { afficherPdfUrl } from './pdfviewer.js';
-import { showToast } from '../utils/utils.js';
+import { showToast, escHtml } from '../utils/utils.js';
 
 export function cacherResume() {
     document.getElementById('vue-resume')?.classList.add('hidden');
@@ -68,9 +68,9 @@ function buildResumeHTML(feuille, elements) {
             html += `
                 <div class="resume-item">
                     <div class="resume-item-left">
-                        <span class="resume-item-client">${el.client || '—'}</span>
-                        ${details ? `<span class="resume-item-details">${details}</span>` : ''}
-                        ${el.mo   ? `<span class="resume-item-mo">MO : ${el.mo}</span>` : ''}
+                        <span class="resume-item-client">${escHtml(el.client) || '—'}</span>
+                        ${details ? `<span class="resume-item-details">${escHtml(details)}</span>` : ''}
+                        ${el.mo   ? `<span class="resume-item-mo">MO : ${escHtml(el.mo)}</span>` : ''}
                     </div>
                     <span class="resume-item-heures">${el.heure_arrivee || '—'} → ${el.heure_depart || '—'}</span>
                 </div>

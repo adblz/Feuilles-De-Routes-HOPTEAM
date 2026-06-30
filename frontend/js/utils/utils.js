@@ -35,9 +35,27 @@ export function affH(m) {
     return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
 }
 
+// Neutralise les caractères spéciaux avant insertion dans du HTML (anti-XSS).
+export function escHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 export function isoLocal(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+}
+
+// Fait défiler l'écran en douceur vers le haut d'un élément (ex. nouvelle carte).
+// Le décalage sous l'entête fixe est géré en CSS via `scroll-margin-top`.
+export function scrollVersCarte(el) {
+    if (!el) return;
+    requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
 }

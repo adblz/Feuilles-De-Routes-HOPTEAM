@@ -1,3 +1,5 @@
+import { escHtml } from '../utils/utils.js';
+
 export function initiales(texte) {
     if (!texte) return '?';
     const p = texte.trim().split(/[\s.]+/);
@@ -77,9 +79,9 @@ export function renderTechs(techMap, vues) {
         const contrat = feuilles[0]?.contrat ? `${feuilles[0].contrat}h` : '';
         html += `<div class="resp-tech-card" data-uid="${uid}">
             <div class="resp-tech-header">
-                <span class="resp-avatar">${initiales(nom)}</span>
+                <span class="resp-avatar">${escHtml(initiales(nom))}</span>
                 <div class="resp-tech-info">
-                    <span class="resp-tech-nom">${nom}</span>
+                    <span class="resp-tech-nom">${escHtml(nom)}</span>
                     ${contrat ? `<span class="resp-tech-contrat">${contrat}</span>` : ''}
                 </div>
                 <span class="resp-pastille resp-pastille-${couleur}">${remplisMois}/${joursOuvres} j.</span>
