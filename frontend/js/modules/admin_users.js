@@ -2,6 +2,7 @@ import { isSessionValid, refreshSession } from './auth.js';
 import { chargerMonProfil } from './db_responsable.js';
 import { chargerTousLesProfils, modifierProfil, creerUtilisateur } from '../api/admin_api.js';
 import { initAdminUI, renderTableau, ouvrirModalCreer } from './admin_users_ui.js';
+import { initSuggestions } from './admin_suggestions.js';
 import { showToast } from '../utils/utils.js';
 
 export async function initAdmin() {
@@ -30,6 +31,7 @@ export async function initAdmin() {
 
     initAdminUI({ onModifier, onCreer });
     await chargerEtAfficher();
+    await initSuggestions();
 }
 
 async function deconnecter() {

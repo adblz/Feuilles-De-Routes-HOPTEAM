@@ -127,6 +127,8 @@ export function ajouterIntervention(data = {}) {
     div.querySelectorAll('input, select, textarea').forEach(el => {
         el.addEventListener('input', notifierChangement);
     });
+
+    return div;
 }
 
 function majChampsConditionnels(n, card) {
@@ -191,6 +193,8 @@ export function ajouterPause(data = {}) {
     div.querySelectorAll('input').forEach(el => {
         el.addEventListener('input', notifierChangement);
     });
+
+    return div;
 }
 
 export function supprimerElement(id) {

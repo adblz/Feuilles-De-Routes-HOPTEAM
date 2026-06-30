@@ -151,6 +151,107 @@
 .btn-admin-valider:hover { background: var(--amber-light); }
 .req { color: var(--amber); font-weight: 700; }
 
+/* ── Suggestions ──────────────────────────────────────────── */
+.sug-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 11px;
+    background: var(--amber);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+.sug-vide {
+    text-align: center;
+    padding: 28px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.sug-item {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    background: var(--surface-light);
+}
+.sug-item:last-child { margin-bottom: 0; }
+.sug-item.sug-nouveau { border-left: 4px solid var(--amber); }
+.sug-item.sug-traite  { opacity: 0.65; }
+
+.sug-item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.sug-cat {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--steel-soft);
+    color: var(--steel);
+}
+
+.sug-statut {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.sug-statut-nouveau { color: var(--amber-deep); }
+.sug-statut-lu      { color: var(--steel); }
+.sug-statut-traite  { color: var(--muted); }
+
+.sug-message {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-body);
+    white-space: pre-wrap;
+    margin: 0 0 12px;
+}
+
+.sug-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+}
+.sug-auteur { font-weight: 600; }
+
+.sug-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.sug-btn {
+    border: 1px solid var(--border);
+    background: var(--surface-mid);
+    color: var(--gray-mid);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.sug-btn:hover { background: var(--border-mid); }
+.sug-btn-traite { color: var(--teal); border-color: var(--teal); }
+.sug-btn-suppr  { color: #e53e3e; border-color: var(--red-border, #f5c6c6); }
+
 /* Page "Accès refusé" */
 .admin-acces-refuse { text-align: center; padding: 80px 20px; }
 .admin-acces-refuse h2 {

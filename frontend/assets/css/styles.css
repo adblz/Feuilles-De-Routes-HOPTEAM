@@ -315,6 +315,8 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     margin-bottom: 14px;
     max-width: 100%;
     overflow: hidden;
+    /* Marge de défilement : la carte s'arrête sous l'entête fixe lors de l'autoscroll */
+    scroll-margin-top: calc(var(--app-header-h, 64px) + 12px);
 }
 
 /* Boutons type d'intervention */
@@ -373,6 +375,8 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 14px;
+    /* Marge de défilement : la pause s'arrête sous l'entête fixe lors de l'autoscroll */
+    scroll-margin-top: calc(var(--app-header-h, 64px) + 12px);
 }
 .pause-number {
     font-family: 'IBM Plex Mono', monospace;
@@ -660,6 +664,9 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     background: var(--paper-dim); border-radius: 10px;
     padding: 11px 14px; margin: 12px 0 4px;
+    /* Marges de défilement : le panneau reste visible entre l'entête et la barre du bas */
+    scroll-margin-top: calc(var(--app-header-h, 64px) + 12px);
+    scroll-margin-bottom: calc(var(--toolbar-h, 60px) + 16px);
 }
 .dash-cal-selected-label {
     font-size: 14px; font-weight: 600; color: var(--ink-body);
@@ -1373,6 +1380,33 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
+}
+
+/* ── Bouton "Suggérer une amélioration" ───────────────────── */
+.btn-suggestion-open {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--blue-pale, #ebf4ff);
+    color: var(--blue-dark);
+    border: 1px solid var(--blue-dark);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-suggestion-open:hover { background: #dceaff; }
+.btn-suggestion-open svg { width: 18px; height: 18px; }
+
+.suggestion-intro {
+    font-size: 13px;
+    color: var(--gray-mid);
+    line-height: 1.5;
+    margin-bottom: 16px;
 }
 
 /* ── Modal première connexion ─────────────────────────────── */

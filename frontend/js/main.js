@@ -6,6 +6,7 @@ import {
     openSettings, fermerModal, sauvegarderParams,
     ouvrirHistorique, renderListeHistorique, initHistoriqueEvents,
     ouvrirSuppRecap, calculerSuppRecap,
+    ouvrirSuggestion, envoyerSuggestion,
 } from './modules/ui.js';
 import { genererPDF } from './modules/pdf.js';
 import { initDashboard, afficherDashboard } from './modules/dashboard.js';
@@ -14,7 +15,7 @@ import { fermerPdfViewer } from './modules/pdfviewer.js';
 import { envoyerMail } from './api/api.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession } from './modules/auth.js';
 import { chargerContratProfil, sauvegarderContratProfil } from './modules/db.js';
-import { showToast } from './utils/utils.js';
+import { showToast, scrollVersCarte } from './utils/utils.js';
 
 // ── Initialisation de l'app après auth ────────────────────────
 
@@ -58,8 +59,12 @@ function initApp(user, nomProfil) {
     });
     document.getElementById('btn-supp-auto').addEventListener('click', resetSuppAuto);
 
-    document.getElementById('btn-add-int').addEventListener('click', ajouterIntervention);
-    document.getElementById('btn-add-pause').addEventListener('click', ajouterPause);
+    document.getElementById('btn-add-int').addEventListener('click', () => {
+        scrollVersCarte(ajouterIntervention());
+    });
+    document.getElementById('btn-add-pause').addEventListener('click', () => {
+        scrollVersCarte(ajouterPause());
+    });
     document.getElementById('btn-pdf').addEventListener('click', genererPDF);
     document.getElementById('btn-email').addEventListener('click', envoyerMail);
 
@@ -82,6 +87,12 @@ function initApp(user, nomProfil) {
 
     document.getElementById('btn-settings-save').addEventListener('click', sauvegarderParams);
     document.getElementById('btn-settings-cancel').addEventListener('click', () => fermerModal('modal-settings'));
+
+    // ── Modal suggestion ───────────────────────────────────────
+
+    document.getElementById('btn-ouvrir-suggestion').addEventListener('click', ouvrirSuggestion);
+    document.getElementById('btn-suggestion-envoyer').addEventListener('click', envoyerSuggestion);
+    document.getElementById('btn-suggestion-annuler').addEventListener('click', () => fermerModal('modal-suggestion'));
 
     document.getElementById('btn-refresh-app').addEventListener('click', async () => {
         if ('serviceWorker' in navigator) {

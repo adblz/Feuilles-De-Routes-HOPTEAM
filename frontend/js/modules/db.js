@@ -100,6 +100,19 @@ export async function sauvegarderContratProfil(contrat) {
     if (!res.ok) throw new Error(`Erreur sauvegarde contrat : ${await res.text()}`);
 }
 
+// Enregistre une suggestion d'amélioration envoyée par un technicien.
+export async function enregistrerSuggestion(categorie, message) {
+    const user = getSession()?.user;
+    if (!user) throw new Error('Non connecté');
+    await dbPost('suggestions', {
+        user_id:        user.id,
+        technicien_nom: user.user_metadata?.nom || null,
+        categorie,
+        message,
+        statut:         'nouveau',
+    });
+}
+
 export async function sauvegarderEnBase({ date, tech, company, contrat, heureDebut, heureFin, repasMin, heuresTravail, heuresSupp, mode, pdfBlob, pdfFileName, elements }) {
     if (!isSessionValid()) await refreshSession();
 

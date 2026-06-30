@@ -283,10 +283,48 @@
             </div>
         </div>
 
+        <hr class="settings-divider">
+
+        <button type="button" class="btn-suggestion-open" id="btn-ouvrir-suggestion">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18h6"/><path d="M10 22h4"/>
+                <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+            </svg>
+            <span>Suggérer une amélioration</span>
+        </button>
+
         <div class="modal-footer settings-footer">
             <button class="modal-save"   id="btn-settings-save">Enregistrer</button>
             <button class="modal-cancel" id="btn-settings-cancel">Annuler</button>
             <button class="btn-logout"   id="btn-logout">D&#233;connexion</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal suggestion d'amélioration -->
+<div class="modal-overlay" id="modal-suggestion">
+    <div class="modal">
+        <div class="modal-title-row">
+            <h3>Suggérer une amélioration</h3>
+        </div>
+        <p class="suggestion-intro">Une idée, un souci ou une amélioration ? Écris-la ici, elle sera transmise à l'administrateur.</p>
+        <div class="form-group">
+            <label>Catégorie</label>
+            <select id="sug-categorie">
+                <option value="Amélioration">Amélioration</option>
+                <option value="Bug ou problème">Bug ou problème</option>
+                <option value="Idée">Idée</option>
+                <option value="Autre">Autre</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Ta suggestion</label>
+            <textarea id="sug-message" rows="5" placeholder="Décris ton idée ou le problème rencontré…"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-save"   id="btn-suggestion-envoyer">Envoyer</button>
+            <button class="modal-cancel" id="btn-suggestion-annuler">Annuler</button>
         </div>
     </div>
 </div>

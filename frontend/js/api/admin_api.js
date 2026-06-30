@@ -30,6 +30,32 @@ export async function modifierProfil(id, data) {
     if (!res.ok) throw new Error(`Modification profil : ${await res.text()}`);
 }
 
+export async function chargerSuggestions() {
+    const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/suggestions?select=*&order=created_at.desc`,
+        { headers: buildHeaders() }
+    );
+    if (!res.ok) throw new Error(`Chargement suggestions : ${await res.text()}`);
+    return res.json();
+}
+
+export async function marquerSuggestion(id, statut) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/suggestions?id=eq.${id}`, {
+        method:  'PATCH',
+        headers: { ...buildHeaders(), Prefer: 'return=minimal' },
+        body:    JSON.stringify({ statut }),
+    });
+    if (!res.ok) throw new Error(`Mise à jour suggestion : ${await res.text()}`);
+}
+
+export async function supprimerSuggestion(id) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/suggestions?id=eq.${id}`, {
+        method:  'DELETE',
+        headers: buildHeaders(),
+    });
+    if (!res.ok) throw new Error(`Suppression suggestion : ${await res.text()}`);
+}
+
 export async function creerUtilisateur(email, nom, contrat, password, company, emailResp) {
     const token = getSession()?.access_token;
     const res = await fetch(`${BACKEND}/admin/create-user`, {
