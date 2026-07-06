@@ -4,5 +4,6 @@ export { seuilJour, calcHeures, onSuppInput, resetSuppAuto }             from '.
 export {
     ajouterIntervention, ajouterPause, supprimerElement, deplacerElement,
     lireTousLesElements, viderInterventions, resetSuppState,
+    afficherBlocRappel, viderRappel, remplirRappel,
 }                                                                         from './fdr_form.js';
 export { sauvegarderBrouillon, restaurerBrouillon, effacerBrouillon, getBrouillonsDates } from './fdr_brouillon.js';

@@ -68,7 +68,10 @@ export function majBrouillonCard() {
         const label = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
         return `<li class="dash-brouillon-item" data-date="${dateISO}">
             <span>${label.charAt(0).toUpperCase() + label.slice(1)}</span>
-            <span class="dash-brouillon-item-btn">Continuer →</span>
+            <span class="dash-brouillon-item-actions">
+                <span class="dash-brouillon-item-btn">Continuer →</span>
+                <button type="button" class="btn-brouillon-item-del" data-del-date="${dateISO}" title="Supprimer">&#10005;</button>
+            </span>
         </li>`;
     }).join('');
 }

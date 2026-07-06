@@ -1,6 +1,6 @@
 import { showToast } from '../utils/utils.js';
 import { getSuppManuel, setSuppManuel, calcHeures } from './fdr_calculs.js';
-import { ajouterIntervention, ajouterPause, lireTousLesElements } from './fdr_form.js';
+import { ajouterIntervention, ajouterPause, lireTousLesElements, remplirRappel } from './fdr_form.js';
 
 // Auto-sauvegarde à chaque modification du formulaire
 document.addEventListener('form:changed', () => sauvegarderBrouillon());
@@ -58,12 +58,18 @@ export function restaurerBrouillon(dateISO) {
             document.getElementById('btn-supp-auto').style.display = 'block';
         }
 
+        let aRappel = false;
         (d.elements || []).forEach(item => {
             if (item.kind === 'intervention') ajouterIntervention(item);
             else if (item.kind === 'pause')   ajouterPause(item);
+            else if (item.kind === 'rappel')  { remplirRappel(item); aRappel = true; }
         });
 
-        if (!d.elements || d.elements.length === 0) ajouterIntervention();
+        const interventionsEtPauses = (d.elements || []).filter(e => e.kind !== 'rappel');
+        if (interventionsEtPauses.length === 0) ajouterIntervention();
+
+        // Le rappel est rempli après le 1er calcHeures : on recalcule pour l'inclure.
+        if (aRappel && d.debut && d.fin) calcHeures();
 
         showToast('Brouillon restauré', 'success', 2500);
         return true;

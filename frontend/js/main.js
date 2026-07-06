@@ -1,6 +1,7 @@
 import {
     cfg, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto,
     ajouterIntervention, ajouterPause, sauvegarderBrouillon,
+    afficherBlocRappel, viderRappel,
 } from './modules/fdr.js';
 import {
     openSettings, fermerModal, sauvegarderParams,
@@ -65,6 +66,40 @@ function initApp(user, nomProfil) {
     document.getElementById('btn-add-pause').addEventListener('click', () => {
         scrollVersCarte(ajouterPause());
     });
+
+    // ── Rappel / sortie supplémentaire ─────────────────────────
+    document.getElementById('btn-rappel').addEventListener('click', () => {
+        afficherBlocRappel();
+        sauvegarderBrouillon();
+    });
+    document.getElementById('btn-rappel-remove').addEventListener('click', () => {
+        viderRappel();
+        calcHeures();
+        sauvegarderBrouillon();
+    });
+    document.getElementById('rappel-debut').addEventListener('input', () => {
+        const rDebut = document.getElementById('rappel-debut').value;
+        const hFin   = document.getElementById('heure-fin').value;
+        if (rDebut && hFin && rDebut <= hFin) {
+            showToast('Le départ de la sortie supplémentaire doit être après la fin de journée', 'warn', 4000);
+            document.getElementById('rappel-debut').value = '';
+            return;
+        }
+        calcHeures();
+        sauvegarderBrouillon();
+    });
+    document.getElementById('rappel-fin').addEventListener('input', () => {
+        const rDebut = document.getElementById('rappel-debut').value;
+        const rFin   = document.getElementById('rappel-fin').value;
+        if (rDebut && rFin && rFin <= rDebut) {
+            showToast('L\'heure de retour doit être après l\'heure de départ', 'warn', 3500);
+            document.getElementById('rappel-fin').value = '';
+            return;
+        }
+        calcHeures();
+        sauvegarderBrouillon();
+    });
+
     document.getElementById('btn-pdf').addEventListener('click', genererPDF);
     document.getElementById('btn-email').addEventListener('click', envoyerMail);
 

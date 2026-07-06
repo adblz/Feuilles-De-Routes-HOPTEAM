@@ -1,7 +1,8 @@
 import { isoLocal } from '../utils/utils.js';
 import { restaurerBrouillon, viderInterventions, cfg, getBrouillonsDates } from './fdr.js';
 import { reinitialiserFeuille } from './ui.js';
-import { initCalendrier, rendreCalendrierMois } from './dashboard_calendar.js';
+import { initCalendrier, rendreCalendrierMois, resetCalOffset, initCalNav } from './dashboard_calendar.js';
+import { effacerBrouillon } from './fdr.js';
 import {
     rendreHeuresSupp, majBrouillonCard,
     toggleBrouillonList, toggleActionList, _rendreActionList,
@@ -22,6 +23,7 @@ function montrerFormulaire() {
 
 export function afficherDashboard() {
     setActionListExpanded(false);
+    resetCalOffset();
     const bl = document.getElementById('dash-brouillon-list');
     if (bl) bl.classList.add('hidden');
     const chev = document.getElementById('dash-brouillon-chevron');
@@ -58,6 +60,7 @@ export async function rafraichirDashboard() {
 
 export function initDashboard(nomTech) {
     initCalendrier(ouvrirNouvelleFeuille, finaliserBrouillon);
+    initCalNav();
 
     const greeting = document.getElementById('dash-greeting');
     if (greeting) greeting.textContent = nomTech || 'Mon espace';
@@ -108,6 +111,14 @@ export function initDashboard(nomTech) {
     });
 
     document.getElementById('dash-brouillon-list').addEventListener('click', (e) => {
+        const delBtn = e.target.closest('.btn-brouillon-item-del');
+        if (delBtn) {
+            e.stopPropagation();
+            if (!confirm('Supprimer ce brouillon ?')) return;
+            effacerBrouillon(delBtn.dataset.delDate);
+            majBrouillonCard();
+            return;
+        }
         const item = e.target.closest('.dash-brouillon-item');
         if (!item) return;
         finaliserBrouillon(item.dataset.date);

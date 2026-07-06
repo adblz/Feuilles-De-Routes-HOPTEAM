@@ -253,7 +253,39 @@ export function lireTousLesElements() {
             });
         }
     });
+
+    // Rappel / sortie supplémentaire (bloc unique, horaires seuls)
+    const rDebut = document.getElementById('rappel-debut')?.value || '';
+    const rFin   = document.getElementById('rappel-fin')?.value   || '';
+    if (rDebut || rFin) items.push({ kind: 'rappel', debut: rDebut, fin: rFin });
+
     return items;
+}
+
+// ── Rappel / sortie supplémentaire ─────────────────────────────
+
+export function afficherBlocRappel() {
+    const bloc = document.getElementById('bloc-rappel');
+    bloc?.classList.remove('hidden');
+    document.getElementById('btn-rappel')?.classList.add('hidden');
+    setTimeout(() => bloc?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+export function viderRappel() {
+    const d = document.getElementById('rappel-debut');
+    const f = document.getElementById('rappel-fin');
+    if (d) d.value = '';
+    if (f) f.value = '';
+    document.getElementById('bloc-rappel')?.classList.add('hidden');
+    document.getElementById('btn-rappel')?.classList.remove('hidden');
+}
+
+export function remplirRappel(data = {}) {
+    const d = document.getElementById('rappel-debut');
+    const f = document.getElementById('rappel-fin');
+    if (d) d.value = data.debut || '';
+    if (f) f.value = data.fin   || '';
+    if (data.debut || data.fin) afficherBlocRappel();
 }
 
 // ── Réinitialisation ───────────────────────────────────────────
@@ -262,6 +294,7 @@ export function viderInterventions() {
     document.getElementById('interventions-list').innerHTML = '';
     intCount   = 0;
     pauseCount = 0;
+    viderRappel();
 }
 
 export function resetSuppState() {

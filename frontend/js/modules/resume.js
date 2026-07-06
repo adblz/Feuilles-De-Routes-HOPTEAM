@@ -1,5 +1,6 @@
 import { chargerDetailFeuille, chargerPdfFeuille } from './db.js';
 import { afficherPdfUrl } from './pdfviewer.js';
+import { remplirFormulaireDepuisFeuille } from './fdr_charger.js';
 import { showToast, escHtml } from '../utils/utils.js';
 
 export function cacherResume() {
@@ -11,6 +12,7 @@ export async function afficherResumeFeuille(feuilleId) {
         const { feuille, elements } = await chargerDetailFeuille(feuilleId);
         document.getElementById('vue-dashboard').classList.add('hidden');
         document.getElementById('vue-formulaire').classList.add('hidden');
+        document.getElementById('vue-heures')?.classList.add('hidden');
         document.getElementById('resume-content').innerHTML = buildResumeHTML(feuille, elements);
         document.getElementById('vue-resume').classList.remove('hidden');
         window.scrollTo(0, 0);
@@ -24,6 +26,17 @@ export async function afficherResumeFeuille(feuilleId) {
             } catch {
                 showToast('Impossible de charger le PDF', 'error');
             }
+        });
+
+        document.getElementById('btn-resume-modifier')?.addEventListener('click', () => {
+            remplirFormulaireDepuisFeuille(feuille, elements);
+            document.getElementById('vue-resume')?.classList.add('hidden');
+            document.getElementById('vue-dashboard')?.classList.add('hidden');
+            document.getElementById('vue-heures')?.classList.add('hidden');
+            document.getElementById('vue-formulaire')?.classList.remove('hidden');
+            window.scrollTo(0, 0);
+            document.dispatchEvent(new CustomEvent('nav:formulaire'));
+            showToast('Vous pouvez compléter la feuille, puis la renvoyer', 'success', 3500);
         });
     } catch {
         showToast('Erreur lors du chargement du résumé', 'error');
@@ -39,6 +52,7 @@ function formatDateLong(iso) {
 function buildResumeHTML(feuille, elements) {
     const interventions = elements.filter(e => e.kind === 'intervention');
     const pauses        = elements.filter(e => e.kind === 'pause');
+    const rappels       = elements.filter(e => e.kind === 'rappel');
 
     const timeRange = (feuille.heure_debut && feuille.heure_fin)
         ? `${feuille.heure_debut} → ${feuille.heure_fin}` : '';
@@ -54,7 +68,10 @@ function buildResumeHTML(feuille, elements) {
             <h2 class="resume-date-titre">${formatDateLong(feuille.date)}</h2>
             ${timeRange ? `<p class="resume-time-range">${timeRange}</p>` : ''}
             ${totaux    ? `<p class="resume-totaux">${totaux}</p>`        : ''}
-            <button class="resume-btn-pdf" id="btn-resume-pdf">📄 Afficher le PDF</button>
+            <div class="resume-actions">
+                <button class="resume-btn-pdf" id="btn-resume-pdf">📄 Afficher le PDF</button>
+                <button class="resume-btn-modifier" id="btn-resume-modifier">✏️ Modifier</button>
+            </div>
         </div>
         <div class="card">
             <h3 class="resume-section-title">Interventions (${interventions.length})</h3>
@@ -79,6 +96,14 @@ function buildResumeHTML(feuille, elements) {
     }
 
     html += '</div>';
+
+    if (rappels.length > 0) {
+        html += '<div class="card"><h3 class="resume-section-title">Rappel / sortie supplémentaire</h3>';
+        rappels.forEach(el => {
+            html += `<div class="resume-item resume-item-rappel">↩ Rappel ${el.pause_debut || '—'} → ${el.pause_fin || '—'}</div>`;
+        });
+        html += '</div>';
+    }
 
     if (pauses.length > 0) {
         html += '<div class="card"><h3 class="resume-section-title">Pauses</h3>';

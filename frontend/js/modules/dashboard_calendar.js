@@ -1,14 +1,39 @@
-import { chargerHistorique, chargerPdfFeuille } from './db.js';
+import { chargerHistorique } from './db.js';
 import { showToast, isoLocal } from '../utils/utils.js';
 import { getBrouillonsDates } from './fdr.js';
-import { afficherPdfUrl } from './pdfviewer.js';
+import { afficherResumeFeuille } from './resume.js';
 
 let _onNouveau   = null;
 let _onFinaliser = null;
+let calOffset    = 0;
 
 export function initCalendrier(onNouveau, onFinaliser) {
     _onNouveau   = onNouveau;
     _onFinaliser = onFinaliser;
+}
+
+export function resetCalOffset() {
+    calOffset = 0;
+    _majBoutonsNav();
+}
+
+export function initCalNav() {
+    document.getElementById('btn-cal-prev').addEventListener('click', () => {
+        calOffset--;
+        _majBoutonsNav();
+        rendreCalendrierMois();
+    });
+    document.getElementById('btn-cal-next').addEventListener('click', () => {
+        if (calOffset >= 0) return;
+        calOffset++;
+        _majBoutonsNav();
+        rendreCalendrierMois();
+    });
+}
+
+function _majBoutonsNav() {
+    const nextBtn = document.getElementById('btn-cal-next');
+    if (nextBtn) nextBtn.disabled = calOffset >= 0;
 }
 
 export async function rendreCalendrierMois() {
@@ -21,10 +46,12 @@ export async function rendreCalendrierMois() {
 
     const today    = new Date();
     const todayISO = isoLocal(today);
-    const year     = today.getFullYear();
-    const month    = today.getMonth();
 
-    const moisNom = today.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const viewDate = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
+    const year     = viewDate.getFullYear();
+    const month    = viewDate.getMonth();
+
+    const moisNom = viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
     if (titreEl) titreEl.textContent = moisNom.charAt(0).toUpperCase() + moisNom.slice(1);
 
     let histo;
@@ -114,9 +141,9 @@ function selectionnerJour(dateObj, key, isFilled, feuilleId, hasBrouillon) {
     btn.id = 'dash-cal-selected-btn';
 
     if (isFilled) {
-        btn.textContent = 'Visionner le PDF';
+        btn.textContent = 'Afficher résumé';
         btn.className   = 'dash-cal-selected-btn dash-cal-btn-pdf';
-        btn.addEventListener('click', () => visionnerPdfJour(feuilleId));
+        btn.addEventListener('click', () => afficherResumeFeuille(feuilleId));
     } else if (hasBrouillon) {
         btn.textContent = 'Finaliser le brouillon';
         btn.className   = 'dash-cal-selected-btn dash-cal-btn-remplir';
@@ -129,15 +156,4 @@ function selectionnerJour(dateObj, key, isFilled, feuilleId, hasBrouillon) {
 
     panel.classList.remove('hidden');
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-async function visionnerPdfJour(id) {
-    if (!id) { showToast('PDF non disponible', 'warn'); return; }
-    try {
-        const pdf = await chargerPdfFeuille(id);
-        if (!pdf) { showToast('PDF non disponible pour cette feuille', 'warn', 4500); return; }
-        await afficherPdfUrl(pdf);
-    } catch {
-        showToast('Erreur lors du chargement du PDF', 'error');
-    }
 }

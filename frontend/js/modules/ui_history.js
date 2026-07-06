@@ -1,8 +1,5 @@
 import { showToast } from '../utils/utils.js';
-import {
-    calcHeures, ajouterIntervention, ajouterPause,
-    sauvegarderBrouillon, viderInterventions, resetSuppState,
-} from './fdr.js';
+import { remplirFormulaireDepuisFeuille } from './fdr_charger.js';
 import { chargerHistorique, chargerDetailFeuille, supprimerFeuille, chargerPdfFeuille } from './db.js';
 import { afficherPdfUrl } from './pdfviewer.js';
 import { fermerModal, fermerTousLesModals } from './ui_settings.js';
@@ -198,33 +195,7 @@ async function restaurerDepuisHistorique(id) {
     }
 
     fermerModal('modal-historique');
-    viderInterventions();
-    resetSuppState();
-
-    document.getElementById('date').value        = feuille.date         || '';
-    document.getElementById('heure-debut').value = feuille.heure_debut  || '';
-    document.getElementById('heure-fin').value   = feuille.heure_fin    || '';
-    document.getElementById('repas').value        = feuille.repas_min ? String(feuille.repas_min) : '';
-    if (feuille.heure_debut && feuille.heure_fin) calcHeures();
-
-    elements.forEach(el => {
-        if (el.kind === 'intervention') {
-            ajouterIntervention({
-                arrivee: el.heure_arrivee || '',
-                depart:  el.heure_depart  || '',
-                client:  el.client        || '',
-                ville:   el.ville         || '',
-                typeInt: el.type_int      || '',
-                mo:      el.mo            || '',
-                details: el.details       || '',
-            });
-        } else if (el.kind === 'pause') {
-            ajouterPause({ debut: el.pause_debut || '', fin: el.pause_fin || '' });
-        }
-    });
-    if (!elements.length) ajouterIntervention();
-
-    sauvegarderBrouillon();
+    remplirFormulaireDepuisFeuille(feuille, elements);
     showToast('Feuille restaurée depuis l\'historique', 'success', 3000);
 }
 

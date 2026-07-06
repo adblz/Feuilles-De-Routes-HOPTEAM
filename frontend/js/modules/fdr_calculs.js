@@ -20,6 +20,18 @@ export function seuilJour() {
     return 8 * 60;
 }
 
+// Durée du rappel en minutes (lu directement dans le DOM pour éviter
+// un import circulaire avec fdr_form.js). 0 si non rempli ou incohérent.
+function dureeRappel() {
+    const rd = document.getElementById('rappel-debut')?.value;
+    const rf = document.getElementById('rappel-fin')?.value;
+    if (!rd || !rf) return 0;
+    const [rdH, rdM] = rd.split(':').map(Number);
+    const [rfH, rfM] = rf.split(':').map(Number);
+    const min = (rfH * 60 + rfM) - (rdH * 60 + rdM);
+    return min > 0 ? min : 0;
+}
+
 export function calcHeures() {
     const debut = document.getElementById('heure-debut').value;
     const fin   = document.getElementById('heure-fin').value;
@@ -39,6 +51,10 @@ export function calcHeures() {
 
     let totalMin = (fH * 60 + fM) - (dH * 60 + dM) - repas - 60;
     if (totalMin < 0) totalMin = 0;
+
+    // Rappel / sortie supplémentaire : on ajoute la 2ᵉ plage horaire.
+    // Le « trou » entre la journée et le rappel n'est jamais saisi, donc jamais compté.
+    totalMin += dureeRappel();
 
     document.getElementById('heures-travail').value = affH(totalMin);
     if (!suppManuel) {

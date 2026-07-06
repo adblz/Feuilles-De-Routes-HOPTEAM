@@ -78,7 +78,11 @@
     <!-- Carnet du mois -->
     <div class="card">
         <p class="dash-eyebrow">Carnet de route</p>
-        <h2 id="dash-cal-titre">…</h2>
+        <div class="dash-cal-nav">
+            <button class="btn-cal-nav" id="btn-cal-prev" title="Mois précédent">&#8249;</button>
+            <h2 id="dash-cal-titre">…</h2>
+            <button class="btn-cal-nav btn-cal-nav-next" id="btn-cal-next" title="Mois suivant" disabled>&#8250;</button>
+        </div>
         <div class="dash-cal-weekdays">
             <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
         </div>
@@ -177,6 +181,28 @@
             <div class="form-group" id="heures-nuit-group" style="display:none;">
                 <label>Heures de nuit (21h–6h)</label>
                 <input type="text" id="heures-nuit" class="auto-field" readonly placeholder="—">
+            </div>
+        </div>
+
+        <!-- Rappel / sortie supplémentaire (hors grille pour ne pas être contraint en hauteur) -->
+        <div class="rappel-zone">
+            <button type="button" class="btn-add-rappel" id="btn-rappel">&#9660; Sortie supplémentaire</button>
+            <div class="rappel-block hidden" id="bloc-rappel">
+                <div class="rappel-block-header">
+                    <span class="rappel-block-title">Sortie supplémentaire</span>
+                    <button type="button" class="btn-rappel-remove" id="btn-rappel-remove">&#10005; Retirer</button>
+                </div>
+                <p class="rappel-block-hint">Horaires de la sortie en plus, après votre journée. Le temps mort entre les deux n'est pas compté.</p>
+                <div class="form-grid form-grid-2col">
+                    <div class="form-group">
+                        <label>Heure de départ</label>
+                        <input type="time" id="rappel-debut">
+                    </div>
+                    <div class="form-group">
+                        <label>Heure de retour</label>
+                        <input type="time" id="rappel-fin">
+                    </div>
+                </div>
             </div>
         </div>
     </div>

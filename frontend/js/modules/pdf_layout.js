@@ -32,6 +32,18 @@ export function construirePDF() {
                     ${item.details ? `<div class="pdf-details-row"><div class="lbl">Détails</div>${item.details}</div>` : ''}
                 </div>
             </div>`;
+        } else if (item.kind === 'rappel') {
+            return `
+            <div class="pdf-pause" style="background:#eafaf6;border-color:#9fd8cd;">
+                <div class="pdf-pause-head">
+                    <span>Rappel / sortie supplémentaire</span>
+                    <span>${item.debut || '—'} &rarr; ${item.fin || '—'}</span>
+                </div>
+                <div class="pdf-pause-body">
+                    <div class="pdf-field"><div class="lbl">Départ</div><div class="val">${item.debut || '—'}</div></div>
+                    <div class="pdf-field"><div class="lbl">Retour</div><div class="val">${item.fin || '—'}</div></div>
+                </div>
+            </div>`;
         } else {
             return `
             <div class="pdf-pause">
