@@ -144,7 +144,7 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         pdf_data:       pdfUrl,
     }, true);
 
-    if (!elements.length) return;
+    if (!elements.length) return feuille.id;
 
     const rows = elements.map((el, i) => ({
         feuille_id:    feuille.id,
@@ -165,4 +165,5 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
     }));
 
     await dbPost('interventions', rows);
+    return feuille.id;
 }

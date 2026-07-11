@@ -2,7 +2,7 @@ import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
 import { cfg, lireTousLesElements, effacerBrouillon } from './fdr.js';
 import { sauvegarderEnBase } from './db.js';
 import { memoriserValeurs } from './autocomplete.js';
-import { afficherPdfBlob } from './pdfviewer.js';
+import { afficherResumeFeuille } from './resume.js';
 import { preparerPdfElement, nomFichierPdf } from './pdf_layout.js';
 
 // Re-exports pour api.js et tout autre fichier qui les importe depuis pdf.js
@@ -26,14 +26,13 @@ export function genererPDF() {
                 .outputPdf('blob')
                 .then(async (blob) => {
                     nettoyer();
-                    afficherPdfBlob(blob);
 
                     const elements = lireTousLesElements();
                     memoriserValeurs(elements);
 
                     setBusy(true, 'Enregistrement sur le cloud…');
                     try {
-                        await sauvegarderEnBase({
+                        const feuilleId = await sauvegarderEnBase({
                             date:          document.getElementById('date').value,
                             tech:          document.getElementById('technicien').value || '',
                             company:       cfg.company,
@@ -50,13 +49,13 @@ export function genererPDF() {
                             elements,
                         });
                         setBusy(false);
-                        showToast('PDF enregistré dans l\'historique', 'success', 5000);
                         effacerBrouillon(document.getElementById('date').value);
                         document.dispatchEvent(new CustomEvent('feuille:enregistree'));
+                        await afficherResumeFeuille(feuilleId);
                     } catch (e) {
                         console.warn('Supabase save failed:', e);
                         setBusy(false);
-                        showToast('PDF affiché, mais l\'enregistrement a échoué : ' + (e?.message || e), 'warn', 9000);
+                        showToast('L\'enregistrement a échoué : ' + (e?.message || e), 'warn', 9000);
                     }
 
                     resolve(nomFichierPdf());

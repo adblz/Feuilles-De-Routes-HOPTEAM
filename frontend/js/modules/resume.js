@@ -1,5 +1,4 @@
 import { chargerDetailFeuille, chargerPdfFeuille } from './db.js';
-import { afficherPdfUrl } from './pdfviewer.js';
 import { remplirFormulaireDepuisFeuille } from './fdr_charger.js';
 import { showToast, escHtml, hhmm } from '../utils/utils.js';
 
@@ -19,11 +18,14 @@ export async function afficherResumeFeuille(feuilleId) {
         document.dispatchEvent(new CustomEvent('nav:resume'));
 
         document.getElementById('btn-resume-pdf')?.addEventListener('click', async () => {
+            const win = window.open('', '_blank');
             try {
                 const url = await chargerPdfFeuille(feuilleId);
-                if (!url) { showToast('Aucun PDF disponible', 'warn'); return; }
-                await afficherPdfUrl(url);
+                if (!url) { win?.close(); showToast('Aucun PDF disponible', 'warn'); return; }
+                if (win) win.location.href = url;
+                else window.open(url, '_blank');
             } catch {
+                win?.close();
                 showToast('Impossible de charger le PDF', 'error');
             }
         });
