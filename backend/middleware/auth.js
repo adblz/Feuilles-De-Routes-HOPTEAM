@@ -19,13 +19,4 @@ async function verifierUtilisateur(token) {
     }
 }
 
-// Middleware Express : exige un utilisateur connecté (n'importe quel rôle).
-async function requireAuth(req, res, next) {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const user = await verifierUtilisateur(token);
-    if (!user) return res.status(401).json({ error: 'Non authentifié' });
-    req.user = user;
-    next();
-}
-
-module.exports = { verifierUtilisateur, requireAuth };
+module.exports = { verifierUtilisateur };

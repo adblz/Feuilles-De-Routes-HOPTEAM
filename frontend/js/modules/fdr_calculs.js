@@ -1,4 +1,4 @@
-import { affH } from '../utils/utils.js';
+import { affH, normaliserSupp, showToast } from '../utils/utils.js';
 import { cfg } from './fdr_config.js';
 import { calcHeuresNuit } from './heures_calculs.js';
 
@@ -87,6 +87,20 @@ export function onSuppInput() {
         input.classList.remove('auto-field');
         input.classList.add('auto-field-manual');
         document.getElementById('btn-supp-auto').style.display = 'block';
+    }
+}
+
+// Vérifie la saisie manuelle à la sortie du champ : corrige ce qui est
+// corrigeable, sinon revient au calcul automatique avec un message.
+export function validerSuppInput() {
+    if (!suppManuel) return;
+    const input = document.getElementById('heures-supp');
+    const res = normaliserSupp(input.value);
+    if (res.ok) {
+        input.value = res.value;
+    } else {
+        showToast('Heures supp. non valides — retour au calcul automatique (format : 3h00)', 'warn', 4000);
+        resetSuppAuto();
     }
 }
 

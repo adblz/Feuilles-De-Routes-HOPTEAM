@@ -3,14 +3,14 @@
 feuille-de-route
 ├─ backend
 │  ├─ controllers
-│  │  └─ emailController.js
+│  │  └─ adminController.js   (création de comptes via clé service_role)
+│  ├─ middleware
+│  │  └─ auth.js              (vérification du token Supabase)
 │  ├─ index.js
 │  ├─ package-lock.json
 │  ├─ package.json
-│  ├─ routes
-│  │  └─ email.js
-│  └─ services
-│     └─ sendgrid.js
+│  └─ routes
+│     └─ admin.js
 ├─ CLAUDE.md
 ├─ demarrer-serveur.bat
 ├─ exemple de design
@@ -27,7 +27,7 @@ feuille-de-route
 │  ├─ index.html
 │  ├─ js
 │  │  ├─ api
-│  │  │  └─ api.js
+│  │  │  └─ admin_api.js
 │  │  ├─ login.js
 │  │  ├─ main.js
 │  │  ├─ modules

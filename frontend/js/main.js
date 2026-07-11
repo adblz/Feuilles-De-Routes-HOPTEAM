@@ -1,5 +1,5 @@
 import {
-    cfg, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto,
+    cfg, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto, validerSuppInput,
     ajouterIntervention, ajouterPause, sauvegarderBrouillon,
     afficherBlocRappel, viderRappel,
 } from './modules/fdr.js';
@@ -13,7 +13,6 @@ import { genererPDF } from './modules/pdf.js';
 import { initDashboard, afficherDashboard } from './modules/dashboard.js';
 import { initToolbar } from './modules/toolbar.js';
 import { fermerPdfViewer } from './modules/pdfviewer.js';
-import { envoyerMail } from './api/api.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession } from './modules/auth.js';
 import { chargerContratProfil, sauvegarderContratProfil } from './modules/db.js';
 import { showToast, scrollVersCarte, attachPasswordToggle } from './utils/utils.js';
@@ -60,6 +59,10 @@ function initApp(user, nomProfil) {
     });
     document.getElementById('heures-supp').addEventListener('input', () => {
         onSuppInput();
+        sauvegarderBrouillon();
+    });
+    document.getElementById('heures-supp').addEventListener('blur', () => {
+        validerSuppInput();
         sauvegarderBrouillon();
     });
     document.getElementById('btn-supp-auto').addEventListener('click', resetSuppAuto);
@@ -111,7 +114,6 @@ function initApp(user, nomProfil) {
     });
 
     document.getElementById('btn-pdf').addEventListener('click', genererPDF);
-    document.getElementById('btn-email').addEventListener('click', envoyerMail);
 
     // ── Modal historique ───────────────────────────────────────
 

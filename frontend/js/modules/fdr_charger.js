@@ -1,4 +1,4 @@
-import { calcHeures } from './fdr_calculs.js';
+import { calcHeures, setSuppManuel } from './fdr_calculs.js';
 import {
     ajouterIntervention, ajouterPause, remplirRappel,
     viderInterventions, resetSuppState,
@@ -42,6 +42,18 @@ export function remplirFormulaireDepuisFeuille(feuille, elements) {
 
     // Calcul après remplissage pour inclure l'éventuel rappel.
     if (feuille.heure_debut && feuille.heure_fin) calcHeures();
+
+    // Restaure une éventuelle correction manuelle des heures supp
+    // (sinon le calcul auto ci-dessus écraserait la valeur enregistrée).
+    const inputSupp = document.getElementById('heures-supp');
+    const stocke = feuille.heures_supp || '';
+    if (stocke && stocke !== inputSupp.value) {
+        inputSupp.value = stocke;
+        setSuppManuel(true);
+        inputSupp.classList.remove('auto-field');
+        inputSupp.classList.add('auto-field-manual');
+        document.getElementById('btn-supp-auto').style.display = 'block';
+    }
 
     sauvegarderBrouillon();
 }

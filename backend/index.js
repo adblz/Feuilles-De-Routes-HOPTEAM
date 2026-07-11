@@ -1,8 +1,6 @@
 const express      = require('express');
 const cors         = require('cors');
-const multer       = require('multer');
 const path         = require('path');
-const emailRoutes  = require('./routes/email');
 const adminRoutes  = require('./routes/admin');
 
 const app = express();
@@ -43,17 +41,11 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-app.use('/', emailRoutes);
+// Le backend sert uniquement à la création de comptes (page Admin).
 app.use('/admin', adminRoutes);
 
-// Gestion propre des erreurs d'upload (fichier trop volumineux, etc.).
+// Gestion propre des erreurs.
 app.use((err, req, res, next) => {
-    if (err instanceof multer.MulterError) {
-        const msg = err.code === 'LIMIT_FILE_SIZE'
-            ? 'Fichier trop volumineux (10 Mo maximum).'
-            : 'Erreur lors de l\'envoi du fichier.';
-        return res.status(413).json({ error: msg });
-    }
     if (err && err.message === 'CORS refusé') {
         return res.status(403).json({ error: 'Origine non autorisée.' });
     }
@@ -61,10 +53,10 @@ app.use((err, req, res, next) => {
     return res.status(500).json({ error: 'Erreur serveur.' });
 });
 
-// Avertissement si des variables d'environnement essentielles manquent.
-['SUPABASE_SERVICE_KEY', 'SENDGRID_API_KEY', 'SENDGRID_SENDER_EMAIL'].forEach(v => {
-    if (!process.env[v]) console.warn(`⚠️  Variable d'environnement manquante : ${v}`);
-});
+// Avertissement si la variable essentielle à la création de comptes manque.
+if (!process.env.SUPABASE_SERVICE_KEY) {
+    console.warn("⚠️  Variable d'environnement manquante : SUPABASE_SERVICE_KEY");
+}
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));

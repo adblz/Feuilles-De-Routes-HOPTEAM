@@ -40,7 +40,7 @@ Application web sans framework, vanilla HTML / CSS / JS avec modules ES natifs. 
 
 **Services externes :**
 - **Supabase** : authentification + base de données + stockage PDF. URL et clé anon dans `frontend/js/modules/config.js`
-- **Backend Express** (Render) : `https://feuilles-de-routes-hopteam.onrender.com` — sert uniquement à envoyer les emails via `/send-email` (multer + SendGrid)
+- **Backend Express** (Render) : `https://feuilles-de-routes-hopteam.onrender.com` — sert uniquement à créer des comptes utilisateurs via `/admin/create-user` (utilise la clé `service_role` Supabase). La fonction d'envoi d'email a été retirée (pas de service d'email configuré).
 - **html2pdf.js** : chargé depuis CDN dans `index.html`, utilisé par `pdf.js`
 
 **Tables Supabase :**
@@ -55,7 +55,7 @@ frontend/js/
 ├── main.js              ← point d'entrée technicien (events DOM, init app)
 ├── login.js             ← point d'entrée login
 ├── api/
-│   └── api.js           ← envoi email + sauvegarde Supabase après envoi
+│   └── admin_api.js     ← appels backend (création de comptes) + requêtes admin Supabase
 ├── modules/
 │   ├── config.js        ← URL et clé Supabase
 │   ├── auth.js          ← session localStorage, connexion/déconnexion Supabase Auth
@@ -93,7 +93,7 @@ frontend/js/
 - Maximum 150 lignes par fichier JS — si dépassement, créer un nouveau fichier
 - Un fichier = une seule responsabilité
 - Jamais de style inline ni de script inline dans le HTML
-- Séparer : logique métier → `modules/`, appels Supabase → `db.js` ou `db_responsable.js`, appels backend → `api/api.js`
+- Séparer : logique métier → `modules/`, appels Supabase → `db.js` ou `db_responsable.js`, appels backend → `api/admin_api.js`
 - Les fichiers "barrel" (`fdr.js`, `dashboard.js`, `ui.js`) ne contiennent que des réexports — ne pas y mettre de logique
 
 ## Calcul des heures

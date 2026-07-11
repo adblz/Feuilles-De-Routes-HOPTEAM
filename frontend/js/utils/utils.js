@@ -21,8 +21,8 @@ export function validerFormulaire() {
 export function setBusy(busy, msg = 'Génération du PDF en cours…') {
     document.getElementById('loading-overlay').classList.toggle('visible', busy);
     document.getElementById('loading-msg').textContent = msg;
-    document.getElementById('btn-pdf').disabled   = busy;
-    document.getElementById('btn-email').disabled = busy;
+    const btnPdf = document.getElementById('btn-pdf');
+    if (btnPdf) btnPdf.disabled = busy;
 }
 
 export function parseDuree(str) {
@@ -49,6 +49,18 @@ export function hhmm(t) {
 
 export function affH(m) {
     return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
+}
+
+// Normalise une saisie d'heures supp au format « XhMM ».
+// Accepte « 3 », « 3h », « 3h5 », « 03h00 », « 3:00 ». Renvoie { ok, value }.
+export function normaliserSupp(str) {
+    const s = (str || '').trim().toLowerCase();
+    if (!s) return { ok: true, value: '0h00' };
+    const m = s.match(/^(\d{1,2})(?:\s*[h:]\s*(\d{1,2}))?$/);
+    if (!m) return { ok: false };
+    const min = m[2] ? parseInt(m[2], 10) : 0;
+    if (min > 59) return { ok: false };
+    return { ok: true, value: affH(parseInt(m[1], 10) * 60 + min) };
 }
 
 // Neutralise les caractères spéciaux avant insertion dans du HTML (anti-XSS).

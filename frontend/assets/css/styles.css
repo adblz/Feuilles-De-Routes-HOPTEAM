@@ -541,17 +541,6 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .btn-pdf:active { transform: scale(0.99); }
 .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-email {
-    flex: 1; min-width: 200px; padding: 15px;
-    background: linear-gradient(90deg, var(--teal), #379b8c);
-    color: white; border: none; border-radius: 16px;
-    font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s;
-    box-shadow: 0 14px 24px -12px rgba(46,128,116,0.55);
-}
-.btn-email:hover { opacity: 0.92; }
-.btn-email:active { transform: scale(0.99); }
-.btn-email:disabled { opacity: 0.5; cursor: not-allowed; }
-
 
 /* ════════ Dashboard ════════ */
 
@@ -1218,10 +1207,10 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
         z-index: 100;
         margin: 0;
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 8px;
     }
-    .btn-pdf, .btn-email { min-width: unset; padding: 13px 8px; font-size: 14px; }
+    .btn-pdf { min-width: unset; padding: 13px 8px; font-size: 14px; }
 
     /* Modal bottom sheet */
     .modal-overlay { align-items: flex-end; }
