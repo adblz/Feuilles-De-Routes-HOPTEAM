@@ -1,3 +1,5 @@
+import { showToast } from '../utils/utils.js';
+
 let _onModifier = null;
 let _onCreer    = null;
 let _profilMap  = {};
@@ -87,7 +89,7 @@ async function soumettreCreer() {
     const emailResp = document.getElementById('form-creer-email-resp').value.trim();
 
     if (!email || !nom || !password) {
-        alert('Veuillez remplir tous les champs obligatoires (*)');
+        showToast('Veuillez remplir tous les champs obligatoires (*).', 'warn');
         return;
     }
     fermerModal('modal-creer');
@@ -102,7 +104,7 @@ async function soumettreModifier() {
     const company          = document.getElementById('modifier-company').value.trim();
     const email_responsable = document.getElementById('modifier-email-resp').value.trim();
 
-    if (!nom) { alert('Le nom est obligatoire'); return; }
+    if (!nom) { showToast('Le nom est obligatoire.', 'warn'); return; }
     fermerModal('modal-modifier');
     if (_onModifier) await _onModifier(id, { nom, contrat, role, company, email_responsable });
 }

@@ -213,6 +213,22 @@
     margin-bottom: 20px;
 }
 
+.heures-periode-select-row {
+    margin-bottom: 16px;
+}
+
+.heures-periode-select {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    color: var(--cream);
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 600;
+}
+
 .heures-period-row {
     display: flex;
     align-items: center;
@@ -236,51 +252,172 @@
     font-size: 16px;
 }
 
-.heures-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    color: var(--cream);
+/* ── Cartes ─────────────────────────────────────────── */
+.heures-carte {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
 }
 
-.heures-table thead th {
-    text-align: left;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
+.heures-label {
     color: var(--muted);
-    padding: 0 8px 10px 0;
-    border-bottom: 1px solid var(--hairline);
+    font-size: 12px;
+    font-weight: 400;
 }
 
-.heures-table tbody td {
-    padding: 10px 8px 10px 0;
-    border-bottom: 1px solid var(--hairline);
-    vertical-align: middle;
+.heures-periode-range {
+    font-size: 11px;
+    color: var(--muted);
+    opacity: .8;
+    margin-left: 4px;
+    white-space: nowrap;
 }
 
-.heures-semaine {
+/* ── Carte résumé du mois ───────────────────────────── */
+.heures-resume-ligne {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.heures-align-droite { text-align: right; }
+
+.heures-hero {
+    color: var(--cream);
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.1;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.heures-secondaire {
     color: var(--paper);
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.heures-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.heures-stat {
+    flex: 1 1 0;
+    min-width: 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+
+.heures-stat-label { font-size: 12px; }
+.heures-stat-val {
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.heures-stat.stat-25        { background: rgba(226,135,46,.15); color: var(--amber); }
+.heures-stat.stat-50        { background: rgba(248,113,113,.15); color: #f87171; }
+.heures-stat.stat-nuit      { background: rgba(167,139,250,.15); color: #a78bfa; }
+.heures-stat.stat-astreinte { background: rgba(34,197,94,.15);  color: #4ade80; }
+
+/* ── Légende ────────────────────────────────────────── */
+.heures-legende {
+    display: flex;
+    gap: 16px;
+    margin: 4px 2px 12px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.heures-puce {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 2px;
+}
+
+.heures-puce.puce-base { background: rgba(255,255,255,.18); }
+.heures-puce.puce-25   { background: var(--amber); }
+.heures-puce.puce-50   { background: #f87171; }
+
+/* ── Carte semaine ──────────────────────────────────── */
+.heures-semaine-carte.est-partielle { opacity: .85; }
+
+.heures-semaine-entete {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+
+.heures-semaine-label {
+    color: var(--cream);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.heures-semaine-jours {
+    color: var(--muted);
     font-size: 12px;
 }
 
-.heures-mono {
-    font-family: 'IBM Plex Mono', monospace;
+.heures-barre {
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: rgba(255,255,255,.06);
+}
+
+.heures-segment { height: 100%; }
+.heures-segment.seg-base { background: rgba(255,255,255,.18); }
+.heures-segment.seg-25   { background: var(--amber); }
+.heures-segment.seg-50   { background: #f87171; }
+
+.heures-semaine-pied {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 10px;
     font-size: 13px;
+    color: var(--paper);
+    font-family: 'IBM Plex Mono', monospace;
 }
 
-.heures-25 { color: var(--amber); }
-.heures-50 { color: #f87171; }
+.heures-fort { color: var(--cream); font-weight: 500; }
+.heures-muet { color: var(--muted); font-family: 'IBM Plex Sans', sans-serif; }
 
-.heures-total td {
-    font-weight: 700;
-    color: var(--cream);
-    border-top: 2px solid var(--hairline);
-    border-bottom: none;
-    padding-top: 12px;
+/* ── Badges ─────────────────────────────────────────── */
+.heures-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
 }
 
+.heures-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.heures-badge.badge-25        { background: rgba(226,135,46,.15); color: var(--amber); }
+.heures-badge.badge-50        { background: rgba(248,113,113,.15); color: #f87171; }
+.heures-badge.badge-nuit      { background: rgba(167,139,250,.15); color: #a78bfa; }
+.heures-badge.badge-astreinte { background: rgba(34,197,94,.15);  color: #4ade80; }
+
+/* ── Messages ───────────────────────────────────────── */
 .heures-loading, .heures-vide, .heures-error {
     color: var(--muted);
     font-size: 14px;

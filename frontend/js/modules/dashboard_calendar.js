@@ -95,16 +95,16 @@ export async function rendreCalendrierMois() {
         const cell = document.createElement('div');
         let cls = 'dash-day';
 
-        if (isWeekend)        { cls += ' dash-day-off'; }
-        else if (isFuture)    { cls += ' dash-day-future'; }
-        else if (isFilled)    { cls += ' dash-day-filled'; if (isToday) cls += ' dash-day-today'; }
-        else if (hasBrouillon){ cls += ' dash-day-pending'; manquants.push({ key, type: 'brouillon' }); }
-        else                  { cls += ' dash-day-missing'; manquants.push({ key, type: 'missing' }); }
+        if (isFilled)          { cls += ' dash-day-filled'; if (isToday) cls += ' dash-day-today'; }
+        else if (hasBrouillon) { cls += ' dash-day-pending'; manquants.push({ key, type: 'brouillon' }); }
+        else if (isWeekend)    { cls += ' dash-day-off'; }
+        else if (isFuture)     { cls += ' dash-day-future'; }
+        else                   { cls += ' dash-day-missing'; manquants.push({ key, type: 'missing' }); }
 
         let dotClass = '';
-        if (isWeekend)         dotClass = 'ldot ldot-off';
-        else if (isFilled)     dotClass = 'ldot ldot-filled';
+        if (isFilled)          dotClass = 'ldot ldot-filled';
         else if (hasBrouillon) dotClass = 'ldot ldot-pending';
+        else if (isWeekend)    dotClass = 'ldot ldot-off';
         else if (!isFuture)    dotClass = 'ldot ldot-missing';
 
         cell.className = cls;

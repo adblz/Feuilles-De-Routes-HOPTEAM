@@ -16,7 +16,7 @@ import { fermerPdfViewer } from './modules/pdfviewer.js';
 import { envoyerMail } from './api/api.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession } from './modules/auth.js';
 import { chargerContratProfil, sauvegarderContratProfil } from './modules/db.js';
-import { showToast, scrollVersCarte } from './utils/utils.js';
+import { showToast, scrollVersCarte, attachPasswordToggle } from './utils/utils.js';
 
 // ── Initialisation de l'app après auth ────────────────────────
 
@@ -51,6 +51,10 @@ function initApp(user, nomProfil) {
         sauvegarderBrouillon();
     });
     document.getElementById('repas').addEventListener('change', () => {
+        calcHeures();
+        sauvegarderBrouillon();
+    });
+    document.getElementById('astreinte-jour').addEventListener('change', () => {
         calcHeures();
         sauvegarderBrouillon();
     });
@@ -91,11 +95,17 @@ function initApp(user, nomProfil) {
     document.getElementById('rappel-fin').addEventListener('input', () => {
         const rDebut = document.getElementById('rappel-debut').value;
         const rFin   = document.getElementById('rappel-fin').value;
-        if (rDebut && rFin && rFin <= rDebut) {
-            showToast('L\'heure de retour doit être après l\'heure de départ', 'warn', 3500);
+        // Un retour « plus petit » que le départ = passage de minuit (ex. 21h → 00h45), c'est valide.
+        // On ne bloque que si les deux heures sont identiques (durée nulle).
+        if (rDebut && rFin && rFin === rDebut) {
+            showToast('Le retour ne peut pas être identique au départ', 'warn', 3500);
             document.getElementById('rappel-fin').value = '';
             return;
         }
+        calcHeures();
+        sauvegarderBrouillon();
+    });
+    document.getElementById('rappel-astreinte').addEventListener('change', () => {
         calcHeures();
         sauvegarderBrouillon();
     });
@@ -141,15 +151,24 @@ function initApp(user, nomProfil) {
         location.reload(true);
     });
 
+    attachPasswordToggle('s-new-password', 'toggle-new-password');
+    attachPasswordToggle('s-confirm-password', 'toggle-confirm-password');
+
     document.getElementById('btn-change-password').addEventListener('click', async () => {
         const newPass = document.getElementById('s-new-password').value;
+        const confirm = document.getElementById('s-confirm-password').value;
         if (!newPass || newPass.length < 6) {
             showToast('Le mot de passe doit faire au moins 6 caractères', 'error');
+            return;
+        }
+        if (newPass !== confirm) {
+            showToast('Les deux mots de passe ne sont pas identiques', 'error');
             return;
         }
         try {
             await changerMotDePasse(newPass);
             document.getElementById('s-new-password').value = '';
+            document.getElementById('s-confirm-password').value = '';
             showToast('Mot de passe changé avec succès', 'success', 3000);
         } catch (err) {
             showToast('Erreur : ' + err.message, 'error');

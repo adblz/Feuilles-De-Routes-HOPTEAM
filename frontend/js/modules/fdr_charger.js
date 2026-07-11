@@ -4,6 +4,7 @@ import {
     viderInterventions, resetSuppState,
 } from './fdr_form.js';
 import { sauvegarderBrouillon } from './fdr_brouillon.js';
+import { hhmm } from '../utils/utils.js';
 
 // Remplit le formulaire à partir d'une feuille Supabase + ses éléments.
 // Partagé par la restauration depuis l'historique et le bouton « Modifier » du résumé.
@@ -12,15 +13,16 @@ export function remplirFormulaireDepuisFeuille(feuille, elements) {
     resetSuppState();
 
     document.getElementById('date').value        = feuille.date        || '';
-    document.getElementById('heure-debut').value = feuille.heure_debut || '';
-    document.getElementById('heure-fin').value   = feuille.heure_fin   || '';
+    document.getElementById('heure-debut').value = hhmm(feuille.heure_debut) || '';
+    document.getElementById('heure-fin').value   = hhmm(feuille.heure_fin)   || '';
     document.getElementById('repas').value        = feuille.repas_min ? String(feuille.repas_min) : '';
+    document.getElementById('astreinte-jour').checked = !!feuille.astreinte;
 
     (elements || []).forEach(el => {
         if (el.kind === 'intervention') {
             ajouterIntervention({
-                arrivee: el.heure_arrivee || '',
-                depart:  el.heure_depart  || '',
+                arrivee: hhmm(el.heure_arrivee) || '',
+                depart:  hhmm(el.heure_depart)  || '',
                 client:  el.client        || '',
                 ville:   el.ville         || '',
                 typeInt: el.type_int      || '',
@@ -29,9 +31,9 @@ export function remplirFormulaireDepuisFeuille(feuille, elements) {
                 details: el.details       || '',
             });
         } else if (el.kind === 'pause') {
-            ajouterPause({ debut: el.pause_debut || '', fin: el.pause_fin || '' });
+            ajouterPause({ debut: hhmm(el.pause_debut) || '', fin: hhmm(el.pause_fin) || '' });
         } else if (el.kind === 'rappel') {
-            remplirRappel({ debut: el.pause_debut || '', fin: el.pause_fin || '' });
+            remplirRappel({ debut: hhmm(el.pause_debut) || '', fin: hhmm(el.pause_fin) || '', astreinte: el.astreinte });
         }
     });
 

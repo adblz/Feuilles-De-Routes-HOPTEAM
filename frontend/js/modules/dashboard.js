@@ -6,7 +6,6 @@ import { effacerBrouillon } from './fdr.js';
 import {
     rendreHeuresSupp, majBrouillonCard,
     toggleBrouillonList, toggleActionList, _rendreActionList,
-    getSuppDebut, getSuppFin, setSuppDebut, setSuppFin,
     getLastManquants, getActionListExpanded, setActionListExpanded,
 } from './dashboard_stats.js';
 
@@ -71,38 +70,6 @@ export function initDashboard(nomTech) {
         const company = cfg.company || '';
         subEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1) + (company ? ` · ${company}` : '');
     }
-
-    document.getElementById('btn-dash-supp-edit').addEventListener('click', () => {
-        const panel  = document.getElementById('dash-supp-edit');
-        const btn    = document.getElementById('btn-dash-supp-edit');
-        const isOpen = !panel.classList.contains('hidden');
-        panel.classList.toggle('hidden');
-        btn.textContent = isOpen ? '✎ Modifier la période' : '✕ Annuler';
-        if (!isOpen) {
-            const today = aujourdhui();
-            document.getElementById('supp-inline-debut').value = getSuppDebut() || today.slice(0, 8) + '01';
-            document.getElementById('supp-inline-fin').value   = getSuppFin()   || today;
-        }
-    });
-
-    document.getElementById('btn-supp-inline-calc').addEventListener('click', () => {
-        const debut = document.getElementById('supp-inline-debut').value;
-        const fin   = document.getElementById('supp-inline-fin').value;
-        if (!debut || !fin || debut > fin) return;
-        setSuppDebut(debut);
-        setSuppFin(fin);
-        document.getElementById('dash-supp-edit').classList.add('hidden');
-        document.getElementById('btn-dash-supp-edit').textContent = '✎ Modifier la période';
-        rendreHeuresSupp();
-    });
-
-    document.getElementById('btn-dash-supp-reset').addEventListener('click', () => {
-        setSuppDebut(null);
-        setSuppFin(null);
-        document.getElementById('dash-supp-edit').classList.add('hidden');
-        document.getElementById('btn-dash-supp-edit').textContent = '✎ Modifier la période';
-        rendreHeuresSupp();
-    });
 
     document.getElementById('dash-brouillon-header').addEventListener('click', () => {
         const dates = [...getBrouillonsDates()];

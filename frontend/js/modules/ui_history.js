@@ -1,4 +1,4 @@
-import { showToast } from '../utils/utils.js';
+import { showToast, hhmm, escHtml } from '../utils/utils.js';
 import { remplirFormulaireDepuisFeuille } from './fdr_charger.js';
 import { chargerHistorique, chargerDetailFeuille, supprimerFeuille, chargerPdfFeuille } from './db.js';
 import { afficherPdfUrl } from './pdfviewer.js';
@@ -71,7 +71,7 @@ export async function renderListeHistorique() {
                 <div class="histo-entry" data-entry-id="${entry.id}">
                     <div class="histo-entry-main">
                         <div class="histo-entry-date">${dateAff}</div>
-                        <div class="histo-entry-tech">${entry.tech || '—'}</div>
+                        <div class="histo-entry-tech">${escHtml(entry.tech) || '—'}</div>
                         <div class="histo-entry-meta">enregistré à ${heureAff}</div>
                     </div>
                     <span class="histo-badge ${badgeClass}">${badgeLabel}</span>
@@ -105,6 +105,7 @@ export async function voirDetailHistorique(id) {
 
     const ints   = elements.filter(e => e.kind === 'intervention');
     const pauses = elements.filter(e => e.kind === 'pause');
+    const rappel = elements.find(e => e.kind === 'rappel');
 
     let intNum = 0;
     const intsHtml = ints.length
@@ -112,14 +113,14 @@ export async function voirDetailHistorique(id) {
             intNum++;
             return `
             <div class="histo-int-item">
-                <div class="histo-int-item-title">#${intNum} — ${i.client || '—'}${i.ville ? ' (' + i.ville + ')' : ''}</div>
-                <div class="histo-int-item-sub">${i.heure_arrivee || '—'} → ${i.heure_depart || '—'}${i.type_int ? ' &bull; ' + i.type_int : ''}${i.details ? ' &bull; ' + i.details.slice(0, 60) + (i.details.length > 60 ? '…' : '') : ''}</div>
+                <div class="histo-int-item-title">#${intNum} — ${escHtml(i.client) || '—'}${i.ville ? ' (' + escHtml(i.ville) + ')' : ''}</div>
+                <div class="histo-int-item-sub">${hhmm(i.heure_arrivee) || '—'} → ${hhmm(i.heure_depart) || '—'}${i.type_int ? ' &bull; ' + escHtml(i.type_int) : ''}${i.details ? ' &bull; ' + escHtml(i.details.slice(0, 60)) + (i.details.length > 60 ? '…' : '') : ''}</div>
             </div>`;
         }).join('')
         : '<div style="color:#a0aec0;font-size:13px;">Aucune intervention</div>';
 
     const pausesHtml = pauses.length
-        ? pauses.map(p => `<div class="histo-int-item"><span style="color:#c05621;">⏸</span> ${p.pause_debut || '—'} → ${p.pause_fin || '—'}</div>`).join('')
+        ? pauses.map(p => `<div class="histo-int-item"><span style="color:#c05621;">⏸</span> ${hhmm(p.pause_debut) || '—'} → ${hhmm(p.pause_fin) || '—'}</div>`).join('')
         : '';
 
     body.innerHTML = `
@@ -128,9 +129,11 @@ export async function voirDetailHistorique(id) {
         <div class="histo-detail-section" style="margin-top:12px;">
             <div class="lbl">Informations générales</div>
             <div class="histo-detail-row"><span>Date</span><span><strong>${dateAff}</strong></span></div>
-            <div class="histo-detail-row"><span>Technicien</span><span>${feuille.tech || '—'}</span></div>
-            <div class="histo-detail-row"><span>Début journée</span><span>${feuille.heure_debut || '—'}</span></div>
-            <div class="histo-detail-row"><span>Fin journée</span><span>${feuille.heure_fin || '—'}</span></div>
+            <div class="histo-detail-row"><span>Technicien</span><span>${escHtml(feuille.tech) || '—'}</span></div>
+            ${feuille.astreinte || (rappel && rappel.astreinte) ? `<div class="histo-detail-row"><span>Astreinte</span><span class="astreinte-badge">Oui</span></div>` : ''}
+            <div class="histo-detail-row"><span>Début journée</span><span>${hhmm(feuille.heure_debut) || '—'}</span></div>
+            <div class="histo-detail-row"><span>Fin journée</span><span>${hhmm(feuille.heure_fin) || '—'}</span></div>
+            ${rappel ? `<div class="histo-detail-row"><span>Sortie supplémentaire${rappel.astreinte ? ' (astreinte)' : ''}</span><span><strong>${hhmm(rappel.pause_debut) || '—'} → ${hhmm(rappel.pause_fin) || '—'}</strong></span></div>` : ''}
             <div class="histo-detail-row"><span>Pause repas</span><span>${feuille.repas_min ? feuille.repas_min + ' min' : '—'}</span></div>
             <div class="histo-detail-row"><span>Heures travaillées</span><span><strong>${feuille.heures_travail || '—'}</strong></span></div>
             ${feuille.heures_supp && feuille.heures_supp !== '0h00' ? `<div class="histo-detail-row"><span>Heures supp.</span><span style="color:#276749;font-weight:700;">${feuille.heures_supp}</span></div>` : ''}

@@ -10,8 +10,7 @@ export { preparerPdfElement, nomFichierPdf } from './pdf_layout.js';
 
 export function genererPDF() {
     if (typeof html2pdf === 'undefined') {
-        alert('La librairie html2pdf ne s\'est pas chargée.\n\n'
-            + 'Vérifiez votre connexion ou désactivez uBlock, puis rechargez la page (F5).');
+        showToast('La librairie PDF ne s\'est pas chargée. Vérifiez votre connexion ou désactivez uBlock, puis rechargez la page (F5).', 'error', 7000);
         return Promise.reject();
     }
 
@@ -44,6 +43,7 @@ export function genererPDF() {
                             repasMin:      document.getElementById('repas').value,
                             heuresTravail: document.getElementById('heures-travail').value,
                             heuresSupp:    document.getElementById('heures-supp').value,
+                            astreinte:     document.getElementById('astreinte-jour')?.checked,
                             mode:          'pdf',
                             pdfBlob:       blob,
                             pdfFileName:   nomFichierPdf(),
@@ -56,7 +56,7 @@ export function genererPDF() {
                     } catch (e) {
                         console.warn('Supabase save failed:', e);
                         setBusy(false);
-                        showToast('PDF affiché, mais l\'enregistrement a échoué', 'warn', 4000);
+                        showToast('PDF affiché, mais l\'enregistrement a échoué : ' + (e?.message || e), 'warn', 9000);
                     }
 
                     resolve(nomFichierPdf());
@@ -64,7 +64,7 @@ export function genererPDF() {
                 .catch(err => {
                     nettoyer();
                     setBusy(false);
-                    alert('Erreur lors de la génération du PDF :\n\n' + (err?.message || err));
+                    showToast('Erreur lors de la génération du PDF : ' + (err?.message || err), 'error', 8000);
                     reject(err);
                 });
         }, 250);

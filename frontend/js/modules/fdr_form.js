@@ -117,7 +117,14 @@ export function ajouterIntervention(data = {}) {
     });
 
     div.querySelectorAll('.uppercase-input').forEach(el => {
-        el.addEventListener('input', () => { el.value = el.value.toUpperCase(); });
+        // On n'écrit PAS en majuscules pendant la saisie : ça casse la dictée
+        // vocale du téléphone et fait sauter le curseur. L'affichage en
+        // majuscules est géré visuellement par le CSS (text-transform).
+        // On met la vraie valeur en majuscules une seule fois, à la sortie du champ.
+        el.addEventListener('blur', () => {
+            const majuscules = el.value.toUpperCase();
+            if (majuscules !== el.value) el.value = majuscules;
+        });
     });
 
     attachAutocomplete(document.getElementById(`i${n}-client`), CLIENTS_KEY);
@@ -257,7 +264,8 @@ export function lireTousLesElements() {
     // Rappel / sortie supplémentaire (bloc unique, horaires seuls)
     const rDebut = document.getElementById('rappel-debut')?.value || '';
     const rFin   = document.getElementById('rappel-fin')?.value   || '';
-    if (rDebut || rFin) items.push({ kind: 'rappel', debut: rDebut, fin: rFin });
+    const rAstr  = document.getElementById('rappel-astreinte')?.checked || false;
+    if (rDebut || rFin) items.push({ kind: 'rappel', debut: rDebut, fin: rFin, astreinte: rAstr });
 
     return items;
 }
@@ -274,8 +282,10 @@ export function afficherBlocRappel() {
 export function viderRappel() {
     const d = document.getElementById('rappel-debut');
     const f = document.getElementById('rappel-fin');
+    const a = document.getElementById('rappel-astreinte');
     if (d) d.value = '';
     if (f) f.value = '';
+    if (a) a.checked = false;
     document.getElementById('bloc-rappel')?.classList.add('hidden');
     document.getElementById('btn-rappel')?.classList.remove('hidden');
 }
@@ -283,8 +293,10 @@ export function viderRappel() {
 export function remplirRappel(data = {}) {
     const d = document.getElementById('rappel-debut');
     const f = document.getElementById('rappel-fin');
+    const a = document.getElementById('rappel-astreinte');
     if (d) d.value = data.debut || '';
     if (f) f.value = data.fin   || '';
+    if (a) a.checked = !!data.astreinte;
     if (data.debut || data.fin) afficherBlocRappel();
 }
 

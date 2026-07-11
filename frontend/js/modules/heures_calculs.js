@@ -1,20 +1,28 @@
-import { parseDuree, affH } from '../utils/utils.js';
+import { parseDuree } from '../utils/utils.js';
+
+// ── Barème heures supplémentaires (défaut légal — à vérifier convention 3044) ──
+const SEUIL_HEBDO_MIN = 35 * 60;   // au-delà de 35h/semaine = heures supplémentaires
+const PALIER_25_MIN   = 8 * 60;    // 8 premières heures supp à +25% (36e→43e), puis +50%
 
 // ── Heures de nuit (21h–6h) ────────────────────────────────────
+// Gère le passage de minuit et retire le trajet (30 min matin + 30 min soir)
+// pour ne compter que le temps de travail effectif.
 
-export function calcHeuresNuit(heureDebut, heureFin) {
+// trajet=true : retire 30 min matin + 30 min soir (journée normale).
+// trajet=false : compte toute la plage (ex. rappel / sortie de nuit).
+export function calcHeuresNuit(heureDebut, heureFin, trajet = true) {
     if (!heureDebut || !heureFin) return 0;
     const toMin = h => { const [hh, mm] = h.split(':').map(Number); return hh * 60 + mm; };
-    const debut = toMin(heureDebut);
-    const fin   = toMin(heureFin);
+    let debut = toMin(heureDebut);
+    let fin   = toMin(heureFin);
+    if (fin <= debut) fin += 1440;   // passage de minuit → fin le lendemain
+    const marge = trajet ? 30 : 0;
+    debut += marge;                  // ½h trajet matin non comptée
+    fin   -= marge;                  // ½h trajet soir non comptée
 
-    let nuit = 0;
-    // Segment après 21h00 (1260 min)
-    if (fin > 1260) nuit += fin - Math.max(debut, 1260);
-    // Segment avant 6h00 (360 min)
-    if (debut < 360) nuit += Math.min(fin, 360) - debut;
-
-    return Math.max(0, nuit);
+    // Nuit = 21h→6h. Deux fenêtres : minuit→6h (0–360) et 21h→6h du lendemain (1260–1800)
+    const chevauche = (a, b, c, d) => Math.max(0, Math.min(b, d) - Math.max(a, c));
+    return Math.max(0, chevauche(debut, fin, 0, 360) + chevauche(debut, fin, 1260, 1800));
 }
 
 // ── Calcul hebdomadaire ────────────────────────────────────────
@@ -36,14 +44,19 @@ function labelSemaine(dateStr) {
     lundi.setDate(d.getDate() - day + 1);
     const dimanche = new Date(lundi);
     dimanche.setDate(lundi.getDate() + 6);
-    const fmt = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-    return `${fmt(lundi)} – ${fmt(dimanche)}`;
+    const jour = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric' });
+    const full = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    // Même mois → « 6 – 12 juil. » ; sinon « 30 juin – 6 juil. »
+    return lundi.getMonth() === dimanche.getMonth()
+        ? `${jour(lundi)} – ${full(dimanche)}`
+        : `${full(lundi)} – ${full(dimanche)}`;
 }
 
-// feuilles : [{date, heures_supp, heure_debut, heure_fin}]
-// contrat  : '35' ou '39'
+// feuilles : [{date, heures_travail, heure_debut, heure_fin}]
+// Heures supp calculées sur le TOTAL HEBDOMADAIRE (au-delà de 35h), conforme
+// au Code du travail — indépendant du contrat 35h/39h.
 // Retourne un tableau trié par semaine avec les colonnes calculées.
-export function calcHebdomadaire(feuilles, contrat) {
+export function calcHebdomadaire(feuilles) {
     const groupes = {};
     for (const f of feuilles) {
         const cle = getSemaineISO(f.date);
@@ -56,19 +69,32 @@ export function calcHebdomadaire(feuilles, contrat) {
     return Object.keys(groupes).sort().map(cle => {
         const { label, feuilles: fs } = groupes[cle];
 
-        let totalSuppMin = 0;
-        let totalNuitMin = 0;
+        let totalTravailMin   = 0;
+        let totalNuitMin      = 0;
+        let totalAstreinteMin = 0;   // heures travaillées des jours cochés « astreinte » (récupérables)
         for (const f of fs) {
-            totalSuppMin += parseDuree(f.heures_supp);
-            totalNuitMin += calcHeuresNuit(f.heure_debut, f.heure_fin);
+            const travailMin = parseDuree(f.heures_travail);
+            totalTravailMin += travailMin;
+            totalNuitMin    += calcHeuresNuit(f.heure_debut, f.heure_fin);
+            if (f.astreinte) totalAstreinteMin += travailMin;
         }
 
-        // 35h → 8h à 25% (heures 36→43), reste à 50%
-        // 39h → 4h à 25% (heures 40→43), reste à 50%
-        const max25  = contrat === '35' ? 8 * 60 : 4 * 60;
-        const supp25 = Math.min(totalSuppMin, max25);
-        const supp50 = Math.max(0, totalSuppMin - max25);
+        const totalSuppMin = Math.max(0, totalTravailMin - SEUIL_HEBDO_MIN);
+        const supp25 = Math.min(totalSuppMin, PALIER_25_MIN);      // heures 36→43
+        const supp50 = Math.max(0, totalSuppMin - PALIER_25_MIN);  // 44h et +
 
-        return { cle, label, nbJours: fs.length, totalSuppMin, totalNuitMin, supp25, supp50 };
+        return { cle, label, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin };
     });
+}
+
+// Totaux agrégés d'une période (dashboard, récap) — somme des semaines.
+export function totauxSuppPeriode(feuilles) {
+    return calcHebdomadaire(feuilles).reduce((a, s) => ({
+        travail:   a.travail   + s.totalTravailMin,
+        supp:      a.supp      + s.totalSuppMin,
+        supp25:    a.supp25    + s.supp25,
+        supp50:    a.supp50    + s.supp50,
+        nuit:      a.nuit      + s.totalNuitMin,
+        astreinte: a.astreinte + s.totalAstreinteMin,
+    }), { travail: 0, supp: 0, supp25: 0, supp50: 0, nuit: 0, astreinte: 0 });
 }

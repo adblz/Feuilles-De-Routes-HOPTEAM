@@ -1,52 +1,49 @@
 import { chargerHeuresSupp } from './db.js';
-import { parseDuree, affH, isoLocal } from '../utils/utils.js';
+import { chargerPeriodesPaie } from './db_planning.js';
+import { trouverPeriodeCourante, nomMois, MOIS_FR } from './periodes_paie.js';
+import { affH, isoLocal } from '../utils/utils.js';
+import { totauxSuppPeriode } from './heures_calculs.js';
 import { getBrouillonsDates } from './fdr.js';
 
-let suppDebut          = null;
-let suppFin            = null;
 let actionListExpanded = false;
 let _lastManquants     = [];
 
-export function getSuppDebut()           { return suppDebut; }
-export function getSuppFin()             { return suppFin; }
-export function setSuppDebut(v)          { suppDebut = v; }
-export function setSuppFin(v)            { suppFin   = v; }
 export function getLastManquants()       { return _lastManquants; }
 export function getActionListExpanded()  { return actionListExpanded; }
 export function setActionListExpanded(v) { actionListExpanded = v; }
 
-function formatPeriode(debut, fin, today) {
-    const fmt = (d) => new Date(d + 'T12:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-    return `${fmt(debut)} à ${fin === today ? 'aujourd\'hui' : fmt(fin)}`;
-}
-
 export async function rendreHeuresSupp() {
     const totalEl   = document.getElementById('dash-supp-total');
-    const subEl     = document.getElementById('dash-supp-sub');
     const periodeEl = document.getElementById('dash-supp-periode-txt');
 
-    const today        = isoLocal(new Date());
-    const firstOfMonth = today.slice(0, 8) + '01';
-    const debut        = suppDebut || firstOfMonth;
-    const fin          = suppFin   || today;
+    const today = isoLocal(new Date());
 
-    if (periodeEl) periodeEl.textContent = formatPeriode(debut, fin, today);
+    // La période suit le planning de paie (période contenant aujourd'hui) ;
+    // à défaut de planning → mois calendaire en cours.
+    let debut = today.slice(0, 8) + '01';
+    let fin   = today;
+    let mois  = MOIS_FR[new Date(today + 'T12:00').getMonth()];
+    try {
+        const periode = trouverPeriodeCourante(await chargerPeriodesPaie(), today);
+        if (periode) {
+            debut = periode.date_debut;
+            fin   = periode.date_fin;
+            mois  = nomMois(periode);
+        }
+    } catch { /* planning indisponible → on garde le mois calendaire */ }
+
+    if (periodeEl) periodeEl.textContent = mois.charAt(0).toUpperCase() + mois.slice(1);
     totalEl.textContent = '…';
-    subEl.textContent   = '';
 
     let histo;
     try {
         histo = await chargerHeuresSupp(debut, fin);
     } catch {
         totalEl.textContent = '—';
-        subEl.textContent   = 'Connexion indisponible';
         return;
     }
 
-    let totalMin = 0;
-    histo.forEach(e => { totalMin += parseDuree(e.heures_supp); });
-    totalEl.textContent = affH(totalMin);
-    subEl.textContent   = `${histo.length} feuille${histo.length > 1 ? 's' : ''} enregistrée${histo.length > 1 ? 's' : ''} sur la période`;
+    totalEl.textContent = affH(totauxSuppPeriode(histo).supp);
 }
 
 export function majBrouillonCard() {

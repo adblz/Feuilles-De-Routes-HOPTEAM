@@ -31,6 +31,22 @@ export function parseDuree(str) {
     return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
 }
 
+// Durée « XhMM » entre deux heures « HH:MM », gère le passage de minuit. '' si vide/nul.
+export function dureeCourte(debut, fin) {
+    if (!debut || !fin) return '';
+    const [dh, dm] = debut.split(':').map(Number);
+    const [fh, fm] = fin.split(':').map(Number);
+    let min = (fh * 60 + fm) - (dh * 60 + dm);
+    if (min < 0) min += 1440;   // passage de minuit
+    return min > 0 ? `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}` : '';
+}
+
+// Retire les secondes d'une heure « HH:MM:SS » (venant de la base) → « HH:MM ».
+// Laisse la valeur telle quelle si vide/nulle.
+export function hhmm(t) {
+    return t ? t.slice(0, 5) : t;
+}
+
 export function affH(m) {
     return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
 }
@@ -49,6 +65,30 @@ export function isoLocal(date) {
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+}
+
+// Icônes œil (afficher / masquer le mot de passe).
+const EYE_OPEN =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a13.2 13.2 0 0 1-2.16 2.9M6.6 6.6A13.2 13.2 0 0 0 2 11s3.5 7 10 7a9.1 9.1 0 0 0 4.4-1.1"/>' +
+    '<path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M2 2l20 20"/></svg>';
+
+// Branche un bouton « œil » sur un champ mot de passe : bascule affiché/masqué.
+export function attachPasswordToggle(inputId, btnId) {
+    const input = document.getElementById(inputId);
+    const btn   = document.getElementById(btnId);
+    if (!input || !btn) return;
+    btn.innerHTML = EYE_OPEN;
+    btn.setAttribute('aria-label', 'Afficher le mot de passe');
+    btn.addEventListener('click', () => {
+        const masque = input.type === 'password';
+        input.type = masque ? 'text' : 'password';
+        btn.innerHTML = masque ? EYE_OFF : EYE_OPEN;
+        btn.setAttribute('aria-label', masque ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+    });
 }
 
 // Fait défiler l'écran en douceur vers le haut d'un élément (ex. nouvelle carte).

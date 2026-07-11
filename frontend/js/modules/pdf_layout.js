@@ -1,4 +1,6 @@
 import { cfg, seuilJour, lireTousLesElements, getLogoBase64 } from './fdr.js';
+import { renderItems } from './pdf_items.js';
+import { dureeCourte } from '../utils/utils.js';
 
 export function construirePDF() {
     const dateVal = document.getElementById('date').value;
@@ -15,49 +17,10 @@ export function construirePDF() {
         ? new Date(dateVal + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
         : '—';
 
-    const itemsHTML = items.map(item => {
-        if (item.kind === 'intervention') {
-            return `
-            <div class="pdf-int">
-                <div class="pdf-int-head">
-                    <span>Intervention #${item.num} &mdash; ${item.client || '—'}${item.ville ? ' (' + item.ville + ')' : ''}</span>
-                    ${item.typeInt ? `<span class="pdf-int-badge">${item.typeInt}</span>` : ''}
-                </div>
-                <div class="pdf-int-body">
-                    <div class="pdf-field"><div class="lbl">Arrivée</div><div class="val">${item.arrivee || '—'}</div></div>
-                    <div class="pdf-field"><div class="lbl">Départ</div><div class="val">${item.depart || '—'}</div></div>
-                    <div class="pdf-field"><div class="lbl">Type</div><div class="val">${item.typeInt || '—'}</div></div>
-                    ${item.mo ? `<div class="pdf-field"><div class="lbl">Main d'oeuvre</div><div class="val">${item.mo}</div></div>` : ''}
-                    ${item.becs ? `<div class="pdf-field"><div class="lbl">Nb. becs</div><div class="val">${item.becs}</div></div>` : ''}
-                    ${item.details ? `<div class="pdf-details-row"><div class="lbl">Détails</div>${item.details}</div>` : ''}
-                </div>
-            </div>`;
-        } else if (item.kind === 'rappel') {
-            return `
-            <div class="pdf-pause" style="background:#eafaf6;border-color:#9fd8cd;">
-                <div class="pdf-pause-head">
-                    <span>Rappel / sortie supplémentaire</span>
-                    <span>${item.debut || '—'} &rarr; ${item.fin || '—'}</span>
-                </div>
-                <div class="pdf-pause-body">
-                    <div class="pdf-field"><div class="lbl">Départ</div><div class="val">${item.debut || '—'}</div></div>
-                    <div class="pdf-field"><div class="lbl">Retour</div><div class="val">${item.fin || '—'}</div></div>
-                </div>
-            </div>`;
-        } else {
-            return `
-            <div class="pdf-pause">
-                <div class="pdf-pause-head">
-                    <span>Pause</span>
-                    <span>${item.debut || '—'} &rarr; ${item.fin || '—'}</span>
-                </div>
-                <div class="pdf-pause-body">
-                    <div class="pdf-field"><div class="lbl">Début</div><div class="val">${item.debut || '—'}</div></div>
-                    <div class="pdf-field"><div class="lbl">Fin</div><div class="val">${item.fin || '—'}</div></div>
-                </div>
-            </div>`;
-        }
-    }).join('');
+    const rappel    = items.find(i => i.kind === 'rappel');
+    const itemsHTML = renderItems(items);
+    const astreinteJour = document.getElementById('astreinte-jour')?.checked;
+    const astreinte     = astreinteJour || !!(rappel && rappel.astreinte);
 
     const suppBanner = (supp && supp !== '0h00')
         ? `<div class="pdf-supp-banner">Heures supplémentaires : ${supp}</div>`
@@ -73,6 +36,7 @@ export function construirePDF() {
             <div>
                 <div class="pdf-title">Feuille de Route</div>
                 <div class="pdf-date-line">${dateAff}</div>
+                ${astreinte ? `<div style="display:inline-block;margin-top:4px;background:#dcfce7;color:#15803d;font-weight:700;font-size:11px;padding:2px 8px;border-radius:6px;letter-spacing:0.04em;">ASTREINTE</div>` : ''}
             </div>
             <div class="pdf-company-block">
                 ${logoHtml}
@@ -90,8 +54,14 @@ export function construirePDF() {
             <div class="pdf-hour-box"><div class="lbl">Début journée</div><div class="val">${debut}</div></div>
             <div class="pdf-hour-box"><div class="lbl">Fin journée</div><div class="val">${fin}</div></div>
             <div class="pdf-hour-box repas"><div class="lbl">Pause repas</div><div class="val">${repas}</div></div>
-            <div class="pdf-hour-box supp"><div class="lbl">Heures trav. (−1h trajet)</div><div class="val">${travail}</div></div>
+            <div class="pdf-hour-box supp"><div class="lbl">${astreinteJour ? 'Heures travaillées (astreinte)' : 'Heures trav. (−1h trajet)'}</div><div class="val">${travail}</div></div>
         </div>
+${rappel ? `
+        <div class="pdf-hours-row">
+            <div class="pdf-hour-box"><div class="lbl">Sortie suppl.${rappel.astreinte ? ' (astreinte)' : ''} — départ</div><div class="val">${rappel.debut || '—'}</div></div>
+            <div class="pdf-hour-box"><div class="lbl">Sortie suppl. — retour</div><div class="val">${rappel.fin || '—'}</div></div>
+            ${dureeCourte(rappel.debut, rappel.fin) ? `<div class="pdf-hour-box supp"><div class="lbl">Durée sortie</div><div class="val">${dureeCourte(rappel.debut, rappel.fin)}</div></div>` : ''}
+        </div>` : ''}
 
         ${suppBanner}
 

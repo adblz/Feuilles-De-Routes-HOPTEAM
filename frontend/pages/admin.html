@@ -28,7 +28,7 @@
     </div>
 </header>
 
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <div class="container admin-main">
 
@@ -61,6 +61,29 @@
         </div>
         <div id="admin-suggestions-list">
             <div class="sug-vide">Chargement…</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="admin-section-header">
+            <h2>Planning des heures supp.</h2>
+            <button class="btn-admin-nouveau" id="btn-planning-nouveau">+ Ajouter une période</button>
+        </div>
+        <p class="admin-section-desc">Définissez la période de calcul des heures supplémentaires pour chaque mois (les dates changent chaque mois selon la paie).</p>
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Mois</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-planning-tbody">
+                    <tr><td colspan="4" class="admin-table-vide">Chargement…</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -153,6 +176,49 @@
         <div class="admin-modal-footer">
             <button class="btn-admin-annuler" id="btn-annuler-modifier">Annuler</button>
             <button class="btn-admin-valider" id="btn-submit-modifier">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal : Ajouter / Modifier une période de paie -->
+<div class="modal-overlay" id="modal-planning">
+    <div class="modal admin-modal">
+        <div class="modal-histo-header">
+            <h3 id="planning-modal-titre">Ajouter une période</h3>
+            <button class="btn-histo-close" id="btn-close-planning">&#10005;</button>
+        </div>
+        <div class="admin-modal-body">
+            <input type="hidden" id="planning-id">
+            <div class="form-group">
+                <label>Mois <span class="req">*</span></label>
+                <select id="planning-mois">
+                    <option value="">Choisir un mois…</option>
+                    <option value="1">Janvier</option>
+                    <option value="2">Février</option>
+                    <option value="3">Mars</option>
+                    <option value="4">Avril</option>
+                    <option value="5">Mai</option>
+                    <option value="6">Juin</option>
+                    <option value="7">Juillet</option>
+                    <option value="8">Août</option>
+                    <option value="9">Septembre</option>
+                    <option value="10">Octobre</option>
+                    <option value="11">Novembre</option>
+                    <option value="12">Décembre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Date de début <span class="req">*</span></label>
+                <input type="date" id="planning-date-debut">
+            </div>
+            <div class="form-group">
+                <label>Date de fin <span class="req">*</span></label>
+                <input type="date" id="planning-date-fin">
+            </div>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin-annuler" id="btn-annuler-planning">Annuler</button>
+            <button class="btn-admin-valider" id="btn-submit-planning">Enregistrer</button>
         </div>
     </div>
 </div>

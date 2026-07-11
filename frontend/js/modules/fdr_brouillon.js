@@ -28,6 +28,7 @@ export function sauvegarderBrouillon() {
             debut:      document.getElementById('heure-debut').value,
             fin:        document.getElementById('heure-fin').value,
             repas:      document.getElementById('repas').value,
+            astreinteJour: document.getElementById('astreinte-jour')?.checked || false,
             suppManuel: getSuppManuel(),
             suppVal:    getSuppManuel() ? document.getElementById('heures-supp').value : null,
             elements:   lireTousLesElements(),
@@ -46,6 +47,7 @@ export function restaurerBrouillon(dateISO) {
         document.getElementById('heure-debut').value = d.debut || '';
         document.getElementById('heure-fin').value   = d.fin   || '';
         document.getElementById('repas').value        = d.repas || '';
+        document.getElementById('astreinte-jour').checked = !!d.astreinteJour;
 
         if (d.debut && d.fin) calcHeures();
 

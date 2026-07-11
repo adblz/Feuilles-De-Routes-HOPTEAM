@@ -1,14 +1,23 @@
 const express      = require('express');
 const cors         = require('cors');
+const multer       = require('multer');
 const path         = require('path');
 const emailRoutes  = require('./routes/email');
 const adminRoutes  = require('./routes/admin');
 
 const app = express();
 
+// Origines autorisées. En production, définir CORS_ORIGINS (liste séparée par des
+// virgules) sur le serveur pour verrouiller au domaine exact. Par défaut on accepte
+// les sous-domaines Vercel (frontend) + le développement local.
+const envOrigins = (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
+
 const allowedOrigins = [
-    'https://gorgeous-rugelach-d822f4.netlify.app',
-    /\.netlify\.app$/,
+    ...envOrigins,
+    /\.vercel\.app$/,
     'http://localhost:3000',
     'http://localhost:5500',
 ];
@@ -22,11 +31,40 @@ app.use(cors({
         cb(ok ? null : new Error('CORS refusé'), ok);
     },
 }));
+
+// En-têtes de sécurité de base (équivalent minimal à helmet, sans dépendance).
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    next();
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 app.use('/', emailRoutes);
 app.use('/admin', adminRoutes);
+
+// Gestion propre des erreurs d'upload (fichier trop volumineux, etc.).
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        const msg = err.code === 'LIMIT_FILE_SIZE'
+            ? 'Fichier trop volumineux (10 Mo maximum).'
+            : 'Erreur lors de l\'envoi du fichier.';
+        return res.status(413).json({ error: msg });
+    }
+    if (err && err.message === 'CORS refusé') {
+        return res.status(403).json({ error: 'Origine non autorisée.' });
+    }
+    console.error(err);
+    return res.status(500).json({ error: 'Erreur serveur.' });
+});
+
+// Avertissement si des variables d'environnement essentielles manquent.
+['SUPABASE_SERVICE_KEY', 'SENDGRID_API_KEY', 'SENDGRID_SENDER_EMAIL'].forEach(v => {
+    if (!process.env[v]) console.warn(`⚠️  Variable d'environnement manquante : ${v}`);
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));

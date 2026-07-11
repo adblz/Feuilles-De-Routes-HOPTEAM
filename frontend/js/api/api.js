@@ -4,18 +4,18 @@ import { cfg, lireTousLesElements, effacerBrouillon } from '../modules/fdr.js';
 import { openSettings } from '../modules/ui.js';
 import { sauvegarderEnBase } from '../modules/db.js';
 import { memoriserValeurs } from '../modules/autocomplete.js';
-import { getUser } from '../modules/auth.js';
+import { getUser, getSession } from '../modules/auth.js';
 
 const API = 'https://feuilles-de-routes-hopteam.onrender.com';
 
 export async function envoyerMail() {
     if (!cfg.email) {
-        alert('Veuillez d\'abord configurer l\'email du responsable dans les Paramètres.');
+        showToast('Veuillez d\'abord configurer l\'email du responsable dans les Paramètres.', 'warn', 5000);
         openSettings();
         return;
     }
     if (typeof html2pdf === 'undefined') {
-        alert('La librairie html2pdf ne s\'est pas chargée. Vérifiez votre connexion ou désactivez uBlock.');
+        showToast('La librairie PDF ne s\'est pas chargée. Vérifiez votre connexion ou désactivez uBlock.', 'error', 6000);
         return;
     }
 
@@ -47,7 +47,12 @@ export async function envoyerMail() {
             const techEmail = getUser()?.email;
             if (techEmail) fd.append('techEmail', techEmail);
 
-            const res = await fetch(`${API}/send-email`, { method: 'POST', body: fd });
+            const token = getSession()?.access_token;
+            const res = await fetch(`${API}/send-email`, {
+                method: 'POST',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                body: fd,
+            });
             if (!res.ok) {
                 const d = await res.json();
                 throw new Error(d.error || res.statusText);
@@ -57,6 +62,7 @@ export async function envoyerMail() {
             memoriserValeurs(elements);
 
             setBusy(true, 'Sauvegarde…');
+            let saveError = null;
             try {
                 await sauvegarderEnBase({
                     date:          document.getElementById('date').value,
@@ -68,6 +74,7 @@ export async function envoyerMail() {
                     repasMin:      document.getElementById('repas').value,
                     heuresTravail: document.getElementById('heures-travail').value,
                     heuresSupp:    document.getElementById('heures-supp').value,
+                    astreinte:     document.getElementById('astreinte-jour')?.checked,
                     mode:          'email',
                     pdfBlob:     blob,
                     pdfFileName: nomFichierPdf(),
@@ -75,16 +82,21 @@ export async function envoyerMail() {
                 });
             } catch (e) {
                 console.warn('Supabase save failed:', e);
+                saveError = e;
             }
 
             setBusy(false);
-            showToast('Email envoyé à ' + cfg.email, 'success', 5000);
+            if (saveError) {
+                showToast('Email envoyé, mais enregistrement échoué : ' + (saveError?.message || saveError), 'warn', 9000);
+            } else {
+                showToast('Email envoyé à ' + cfg.email, 'success', 5000);
+            }
             effacerBrouillon(document.getElementById('date').value);
             document.dispatchEvent(new CustomEvent('feuille:enregistree'));
         } catch (err) {
             nettoyer();
             setBusy(false);
-            alert('Erreur lors de l\'envoi :\n' + (err?.message || err));
+            showToast('Erreur lors de l\'envoi : ' + (err?.message || err), 'error', 8000);
         }
     }, 250);
 }

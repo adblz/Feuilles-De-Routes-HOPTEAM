@@ -49,39 +49,18 @@
 
     <!-- Récap heures supplémentaires -->
     <div class="card dash-supp-card">
-        <p class="dash-eyebrow">Heures supplémentaires — Pour la période :</p>
-        <p class="dash-supp-periode" id="dash-supp-periode-txt">…</p>
+        <p class="dash-supp-mois" id="dash-supp-periode-txt">…</p>
         <div class="dash-supp-total" id="dash-supp-total">…</div>
-        <div class="dash-supp-sub" id="dash-supp-sub"></div>
-
-        <!-- Éditeur de période (caché par défaut) -->
-        <div class="dash-supp-edit hidden" id="dash-supp-edit">
-            <div class="dash-supp-edit-fields">
-                <div class="form-group">
-                    <label>Du</label>
-                    <input type="date" id="supp-inline-debut">
-                </div>
-                <div class="form-group">
-                    <label>Au</label>
-                    <input type="date" id="supp-inline-fin">
-                </div>
-            </div>
-            <button class="dash-supp-calc-btn" id="btn-supp-inline-calc">Calculer</button>
-        </div>
-
-        <div class="dash-supp-btns">
-            <button class="dash-supp-edit-btn" id="btn-dash-supp-edit">&#9998; Modifier la période</button>
-            <button class="dash-supp-reset-btn" id="btn-dash-supp-reset">&#8635; Réinitialiser</button>
-        </div>
+        <p class="dash-supp-label">heures supp.</p>
     </div>
 
     <!-- Carnet du mois -->
     <div class="card">
         <p class="dash-eyebrow">Carnet de route</p>
         <div class="dash-cal-nav">
-            <button class="btn-cal-nav" id="btn-cal-prev" title="Mois précédent">&#8249;</button>
+            <button class="btn-cal-nav" id="btn-cal-prev" title="Mois précédent" aria-label="Mois précédent">&#8249;</button>
             <h2 id="dash-cal-titre">…</h2>
-            <button class="btn-cal-nav btn-cal-nav-next" id="btn-cal-next" title="Mois suivant" disabled>&#8250;</button>
+            <button class="btn-cal-nav btn-cal-nav-next" id="btn-cal-next" title="Mois suivant" aria-label="Mois suivant" disabled>&#8250;</button>
         </div>
         <div class="dash-cal-weekdays">
             <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
@@ -131,7 +110,13 @@
 
     <!-- Infos générales -->
     <div class="card">
-        <h2>Informations générales</h2>
+        <div class="card-head-row">
+            <h2>Informations générales</h2>
+            <label class="astreinte-toggle" title="Compter les heures sans retirer le trajet">
+                <input type="checkbox" id="astreinte-jour">
+                <span>Astreinte</span>
+            </label>
+        </div>
         <div class="form-grid form-grid-2col">
             <div class="form-group">
                 <label>Date</label>
@@ -172,7 +157,7 @@
                 <input type="text" id="heures-travail" class="auto-field" readonly placeholder="Calculé auto">
             </div>
             <div class="form-group">
-                <label>Heures supplémentaires <span id="seuil-label" style="font-weight:400;color:#718096;font-size:11px;text-transform:none;letter-spacing:0;"></span></label>
+                <label>Heures supp. du jour <span id="seuil-label" style="font-weight:400;color:#718096;font-size:11px;text-transform:none;letter-spacing:0;"></span></label>
                 <div class="supp-input-row">
                     <input type="text" id="heures-supp" class="auto-field" placeholder="Calculé auto">
                     <button type="button" id="btn-supp-auto" class="btn-supp-auto" title="Revenir au calcul automatique">↺ Auto</button>
@@ -203,6 +188,10 @@
                         <input type="time" id="rappel-fin">
                     </div>
                 </div>
+                <label class="astreinte-check astreinte-check-rappel">
+                    <input type="checkbox" id="rappel-astreinte">
+                    <span>Sortie d'astreinte</span>
+                </label>
             </div>
         </div>
     </div>
@@ -233,7 +222,7 @@
             <select id="histo-filtre-annee" class="histo-filtre-select">
                 <option value="">Toutes</option>
             </select>
-            <button class="btn-histo-close" id="btn-close-historique">&#10005;</button>
+            <button class="btn-histo-close" id="btn-close-historique" aria-label="Fermer" title="Fermer">&#10005;</button>
         </div>
         <div class="modal-histo-body" id="histo-body"></div>
     </div>
@@ -244,7 +233,7 @@
     <div class="modal modal-histo">
         <div class="modal-histo-header">
             <h3>Heures suppl&#233;mentaires</h3>
-            <button class="btn-histo-close" id="btn-close-supp">&#10005;</button>
+            <button class="btn-histo-close" id="btn-close-supp" aria-label="Fermer" title="Fermer">&#10005;</button>
         </div>
         <div class="modal-histo-body">
             <div class="supp-filters">
@@ -268,7 +257,7 @@
     <div class="modal modal-pdf-box">
         <div class="modal-histo-header">
             <h3>Aper&#231;u du PDF</h3>
-            <button class="btn-histo-close" id="btn-close-pdf">&#10005;</button>
+            <button class="btn-histo-close" id="btn-close-pdf" aria-label="Fermer" title="Fermer">&#10005;</button>
         </div>
         <div class="pdf-mobile-placeholder">
             <p>L'aper&#231;u PDF n'est pas disponible sur mobile.</p>
@@ -303,10 +292,15 @@
 
         <div class="form-group">
             <label>Changer mon mot de passe</label>
-            <div class="password-change-row">
+            <div class="input-password-wrap">
                 <input type="password" id="s-new-password" placeholder="Nouveau mot de passe (6 car. min.)">
-                <button type="button" class="btn-settings-action" id="btn-change-password">Changer</button>
+                <button type="button" class="btn-eye" id="toggle-new-password"></button>
             </div>
+            <div class="input-password-wrap">
+                <input type="password" id="s-confirm-password" placeholder="Confirmer le mot de passe">
+                <button type="button" class="btn-eye" id="toggle-confirm-password"></button>
+            </div>
+            <button type="button" class="btn-settings-action btn-change-password" id="btn-change-password">Changer le mot de passe</button>
         </div>
 
         <hr class="settings-divider">
@@ -377,7 +371,10 @@
 <!-- ════════ VUE HEURES PAR SEMAINE ════════ -->
 <div class="container hidden" id="vue-heures">
     <h2 class="vue-heures-titre">Heures par semaine</h2>
-    <div class="heures-period-row">
+    <div class="heures-periode-select-row hidden" id="heures-periode-row">
+        <select id="heures-periode" class="heures-periode-select"></select>
+    </div>
+    <div class="heures-period-row" id="heures-dates-row">
         <input type="date" id="heures-date-debut" class="heures-date-input">
         <span class="heures-period-sep">→</span>
         <input type="date" id="heures-date-fin" class="heures-date-input">

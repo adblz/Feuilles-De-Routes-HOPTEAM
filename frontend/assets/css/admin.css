@@ -101,6 +101,26 @@
 }
 .btn-admin-modifier:hover { background: var(--border-mid); }
 
+.btn-admin-supprimer {
+    background: var(--surface-mid);
+    border: 1px solid #e5484d;
+    color: #e5484d;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 6px;
+    transition: background 0.15s;
+}
+.btn-admin-supprimer:hover { background: rgba(229, 72, 77, 0.12); }
+
+.admin-section-desc {
+    margin: -4px 0 14px;
+    font-size: 13px;
+    color: var(--gray-mid);
+}
+
 /* Modals */
 .admin-modal { max-width: 480px; width: 90%; padding: 0; }
 .admin-modal-body {

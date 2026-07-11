@@ -1,6 +1,7 @@
 import { getSession, isSessionValid, connexion, refreshSession } from './modules/auth.js';
 import { getLogoBase64 } from './modules/fdr.js';
 import { chargerMonProfil } from './modules/db_responsable.js';
+import { attachPasswordToggle } from './utils/utils.js';
 
 async function redirigerSelonRole() {
     const profil = await chargerMonProfil();
@@ -21,6 +22,7 @@ window.addEventListener('load', async () => {
         return;
     }
 
+    attachPasswordToggle('login-password', 'toggle-login-password');
     document.getElementById('btn-login').addEventListener('click', handleLogin);
     document.getElementById('login-password').addEventListener('keydown', e => {
         if (e.key === 'Enter') handleLogin();

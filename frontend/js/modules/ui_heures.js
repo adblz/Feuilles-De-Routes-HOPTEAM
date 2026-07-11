@@ -1,5 +1,6 @@
 import { parseDuree, affH } from '../utils/utils.js';
 import { chargerHeuresSupp } from './db.js';
+import { totauxSuppPeriode } from './heures_calculs.js';
 import { fermerTousLesModals } from './ui_settings.js';
 
 export function ouvrirSuppRecap() {
@@ -31,8 +32,7 @@ export async function calculerSuppRecap() {
         return;
     }
 
-    let totalMin = 0;
-    histo.forEach(e => { totalMin += parseDuree(e.heures_supp); });
+    const totalMin = totauxSuppPeriode(histo).supp;
 
     const avecSupp  = histo.filter(e => parseDuree(e.heures_supp) > 0);
     const tableHtml = avecSupp.length ? `

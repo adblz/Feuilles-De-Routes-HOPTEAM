@@ -1,9 +1,12 @@
 import { chargerHeuresSupp } from './db.js';
-import { calcHebdomadaire } from './heures_calculs.js';
-import { affH, isoLocal } from '../utils/utils.js';
-import { cfg } from './fdr_config.js';
+import { chargerPeriodesPaie } from './db_planning.js';
+import { trouverPeriodeCourante, nomMois, rangeLabel } from './periodes_paie.js';
+import { calcHebdomadaire, totauxSuppPeriode } from './heures_calculs.js';
+import { renderHeures } from './heures_render.js';
+import { isoLocal, escHtml } from '../utils/utils.js';
 
 let initialized = false;
+let periodes    = [];
 
 function debutMois() {
     const n = new Date();
@@ -22,8 +25,56 @@ export function afficherHeures() {
         initialized = true;
         document.getElementById('heures-date-debut').value = debutMois();
         document.getElementById('heures-date-fin').value   = isoLocal(new Date());
-        document.getElementById('btn-heures-calc').addEventListener('click', chargerEtRendre);
+        // « Calculer » = période personnalisée à partir des deux champs date.
+        document.getElementById('btn-heures-calc').addEventListener('click', () => {
+            document.getElementById('heures-periode').value = 'custom';
+            chargerEtRendre();
+        });
+        document.getElementById('heures-periode').addEventListener('change', appliquerSelection);
     }
+    peuplerPeriodes();
+}
+
+// Remplit le menu déroulant des périodes du planning et affiche la période courante.
+async function peuplerPeriodes() {
+    const sel      = document.getElementById('heures-periode');
+    const row      = document.getElementById('heures-periode-row');
+    const datesRow = document.getElementById('heures-dates-row');
+
+    try { periodes = await chargerPeriodesPaie(); }
+    catch { periodes = []; }
+
+    // Sans planning : on garde l'ancien comportement (mois calendaire + champs date).
+    if (!periodes.length) {
+        row.classList.add('hidden');
+        datesRow.classList.remove('hidden');
+        chargerEtRendre();
+        return;
+    }
+
+    row.classList.remove('hidden');
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    sel.innerHTML = periodes.map((p, i) => `<option value="${i}">${cap(nomMois(p))}</option>`).join('')
+        + '<option value="custom">Période personnalisée…</option>';
+
+    const courante = trouverPeriodeCourante(periodes, isoLocal(new Date()));
+    sel.value = String(courante ? periodes.indexOf(courante) : 0);
+    appliquerSelection();
+}
+
+function appliquerSelection() {
+    const sel      = document.getElementById('heures-periode');
+    const datesRow = document.getElementById('heures-dates-row');
+
+    if (sel.value === 'custom') {
+        datesRow.classList.remove('hidden');   // on laisse l'utilisateur saisir ses dates
+        return;
+    }
+    const p = periodes[parseInt(sel.value, 10)];
+    if (!p) return;
+    document.getElementById('heures-date-debut').value = p.date_debut;
+    document.getElementById('heures-date-fin').value   = p.date_fin;
+    datesRow.classList.add('hidden');
     chargerEtRendre();
 }
 
@@ -37,51 +88,10 @@ export async function chargerEtRendre() {
 
     try {
         const feuilles = await chargerHeuresSupp(debut, fin);
-        const semaines = calcHebdomadaire(feuilles, cfg.contrat);
-        zone.innerHTML = renderTableau(semaines);
+        const semaines = calcHebdomadaire(feuilles);
+        const totaux   = totauxSuppPeriode(feuilles);
+        zone.innerHTML = renderHeures(semaines, totaux, rangeLabel(debut, fin));
     } catch (e) {
-        zone.innerHTML = `<p class="heures-error">Erreur : ${e.message}</p>`;
+        zone.innerHTML = `<p class="heures-error">Erreur : ${escHtml(e.message)}</p>`;
     }
-}
-
-function renderTableau(semaines) {
-    if (!semaines.length) {
-        return '<p class="heures-vide">Aucune feuille sur cette période.</p>';
-    }
-
-    const hasNuit = semaines.some(s => s.totalNuitMin > 0);
-
-    let html = '<table class="heures-table"><thead><tr>';
-    html += '<th>Semaine</th><th>Jours</th><th>Supp.</th>';
-    if (hasNuit) html += '<th>Nuit</th>';
-    html += '<th>25%</th><th>50%</th>';
-    html += '</tr></thead><tbody>';
-
-    for (const s of semaines) {
-        html += '<tr>';
-        html += `<td class="heures-semaine">${s.label}</td>`;
-        html += `<td>${s.nbJours}j</td>`;
-        html += `<td class="heures-mono">${s.totalSuppMin > 0 ? affH(s.totalSuppMin) : '—'}</td>`;
-        if (hasNuit) html += `<td class="heures-mono">${s.totalNuitMin > 0 ? affH(s.totalNuitMin) : '—'}</td>`;
-        html += `<td class="heures-mono${s.supp25 > 0 ? ' heures-25' : ''}">${s.supp25 > 0 ? affH(s.supp25) : '—'}</td>`;
-        html += `<td class="heures-mono${s.supp50 > 0 ? ' heures-50' : ''}">${s.supp50 > 0 ? affH(s.supp50) : '—'}</td>`;
-        html += '</tr>';
-    }
-
-    // Ligne totaux
-    const totSupp = semaines.reduce((a, s) => a + s.totalSuppMin, 0);
-    const totNuit = semaines.reduce((a, s) => a + s.totalNuitMin, 0);
-    const tot25   = semaines.reduce((a, s) => a + s.supp25, 0);
-    const tot50   = semaines.reduce((a, s) => a + s.supp50, 0);
-
-    html += '<tr class="heures-total">';
-    html += '<td colspan="2">Total</td>';
-    html += `<td class="heures-mono">${affH(totSupp)}</td>`;
-    if (hasNuit) html += `<td class="heures-mono">${affH(totNuit)}</td>`;
-    html += `<td class="heures-mono">${affH(tot25)}</td>`;
-    html += `<td class="heures-mono">${affH(tot50)}</td>`;
-    html += '</tr>';
-
-    html += '</tbody></table>';
-    return html;
 }

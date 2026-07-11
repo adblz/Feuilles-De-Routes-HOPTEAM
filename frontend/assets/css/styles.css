@@ -195,6 +195,15 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .autocomplete-wrapper input {
     width: 100%;
 }
+/* Affiche le texte en majuscules sans modifier la vraie valeur pendant la
+   saisie (compatible dictée vocale). La valeur est mise en majuscules à la
+   sortie du champ, voir fdr_form.js. */
+.uppercase-input {
+    text-transform: uppercase;
+}
+.uppercase-input::placeholder {
+    text-transform: none;
+}
 .autocomplete-wrapper.open input {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -588,7 +597,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     letter-spacing: 0.5px;
 }
 
-/* Carte heures supplémentaires */
+/* Carte heures supplémentaires — épurée : mois + heures supp */
 .dash-supp-card {
     display: block;
     width: 100%;
@@ -597,59 +606,20 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     cursor: default;
     font-family: inherit;
 }
-.dash-supp-periode {
+.dash-supp-mois {
     font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif;
-    font-size: 26px; font-weight: 800; color: var(--ink-title);
-    margin: 4px 0 8px; line-height: 1.1;
+    font-size: 30px; font-weight: 800; color: var(--ink-title);
+    line-height: 1; margin: 0 0 12px;
 }
 .dash-supp-total {
     font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif;
     font-size: 48px; font-weight: 800; color: var(--ink-title);
-    line-height: 1.05; margin-bottom: 2px;
+    line-height: 1; margin-bottom: 4px;
 }
-.dash-supp-sub { font-size: 12px; color: var(--muted); }
-
-/* Panneau éditeur de période (inline) */
-.dash-supp-edit {
-    background: var(--paper-dim);
-    border-radius: 12px;
-    padding: 14px;
-    margin: 14px 0 4px;
+.dash-supp-label {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.6px; margin: 0;
 }
-.dash-supp-edit-fields {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-.dash-supp-calc-btn {
-    width: 100%; padding: 10px;
-    background: var(--steel); color: #fff; border: none;
-    border-radius: 10px; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: opacity 0.2s;
-}
-.dash-supp-calc-btn:hover { opacity: 0.88; }
-
-/* Boutons Modifier / Réinitialiser */
-.dash-supp-btns {
-    display: flex; gap: 8px; margin-top: 14px;
-}
-.dash-supp-edit-btn {
-    flex: 1; padding: 9px 12px;
-    background: transparent; border: 1.5px solid var(--steel);
-    color: var(--steel); border-radius: 10px;
-    font-size: 12.5px; font-weight: 600; cursor: pointer;
-    transition: background 0.2s;
-}
-.dash-supp-edit-btn:hover { background: var(--steel-soft); }
-.dash-supp-reset-btn {
-    padding: 9px 12px;
-    background: transparent; border: 1.5px solid rgba(0,0,0,0.12);
-    color: var(--muted); border-radius: 10px;
-    font-size: 12.5px; font-weight: 600; cursor: pointer;
-    transition: background 0.2s;
-}
-.dash-supp-reset-btn:hover { background: var(--paper-dim); }
 
 /* ── Calendrier du mois (dashboard) ─────────────────────────── */
 .dash-cal-nav {
@@ -1427,13 +1397,44 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     margin: 20px 0;
 }
 
-.password-change-row {
-    display: flex;
-    gap: 8px;
+/* ── Champ mot de passe avec bouton « œil » ─────────────────── */
+
+.input-password-wrap {
+    position: relative;
 }
 
-.password-change-row input {
-    flex: 1;
+.input-password-wrap + .input-password-wrap {
+    margin-top: 8px;
+}
+
+.input-password-wrap input {
+    width: 100%;
+    padding-right: 44px;
+}
+
+.btn-eye {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gray-mid, #94a3b8);
+}
+
+.btn-eye:hover { color: var(--gray-dark); }
+
+.btn-eye svg { width: 20px; height: 20px; }
+
+.btn-change-password {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px 14px;
 }
 
 .btn-settings-action {
@@ -1532,3 +1533,62 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 }
 
 .btn-logout:hover { background: var(--red-border); }
+
+/* ── Astreinte ─────────────────────────────────────────────── */
+.card-head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.10);
+}
+.card-head-row h2 { margin: 0; padding: 0; border: none; }
+.astreinte-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    background: var(--bg-input);
+    color: #667085;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.astreinte-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.astreinte-toggle:has(input:checked) { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+.astreinte-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.astreinte-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.astreinte-check small { font-weight: 400; color: #718096; }
+.astreinte-check-rappel { margin-top: 10px; }
+.astreinte-badge {
+    display: inline-block;
+    background: #dcfce7;
+    color: #15803d;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+.resume-astreinte { margin: 4px 0 0; }

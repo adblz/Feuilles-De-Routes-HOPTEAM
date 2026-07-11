@@ -25,7 +25,10 @@
         </div>
         <div class="form-group">
             <label>Mot de passe</label>
-            <input type="password" id="login-password" autocomplete="current-password">
+            <div class="input-password-wrap">
+                <input type="password" id="login-password" autocomplete="current-password">
+                <button type="button" class="btn-eye" id="toggle-login-password"></button>
+            </div>
         </div>
         <div id="login-error" class="login-error"></div>
         <button class="login-btn" id="btn-login">Se connecter</button>

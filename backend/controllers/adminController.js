@@ -1,13 +1,11 @@
+const { verifierUtilisateur } = require('../middleware/auth');
+
 const SUPABASE_URL         = process.env.SUPABASE_URL         || 'https://zblggovelezxxrkbqbcv.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const SUPABASE_KEY         = process.env.SUPABASE_KEY         || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpibGdnb3ZlbGV6eHhya2JxYmN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4OTE0NjcsImV4cCI6MjA5NzQ2NzQ2N30._KORySYHBmQ0aYp97r-6fLEX_4SF8NrbWYJ8fGFpzJM';
 
 async function verifierAdmin(token) {
-    const authRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-    });
-    if (!authRes.ok) return false;
-    const user = await authRes.json();
+    const user = await verifierUtilisateur(token);
+    if (!user) return false;
 
     const profilRes = await fetch(
         `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=role`,

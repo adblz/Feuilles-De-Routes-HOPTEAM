@@ -59,7 +59,7 @@ export async function chargerHistorique() {
 
 export async function chargerDetailFeuille(id) {
     const [feuilles, elements] = await Promise.all([
-        dbGet(`feuilles_de_route?id=eq.${id}&select=id,date,tech,company,contrat,heure_debut,heure_fin,repas_min,heures_travail,heures_supp,mode,created_at`),
+        dbGet(`feuilles_de_route?id=eq.${id}&select=id,date,tech,company,contrat,heure_debut,heure_fin,repas_min,heures_travail,heures_supp,astreinte,mode,created_at`),
         dbGet(`interventions?feuille_id=eq.${id}&order=order_index.asc`),
     ]);
     return { feuille: feuilles[0], elements };
@@ -78,7 +78,7 @@ export async function supprimerFeuille(id) {
 export async function chargerHeuresSupp(debut, fin) {
     const user = getSession()?.user;
     if (!user) return [];
-    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_supp,heure_debut,heure_fin&order=date.asc`);
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_travail,heures_supp,heure_debut,heure_fin,astreinte&order=date.asc`);
 }
 
 function toTime(val) { return val || null; }
@@ -113,7 +113,7 @@ export async function enregistrerSuggestion(categorie, message) {
     });
 }
 
-export async function sauvegarderEnBase({ date, tech, company, contrat, heureDebut, heureFin, repasMin, heuresTravail, heuresSupp, mode, pdfBlob, pdfFileName, elements }) {
+export async function sauvegarderEnBase({ date, tech, company, contrat, heureDebut, heureFin, repasMin, heuresTravail, heuresSupp, astreinte, mode, pdfBlob, pdfFileName, elements }) {
     if (!isSessionValid()) await refreshSession();
 
     const user = getSession()?.user;
@@ -139,6 +139,7 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         repas_min:      toInt(repasMin),
         heures_travail: heuresTravail || null,
         heures_supp:    heuresSupp    || null,
+        astreinte:      !!astreinte,
         mode,
         pdf_data:       pdfUrl,
     }, true);
@@ -160,6 +161,7 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         // 'rappel' réutilise les colonnes pause_debut/pause_fin (pas de nouvelle colonne).
         pause_debut:   (el.kind === 'pause' || el.kind === 'rappel') ? toTime(el.debut) : null,
         pause_fin:     (el.kind === 'pause' || el.kind === 'rappel') ? toTime(el.fin)   : null,
+        astreinte:     el.kind === 'rappel' ? !!el.astreinte : false,
     }));
 
     await dbPost('interventions', rows);

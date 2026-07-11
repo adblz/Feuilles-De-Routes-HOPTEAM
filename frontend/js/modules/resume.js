@@ -1,7 +1,7 @@
 import { chargerDetailFeuille, chargerPdfFeuille } from './db.js';
 import { afficherPdfUrl } from './pdfviewer.js';
 import { remplirFormulaireDepuisFeuille } from './fdr_charger.js';
-import { showToast, escHtml } from '../utils/utils.js';
+import { showToast, escHtml, hhmm } from '../utils/utils.js';
 
 export function cacherResume() {
     document.getElementById('vue-resume')?.classList.add('hidden');
@@ -55,7 +55,10 @@ function buildResumeHTML(feuille, elements) {
     const rappels       = elements.filter(e => e.kind === 'rappel');
 
     const timeRange = (feuille.heure_debut && feuille.heure_fin)
-        ? `${feuille.heure_debut} → ${feuille.heure_fin}` : '';
+        ? `${hhmm(feuille.heure_debut)} → ${hhmm(feuille.heure_fin)}` : '';
+    const rappel      = rappels[0];
+    const rappelRange = rappel ? `${hhmm(rappel.pause_debut) || '—'} → ${hhmm(rappel.pause_fin) || '—'}` : '';
+    const astreinte   = !!feuille.astreinte || !!(rappel && rappel.astreinte);
 
     const totaux = [
         feuille.heures_travail ? `${feuille.heures_travail} travaillées` : '',
@@ -66,8 +69,10 @@ function buildResumeHTML(feuille, elements) {
         <div class="resume-hero">
             <p class="resume-label">Feuille du jour</p>
             <h2 class="resume-date-titre">${formatDateLong(feuille.date)}</h2>
-            ${timeRange ? `<p class="resume-time-range">${timeRange}</p>` : ''}
-            ${totaux    ? `<p class="resume-totaux">${totaux}</p>`        : ''}
+            ${astreinte ? `<p class="resume-astreinte"><span class="astreinte-badge">Astreinte</span></p>` : ''}
+            ${timeRange   ? `<p class="resume-time-range">${timeRange}</p>` : ''}
+            ${rappelRange ? `<p class="resume-time-range">↩ Sortie suppl. ${rappelRange}${rappel && rappel.astreinte ? ' (astreinte)' : ''}</p>` : ''}
+            ${totaux      ? `<p class="resume-totaux">${totaux}</p>`        : ''}
             <div class="resume-actions">
                 <button class="resume-btn-pdf" id="btn-resume-pdf">📄 Afficher le PDF</button>
                 <button class="resume-btn-modifier" id="btn-resume-modifier">✏️ Modifier</button>
@@ -89,7 +94,7 @@ function buildResumeHTML(feuille, elements) {
                         ${details ? `<span class="resume-item-details">${escHtml(details)}</span>` : ''}
                         ${el.mo   ? `<span class="resume-item-mo">MO : ${escHtml(el.mo)}</span>` : ''}
                     </div>
-                    <span class="resume-item-heures">${el.heure_arrivee || '—'} → ${el.heure_depart || '—'}</span>
+                    <span class="resume-item-heures">${hhmm(el.heure_arrivee) || '—'} → ${hhmm(el.heure_depart) || '—'}</span>
                 </div>
             `;
         });
@@ -97,18 +102,10 @@ function buildResumeHTML(feuille, elements) {
 
     html += '</div>';
 
-    if (rappels.length > 0) {
-        html += '<div class="card"><h3 class="resume-section-title">Rappel / sortie supplémentaire</h3>';
-        rappels.forEach(el => {
-            html += `<div class="resume-item resume-item-rappel">↩ Rappel ${el.pause_debut || '—'} → ${el.pause_fin || '—'}</div>`;
-        });
-        html += '</div>';
-    }
-
     if (pauses.length > 0) {
         html += '<div class="card"><h3 class="resume-section-title">Pauses</h3>';
         pauses.forEach(el => {
-            html += `<div class="resume-item resume-item-pause">⏸ Pause ${el.pause_debut || '—'} → ${el.pause_fin || '—'}</div>`;
+            html += `<div class="resume-item resume-item-pause">⏸ Pause ${hhmm(el.pause_debut) || '—'} → ${hhmm(el.pause_fin) || '—'}</div>`;
         });
         html += '</div>';
     }
