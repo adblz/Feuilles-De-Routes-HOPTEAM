@@ -1,7 +1,8 @@
 import { getSession } from '../modules/auth.js';
 import { SUPABASE_URL, SUPABASE_KEY } from '../modules/config.js';
 
-const BACKEND = 'https://feuilles-de-routes-hopteam.onrender.com';
+const BACKEND       = 'https://feuilles-de-routes-hopteam.onrender.com';
+const ERROR_API_KEY = 'fdr-hopteam-errors-k7x2m9p';
 
 function buildHeaders() {
     const token = getSession()?.access_token;
@@ -54,6 +55,28 @@ export async function supprimerSuggestion(id) {
         headers: buildHeaders(),
     });
     if (!res.ok) throw new Error(`Suppression suggestion : ${await res.text()}`);
+}
+
+export async function notifySuggestion(categorie, message) {
+    const token = getSession()?.access_token;
+    if (!token) return;
+    try {
+        await fetch(`${BACKEND}/admin/notify-suggestion`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body:    JSON.stringify({ categorie, message }),
+        });
+    } catch { /* notification silencieuse */ }
+}
+
+export async function reportError({ message, source, userEmail, userRole, page }) {
+    try {
+        await fetch(`${BACKEND}/report-error`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': ERROR_API_KEY },
+            body:    JSON.stringify({ message, source, userEmail, userRole, page }),
+        });
+    } catch { /* notification silencieuse */ }
 }
 
 export async function creerUtilisateur(email, nom, contrat, password, company, emailResp) {

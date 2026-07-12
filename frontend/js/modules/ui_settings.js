@@ -1,6 +1,7 @@
 import { showToast } from '../utils/utils.js';
 import { cfg, saveCfg, calcHeures } from './fdr.js';
 import { sauvegarderContratProfil, enregistrerSuggestion } from './db.js';
+import { notifySuggestion } from '../api/admin_api.js';
 
 export function fermerModal(id) {
     document.getElementById(id).classList.remove('open');
@@ -50,6 +51,7 @@ export async function envoyerSuggestion() {
     btn.disabled = true;
     try {
         await enregistrerSuggestion(categorie, message);
+        notifySuggestion(categorie, message);
         showToast('Merci, suggestion envoyée !', 'success');
         fermerModal('modal-suggestion');
     } catch {

@@ -2,6 +2,7 @@ const express      = require('express');
 const cors         = require('cors');
 const path         = require('path');
 const adminRoutes  = require('./routes/admin');
+const { adminRouter: notifyAdmin, publicRouter: notifyPublic } = require('./routes/notify');
 
 const app = express();
 
@@ -43,6 +44,8 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Le backend sert uniquement à la création de comptes (page Admin).
 app.use('/admin', adminRoutes);
+app.use('/admin', notifyAdmin);
+app.use('/', notifyPublic);
 
 // Gestion propre des erreurs.
 app.use((err, req, res, next) => {
@@ -56,6 +59,9 @@ app.use((err, req, res, next) => {
 // Avertissement si la variable essentielle à la création de comptes manque.
 if (!process.env.SUPABASE_SERVICE_KEY) {
     console.warn("⚠️  Variable d'environnement manquante : SUPABASE_SERVICE_KEY");
+}
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+    console.warn("⚠️  TELEGRAM_BOT_TOKEN manquant — notifications Telegram désactivées.");
 }
 
 const PORT = process.env.PORT || 3000;
