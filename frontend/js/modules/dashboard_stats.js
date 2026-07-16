@@ -1,49 +1,69 @@
 import { chargerHeuresSupp } from './db.js';
-import { chargerPeriodesPaie } from './db_planning.js';
-import { trouverPeriodeCourante, nomMois, MOIS_FR } from './periodes_paie.js';
 import { affH, isoLocal } from '../utils/utils.js';
-import { totauxSuppPeriode } from './heures_calculs.js';
+import { calcHebdomadaire } from './heures_calculs.js';
 import { getBrouillonsDates } from './fdr.js';
 
-let actionListExpanded = false;
-let _lastManquants     = [];
-
-export function getLastManquants()       { return _lastManquants; }
-export function getActionListExpanded()  { return actionListExpanded; }
-export function setActionListExpanded(v) { actionListExpanded = v; }
-
 export async function rendreHeuresSupp() {
-    const totalEl   = document.getElementById('dash-supp-total');
-    const periodeEl = document.getElementById('dash-supp-periode-txt');
+    const heroEl    = document.getElementById('dash-supp-hero');
+    const datesEl   = document.getElementById('dash-supp-dates');
+    const contextEl = document.getElementById('dash-supp-context');
+    const barEl     = document.getElementById('dash-supp-bar');
+    const legendEl  = document.getElementById('dash-supp-legend');
 
-    const today = isoLocal(new Date());
+    if (!heroEl) return;
+    heroEl.textContent = '…';
 
-    // La période suit le planning de paie (période contenant aujourd'hui) ;
-    // à défaut de planning → mois calendaire en cours.
-    let debut = today.slice(0, 8) + '01';
-    let fin   = today;
-    let mois  = MOIS_FR[new Date(today + 'T12:00').getMonth()];
-    try {
-        const periode = trouverPeriodeCourante(await chargerPeriodesPaie(), today);
-        if (periode) {
-            debut = periode.date_debut;
-            fin   = periode.date_fin;
-            mois  = nomMois(periode);
-        }
-    } catch { /* planning indisponible → on garde le mois calendaire */ }
-
-    if (periodeEl) periodeEl.textContent = mois.charAt(0).toUpperCase() + mois.slice(1);
-    totalEl.textContent = '…';
+    // Lundi et dimanche de la semaine en cours
+    const today = new Date();
+    const dow = today.getDay() || 7;
+    const lundi = new Date(today);
+    lundi.setDate(today.getDate() - dow + 1);
+    const dimanche = new Date(lundi);
+    dimanche.setDate(lundi.getDate() + 6);
 
     let histo;
     try {
-        histo = await chargerHeuresSupp(debut, fin);
+        histo = await chargerHeuresSupp(isoLocal(lundi), isoLocal(dimanche));
     } catch {
-        totalEl.textContent = '—';
+        heroEl.textContent = '—';
         return;
     }
 
-    totalEl.textContent = affH(totauxSuppPeriode(histo).supp);
+    const semaines = calcHebdomadaire(histo);
+
+    if (!semaines.length) {
+        heroEl.textContent = '—';
+        if (contextEl) contextEl.textContent = 'Aucune heure saisie cette semaine';
+        if (barEl) barEl.hidden = true;
+        if (legendEl) legendEl.textContent = '';
+        return;
+    }
+
+    const { label, totalTravailMin, totalSuppMin, supp25, supp50, totalAstreinteMin, nbJours, seuilMin } = semaines[0];
+
+    if (datesEl) datesEl.textContent = label;
+    heroEl.textContent = totalSuppMin > 0 ? `+${affH(totalSuppMin)}` : '0h00';
+
+    if (contextEl) {
+        contextEl.textContent = `${affH(totalTravailMin)} travaillées · ${nbJours} jour${nbJours > 1 ? 's' : ''}`;
+    }
+
+    if (barEl && totalTravailMin > 0) {
+        barEl.hidden = false;
+        const base = Math.min(totalTravailMin, seuilMin);
+        document.getElementById('dash-supp-seg-base').style.width = `${base / totalTravailMin * 100}%`;
+        document.getElementById('dash-supp-seg-25').style.width   = `${supp25 / totalTravailMin * 100}%`;
+        document.getElementById('dash-supp-seg-50').style.width   = `${supp50 / totalTravailMin * 100}%`;
+    }
+
+    if (legendEl && totalTravailMin > 0) {
+        const base = Math.min(totalTravailMin, seuilMin);
+        let html = `<span>Base ${affH(base)}</span>`;
+        if (supp25 > 0) html += `<span class="dash-supp-lbl-25">25% · ${affH(supp25)}</span>`;
+        if (supp50 > 0) html += `<span class="dash-supp-lbl-50">50% · ${affH(supp50)}</span>`;
+        if (totalAstreinteMin > 0) html += `<span class="dash-supp-lbl-ast">● ${affH(totalAstreinteMin)} ast.</span>`;
+        legendEl.innerHTML = html;
+    }
 }
 
 export function majBrouillonCard() {
@@ -81,59 +101,3 @@ export function toggleBrouillonList() {
     if (chev) chev.textContent = isHidden ? '▼' : '▲';
 }
 
-export function toggleActionList() {
-    actionListExpanded = !actionListExpanded;
-    _rendreActionList(_lastManquants);
-}
-
-export function _rendreActionList(items) {
-    _lastManquants = items;
-    const list  = document.getElementById('dash-action-list');
-    const titre = document.getElementById('dash-action-titre');
-    if (!list || !titre) return;
-
-    if (!items.length) {
-        titre.textContent  = 'Tout est à jour';
-        titre.style.cursor = '';
-        list.innerHTML = '<li class="dash-action-empty">Aucune feuille en attente. Bon travail.</li>';
-        return;
-    }
-
-    const total    = items.length;
-    const LIMIT    = 2;
-    const hasMore  = total > LIMIT;
-    const visibles = (hasMore && !actionListExpanded) ? items.slice(0, LIMIT) : items;
-
-    titre.textContent  = total === 1 ? '1 feuille en attente' : `${total} feuilles en attente`;
-    titre.style.cursor = hasMore ? 'pointer' : '';
-
-    const ICON_PENDING = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3.5 2"/></svg>`;
-    const ICON_MISSING = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 21 19H3Z"/><line x1="12" y1="9.5" x2="12" y2="14"/></svg>`;
-
-    let html = visibles.map(({ key, type }) => {
-        const dateObj     = new Date(key + 'T12:00');
-        const label       = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-        const labelCap    = label.charAt(0).toUpperCase() + label.slice(1);
-        const isBrouillon = type === 'brouillon';
-        return `
-            <li class="dash-action-row ${isBrouillon ? 'is-pending' : 'is-missing'}">
-                <span class="dash-action-ico">${isBrouillon ? ICON_PENDING : ICON_MISSING}</span>
-                <span class="dash-action-info">
-                    <strong>${labelCap}</strong>
-                    <span>${isBrouillon ? 'Brouillon non finalisé' : 'Non rempli'}</span>
-                </span>
-                <button class="dash-action-btn" data-date="${key}" data-action="${isBrouillon ? 'finaliser' : 'remplir'}">
-                    ${isBrouillon ? 'Finaliser' : 'Remplir'}
-                </button>
-            </li>`;
-    }).join('');
-
-    if (hasMore) {
-        const restant = total - LIMIT;
-        html += actionListExpanded
-            ? `<li class="dash-action-toggle" id="dash-action-toggle">▲ Réduire</li>`
-            : `<li class="dash-action-toggle" id="dash-action-toggle">▼ Afficher ${restant} de plus</li>`;
-    }
-
-    list.innerHTML = html;
-}

@@ -2,6 +2,7 @@ import { chargerHistorique } from './db.js';
 import { showToast, isoLocal } from '../utils/utils.js';
 import { getBrouillonsDates } from './fdr.js';
 import { afficherResumeFeuille } from './resume.js';
+import { estFerie } from './jours_feries.js';
 
 let _onNouveau   = null;
 let _onFinaliser = null;
@@ -87,6 +88,7 @@ export async function rendreCalendrierMois() {
         const key          = isoLocal(dateObj);
         const dow          = dateObj.getDay();
         const isWeekend    = dow === 0 || dow === 6;
+        const isFerie      = !isWeekend && estFerie(key);
         const isFuture     = key > todayISO;
         const isToday      = key === todayISO;
         const isFilled     = datesEnregistrees.has(key);
@@ -95,9 +97,10 @@ export async function rendreCalendrierMois() {
         const cell = document.createElement('div');
         let cls = 'dash-day';
 
-        if (isFilled)          { cls += ' dash-day-filled'; if (isToday) cls += ' dash-day-today'; }
+        if (isFilled)          { cls += ' dash-day-filled'; if (isToday) cls += ' dash-day-today'; if (isFerie) cls += ' dash-day-ferie-badge'; }
         else if (hasBrouillon) { cls += ' dash-day-pending'; manquants.push({ key, type: 'brouillon' }); }
         else if (isWeekend)    { cls += ' dash-day-off'; }
+        else if (isFerie)      { cls += ' dash-day-ferie'; }
         else if (isFuture)     { cls += ' dash-day-future'; }
         else                   { cls += ' dash-day-missing'; manquants.push({ key, type: 'missing' }); }
 
@@ -105,14 +108,15 @@ export async function rendreCalendrierMois() {
         if (isFilled)          dotClass = 'ldot ldot-filled';
         else if (hasBrouillon) dotClass = 'ldot ldot-pending';
         else if (isWeekend)    dotClass = 'ldot ldot-off';
+        else if (isFerie)      dotClass = 'ldot ldot-ferie';
         else if (!isFuture)    dotClass = 'ldot ldot-missing';
 
         cell.className = cls;
         cell.innerHTML = `<span class="dash-day-num">${d}</span>${dotClass ? `<i class="${dotClass}"></i>` : ''}`;
 
-        if (!isFuture) {
+        if (!isFuture || isFerie) {
             cell.style.cursor = 'pointer';
-            cell.addEventListener('click', () => selectionnerJour(dateObj, key, isFilled, dateToId[key] || null, hasBrouillon));
+            cell.addEventListener('click', () => selectionnerJour(dateObj, key, isFilled, dateToId[key] || null, hasBrouillon, isFerie));
         }
 
         grid.appendChild(cell);
@@ -127,7 +131,7 @@ export async function rendreCalendrierMois() {
     return manquants;
 }
 
-function selectionnerJour(dateObj, key, isFilled, feuilleId, hasBrouillon) {
+function selectionnerJour(dateObj, key, isFilled, feuilleId, hasBrouillon, isFerie = false) {
     const panel   = document.getElementById('dash-cal-selected');
     const labelEl = document.getElementById('dash-cal-selected-label');
     const oldBtn  = document.getElementById('dash-cal-selected-btn');
@@ -148,6 +152,10 @@ function selectionnerJour(dateObj, key, isFilled, feuilleId, hasBrouillon) {
         btn.textContent = 'Finaliser le brouillon';
         btn.className   = 'dash-cal-selected-btn dash-cal-btn-remplir';
         btn.addEventListener('click', () => _onFinaliser && _onFinaliser(key));
+    } else if (isFerie) {
+        btn.textContent = 'Travailler ce jour (exceptionnel)';
+        btn.className   = 'dash-cal-selected-btn dash-cal-btn-remplir';
+        btn.addEventListener('click', () => _onNouveau && _onNouveau(key));
     } else {
         btn.textContent = 'Remplir';
         btn.className   = 'dash-cal-selected-btn dash-cal-btn-remplir';

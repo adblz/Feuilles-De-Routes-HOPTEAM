@@ -5,6 +5,7 @@ import {
 } from './fdr_form.js';
 import { sauvegarderBrouillon } from './fdr_brouillon.js';
 import { hhmm } from '../utils/utils.js';
+import { collapserApresRestauration } from './fdr_collapse.js';
 
 // Remplit le formulaire à partir d'une feuille Supabase + ses éléments.
 // Partagé par la restauration depuis l'historique et le bouton « Modifier » du résumé.
@@ -39,6 +40,7 @@ export function remplirFormulaireDepuisFeuille(feuille, elements) {
 
     const interventionsEtPauses = (elements || []).filter(e => e.kind !== 'rappel');
     if (!interventionsEtPauses.length) ajouterIntervention();
+    collapserApresRestauration();
 
     // Calcul après remplissage pour inclure l'éventuel rappel.
     if (feuille.heure_debut && feuille.heure_fin) calcHeures();

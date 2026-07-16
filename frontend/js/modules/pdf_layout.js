@@ -1,4 +1,4 @@
-import { cfg, seuilJour, lireTousLesElements, getLogoBase64 } from './fdr.js';
+import { cfg, seuilJour, lireTousLesElements, getLogoBase64, estExterne } from './fdr.js';
 import { renderItems } from './pdf_items.js';
 import { dureeCourte } from '../utils/utils.js';
 
@@ -28,7 +28,7 @@ export function construirePDF() {
 
     const logoB64  = getLogoBase64();
     const logoHtml = logoB64
-        ? `<img src="${logoB64}" style="height:44px;width:auto;display:block;margin-bottom:6px;">`
+        ? `<img src="${logoB64}" style="height:44px;width:auto;display:block;margin-bottom:6px;margin-left:auto;">`
         : '';
 
     return `
@@ -54,7 +54,7 @@ export function construirePDF() {
             <div class="pdf-hour-box"><div class="lbl">Début journée</div><div class="val">${debut}</div></div>
             <div class="pdf-hour-box"><div class="lbl">Fin journée</div><div class="val">${fin}</div></div>
             <div class="pdf-hour-box repas"><div class="lbl">Pause repas</div><div class="val">${repas}</div></div>
-            <div class="pdf-hour-box supp"><div class="lbl">${astreinteJour ? 'Heures travaillées (astreinte)' : 'Heures trav. (−1h trajet)'}</div><div class="val">${travail}</div></div>
+            <div class="pdf-hour-box supp"><div class="lbl">${astreinteJour ? 'Heures travaillées (astreinte)' : (estExterne() ? 'Heures trav.' : 'Heures trav. (−1h trajet)')}</div><div class="val">${travail}</div></div>
         </div>
 ${rappel ? `
         <div class="pdf-hours-row">
@@ -90,8 +90,7 @@ export function preparerPdfElement() {
     el.innerHTML  = construirePDF();
     document.body.appendChild(el);
 
-    const w = el.offsetWidth  || PDF_CONTENT_WIDTH_PX;
-    const h = el.offsetHeight;
+    const w = el.offsetWidth || PDF_CONTENT_WIDTH_PX;
 
     const nettoyer = () => {
         if (document.body.contains(el)) document.body.removeChild(el);
@@ -105,8 +104,8 @@ export function preparerPdfElement() {
         html2canvas: {
             scale: 2, useCORS: true, logging: false,
             backgroundColor: '#ffffff',
-            width: w, height: h,
-            windowWidth: w, windowHeight: h,
+            width: w,
+            windowWidth: w,
             scrollX: 0, scrollY: 0, x: 0, y: 0,
             onclone(clonedDoc) {
                 clonedDoc.getElementById('loading-overlay').style.display = 'none';

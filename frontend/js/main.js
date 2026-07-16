@@ -5,17 +5,18 @@ import {
 } from './modules/fdr.js';
 import {
     openSettings, fermerModal, sauvegarderParams,
-    ouvrirHistorique, renderListeHistorique, initHistoriqueEvents,
     ouvrirSuppRecap, calculerSuppRecap,
     ouvrirSuggestion, envoyerSuggestion,
 } from './modules/ui.js';
 import { genererPDF } from './modules/pdf.js';
 import { initDashboard, afficherDashboard } from './modules/dashboard.js';
 import { initToolbar } from './modules/toolbar.js';
+import { afficherHeures } from './modules/heures_history.js';
 import { fermerPdfViewer } from './modules/pdfviewer.js';
-import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession } from './modules/auth.js';
+import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession, startAutoRefresh } from './modules/auth.js';
 import { chargerContratProfil, sauvegarderContratProfil } from './modules/db.js';
-import { showToast, scrollVersCarte, attachPasswordToggle } from './utils/utils.js';
+import { showToast, scrollVersCarte, attachPasswordToggle, attacherBoutonMiseAJour } from './utils/utils.js';
+import { collapserToutesSauf } from './modules/fdr_collapse.js';
 
 // ── Initialisation de l'app après auth ────────────────────────
 
@@ -34,6 +35,7 @@ function initApp(user, nomProfil) {
     initDashboard(nomTech);
     afficherDashboard();
     initToolbar();
+    document.getElementById('dash-supp-card')?.addEventListener('click', afficherHeures);
 
     // ── Formulaire principal ───────────────────────────────────
 
@@ -68,9 +70,11 @@ function initApp(user, nomProfil) {
     document.getElementById('btn-supp-auto').addEventListener('click', resetSuppAuto);
 
     document.getElementById('btn-add-int').addEventListener('click', () => {
+        collapserToutesSauf(null);
         scrollVersCarte(ajouterIntervention());
     });
     document.getElementById('btn-add-pause').addEventListener('click', () => {
+        collapserToutesSauf(null);
         scrollVersCarte(ajouterPause());
     });
 
@@ -115,12 +119,6 @@ function initApp(user, nomProfil) {
 
     document.getElementById('btn-pdf').addEventListener('click', genererPDF);
 
-    // ── Modal historique ───────────────────────────────────────
-
-    initHistoriqueEvents();
-    document.getElementById('histo-filtre-annee').addEventListener('change', renderListeHistorique);
-    document.getElementById('btn-close-historique').addEventListener('click', () => fermerModal('modal-historique'));
-
     // ── Modal aperçu PDF ───────────────────────────────────────
 
     document.getElementById('btn-close-pdf').addEventListener('click', fermerPdfViewer);
@@ -140,18 +138,6 @@ function initApp(user, nomProfil) {
     document.getElementById('btn-ouvrir-suggestion').addEventListener('click', ouvrirSuggestion);
     document.getElementById('btn-suggestion-envoyer').addEventListener('click', envoyerSuggestion);
     document.getElementById('btn-suggestion-annuler').addEventListener('click', () => fermerModal('modal-suggestion'));
-
-    document.getElementById('btn-refresh-app').addEventListener('click', async () => {
-        if ('serviceWorker' in navigator) {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            for (const reg of regs) await reg.unregister();
-        }
-        if ('caches' in window) {
-            const keys = await caches.keys();
-            await Promise.all(keys.map(k => caches.delete(k)));
-        }
-        location.reload(true);
-    });
 
     attachPasswordToggle('s-new-password', 'toggle-new-password');
     attachPasswordToggle('s-confirm-password', 'toggle-confirm-password');
@@ -177,21 +163,12 @@ function initApp(user, nomProfil) {
         }
     });
 
-    document.getElementById('btn-logout').addEventListener('click', async () => {
-        if (!confirm('Se déconnecter ?')) return;
-        await deconnexion();
-        if (typeof caches !== 'undefined') {
-            const keys = await caches.keys();
-            await Promise.all(keys.map(k => caches.delete(k)));
-        }
-        window.location.href = '/pages/login.html';
-    });
 }
 
 // ── Point d'entrée ─────────────────────────────────────────────
 
-// Mesure la hauteur de l'entête pour que les panneaux (historique, heures supp)
-// s'ouvrent pile en dessous sur téléphone.
+// Mesure la hauteur de l'entête pour que le panneau heures supp
+// s'ouvre pile en dessous sur téléphone.
 function majHauteurHeader() {
     const header = document.querySelector('header');
     if (header) {
@@ -201,12 +178,56 @@ function majHauteurHeader() {
 
 window.addEventListener('resize', majHauteurHeader);
 
+// Boutons de secours ("Mettre à jour", "Déconnexion") : branchés tout au
+// début du chargement, isolés dans leur propre try/catch, pour qu'ils
+// fonctionnent toujours même si une erreur survient ailleurs dans l'appli
+// (par ex. un mélange de fichiers en cache d'anciennes/nouvelles versions).
+function attacherBoutonsSecours() {
+    try {
+        attacherBoutonMiseAJour();
+
+        document.getElementById('btn-logout')?.addEventListener('click', async () => {
+            if (!confirm('Se déconnecter ?')) return;
+            await deconnexion();
+            if (typeof caches !== 'undefined') {
+                const keys = await caches.keys();
+                await Promise.all(keys.map(k => caches.delete(k)));
+            }
+            window.location.href = document.body.dataset.loginPage || '/pages/login.html';
+        });
+    } catch (err) {
+        console.error('Erreur lors de l\'attachement des boutons de secours', err);
+    }
+}
+
 window.addEventListener('load', async () => {
-    document.getElementById('header-logo').src = getLogoBase64();
+    attacherBoutonsSecours();
+
+    const logo = getLogoBase64();
+    const logoEl = document.getElementById('header-logo');
+    if (logo) logoEl.src = logo; else logoEl.classList.add('hidden');
     majHauteurHeader();
 
     if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+            // Le navigateur ne revérifie pas toujours de lui-même s'il existe
+            // une nouvelle version du service worker (surtout en usage PWA sur
+            // téléphone, onglet resté ouvert plusieurs jours). On force cette
+            // vérification à chaque fois que l'appli revient au premier plan.
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') reg.update();
+            });
+        }).catch(() => {});
+
+        // Dès qu'une nouvelle version du service worker prend le contrôle de
+        // la page, on recharge automatiquement une seule fois (le garde-fou
+        // ci-dessous évite toute boucle de rechargement infinie).
+        let dejaRecharge = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (dejaRecharge) return;
+            dejaRecharge = true;
+            window.location.reload();
+        });
     }
 
     let session = getSession();
@@ -216,14 +237,21 @@ window.addEventListener('load', async () => {
     }
 
     if (!session?.user) {
-        window.location.href = '/pages/login.html';
+        window.location.href = document.body.dataset.loginPage || '/pages/login.html';
         return;
     }
+    startAutoRefresh();
 
     try {
         const profil = await chargerContratProfil();
         if (profil?.role === 'responsable') {
             window.location.href = '/pages/responsable.html';
+            return;
+        }
+        const estExterne = document.body.dataset.branding === 'externe';
+        const estDav = profil?.company === 'DAV';
+        if (estExterne !== estDav) {
+            window.location.href = estDav ? '/index-externe.html' : '/index.html';
             return;
         }
         if (profil?.contrat) {

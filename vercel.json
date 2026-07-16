@@ -1,4 +1,24 @@
 {
   "buildCommand": "node -e \"const fs=require('fs');const id=process.env.VERCEL_DEPLOYMENT_ID||'local';const p=fs.existsSync('sw.js')?'sw.js':'frontend/sw.js';const c=fs.readFileSync(p,'utf8').replace(/fdr-v[0-9a-z]*/,'fdr-'+id.slice(0,16));fs.writeFileSync(p,c);\"",
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/js/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/assets/css/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+      ]
+    }
+  ]
 }

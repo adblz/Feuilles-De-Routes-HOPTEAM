@@ -21,6 +21,10 @@ export async function chargerToutesLesFeuilles() {
     );
 }
 
+export async function chargerProfilsTechniciens() {
+    return dbGet(`profiles?select=id,nom,company&role=eq.technicien`);
+}
+
 export async function chargerPdfResponsable(id) {
     const rows = await dbGet(`feuilles_de_route?id=eq.${id}&select=pdf_data`);
     return rows[0]?.pdf_data || null;

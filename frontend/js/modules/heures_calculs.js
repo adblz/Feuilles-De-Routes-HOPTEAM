@@ -1,4 +1,6 @@
 import { parseDuree } from '../utils/utils.js';
+import { feriesEnSemaine } from './jours_feries.js';
+import { estExterne } from './fdr_config.js';
 
 // ── Barème heures supplémentaires (défaut légal — à vérifier convention 3044) ──
 const SEUIL_HEBDO_MIN = 35 * 60;   // au-delà de 35h/semaine = heures supplémentaires
@@ -26,6 +28,14 @@ export function calcHeuresNuit(heureDebut, heureFin, trajet = true) {
 }
 
 // ── Calcul hebdomadaire ────────────────────────────────────────
+
+function getLundiSemaine(dateStr) {
+    const d = new Date(dateStr + 'T12:00');
+    const day = d.getDay() || 7;
+    const lundi = new Date(d);
+    lundi.setDate(d.getDate() - day + 1);
+    return lundi;
+}
 
 function getSemaineISO(dateStr) {
     const d = new Date(dateStr + 'T12:00');
@@ -75,15 +85,21 @@ export function calcHebdomadaire(feuilles) {
         for (const f of fs) {
             const travailMin = parseDuree(f.heures_travail);
             totalTravailMin += travailMin;
-            totalNuitMin    += calcHeuresNuit(f.heure_debut, f.heure_fin);
+            totalNuitMin    += calcHeuresNuit(f.heure_debut, f.heure_fin, !estExterne());
+            const rappel = f.interventions?.find(i => i.kind === 'rappel');
+            if (rappel) totalNuitMin += calcHeuresNuit(rappel.pause_debut, rappel.pause_fin, false);
             if (f.astreinte) totalAstreinteMin += travailMin;
         }
 
-        const totalSuppMin = Math.max(0, totalTravailMin - SEUIL_HEBDO_MIN);
-        const supp25 = Math.min(totalSuppMin, PALIER_25_MIN);      // heures 36→43
-        const supp50 = Math.max(0, totalSuppMin - PALIER_25_MIN);  // 44h et +
+        // Seuil réduit de 7h par jour férié tombant lun→ven dans la semaine.
+        const nbFeries = feriesEnSemaine(getLundiSemaine(fs[0].date));
+        const seuilMin = Math.max(0, SEUIL_HEBDO_MIN - nbFeries * 7 * 60);
 
-        return { cle, label, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin };
+        const totalSuppMin = Math.max(0, totalTravailMin - seuilMin);
+        const supp25 = Math.min(totalSuppMin, PALIER_25_MIN);      // premières 8h supp à +25%
+        const supp50 = Math.max(0, totalSuppMin - PALIER_25_MIN);  // au-delà à +50%
+
+        return { cle, label, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin, nbFeries, seuilMin };
     });
 }
 

@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Feuille de Route">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest-externe.json">
     <title>Feuille de Route</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,12 +17,12 @@
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/toolbar.css">
 </head>
-<body>
+<body data-branding="externe" data-login-page="/pages/login-externe.html">
 
 <header>
     <div class="header-left">
         <img id="header-logo" class="header-logo" alt="Logo">
-        <img class="header-logo-reduit" src="/assets/images/logo-reduit.png" alt="Logo">
+        <img class="header-logo-reduit" src="/assets/images/davlogo.png" alt="Logo">
         <div>
             <h1>FEUILLES DE ROUTES</h1>
         </div>

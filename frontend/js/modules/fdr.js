@@ -1,5 +1,5 @@
 // Point d'entrée unique — réexporte tout pour que les imports existants continuent de fonctionner.
-export { cfg, saveCfg, getLogoBase64 }                                   from './fdr_config.js';
+export { cfg, saveCfg, getLogoBase64, estExterne }                       from './fdr_config.js';
 export { seuilJour, calcHeures, onSuppInput, resetSuppAuto, validerSuppInput, setSuppManuel } from './fdr_calculs.js';
 export {
     ajouterIntervention, ajouterPause, supprimerElement, deplacerElement,

@@ -1,5 +1,5 @@
 import { affH, normaliserSupp, showToast } from '../utils/utils.js';
-import { cfg } from './fdr_config.js';
+import { cfg, estExterne } from './fdr_config.js';
 import { calcHeuresNuit } from './heures_calculs.js';
 
 // ── État heures supplémentaires ────────────────────────────────
@@ -55,7 +55,7 @@ export function calcHeures() {
     if (finMin <= debutMin) finMin += 1440;   // passage de minuit (retour après 00h)
 
     const astreinteJour = document.getElementById('astreinte-jour')?.checked;
-    const trajetMin     = astreinteJour ? 0 : 60;   // astreinte : aucun trajet retiré
+    const trajetMin     = (astreinteJour || estExterne()) ? 0 : 60;   // astreinte ou page externe : aucun trajet retiré
     let totalMin = finMin - debutMin - repas - trajetMin;   // −60 = 30 min matin + 30 min soir
     if (totalMin < 0) totalMin = 0;
 
@@ -71,7 +71,7 @@ export function calcHeures() {
     // Nuit = journée principale (avec trajet) + rappel éventuel (compté en entier)
     const rDebut   = document.getElementById('rappel-debut')?.value;
     const rFin     = document.getElementById('rappel-fin')?.value;
-    const nuitMin  = calcHeuresNuit(debut, fin, !astreinteJour) + calcHeuresNuit(rDebut, rFin, false);
+    const nuitMin  = calcHeuresNuit(debut, fin, !astreinteJour && !estExterne()) + calcHeuresNuit(rDebut, rFin, false);
     const nuitEl   = document.getElementById('heures-nuit');
     const nuitGrp  = document.getElementById('heures-nuit-group');
     if (nuitEl && nuitGrp) {

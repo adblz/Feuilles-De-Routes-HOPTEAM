@@ -69,6 +69,15 @@ export async function changerMotDePasse(newPassword) {
     }
 }
 
+export function startAutoRefresh() {
+    setInterval(async () => {
+        if (!isSessionValid()) {
+            const refreshed = await refreshSession();
+            if (!refreshed) window.location.href = document.body.dataset.loginPage || '/pages/login.html';
+        }
+    }, 45 * 60 * 1000);
+}
+
 export async function refreshSession() {
     const s = getSession();
     if (!s?.refresh_token) return null;

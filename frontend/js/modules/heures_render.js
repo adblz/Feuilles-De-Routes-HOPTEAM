@@ -60,9 +60,10 @@ function carteSemaine(s) {
         : `<span class="heures-muet">Aucune heure supp.</span>`;
 
     const badges = [];
-    if (s.supp25 > 0)           badges.push(badge('badge-25', `25% · ${affH(s.supp25)}`));
-    if (s.supp50 > 0)           badges.push(badge('badge-50', `50% · ${affH(s.supp50)}`));
-    if (s.totalNuitMin > 0)     badges.push(badge('badge-nuit', `Nuit · ${affH(s.totalNuitMin)}`));
+    if (s.nbFeries > 0)          badges.push(badge('badge-ferie', `Seuil ${affH(s.seuilMin)} — ${s.nbFeries} jour${s.nbFeries > 1 ? 's' : ''} férié${s.nbFeries > 1 ? 's' : ''}`));
+    if (s.supp25 > 0)            badges.push(badge('badge-25', `25% · ${affH(s.supp25)}`));
+    if (s.supp50 > 0)            badges.push(badge('badge-50', `50% · ${affH(s.supp50)}`));
+    if (s.totalNuitMin > 0)      badges.push(badge('badge-nuit', `Nuit · ${affH(s.totalNuitMin)}`));
     if (s.totalAstreinteMin > 0) badges.push(badge('badge-astreinte', `Astreinte · ${affH(s.totalAstreinteMin)}`));
     const badgesHtml = badges.length ? `<div class="heures-badges">${badges.join('')}</div>` : '';
 

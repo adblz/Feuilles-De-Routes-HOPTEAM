@@ -33,6 +33,12 @@
     justify-content: center;
     font-family: 'IBM Plex Sans', sans-serif;
     flex-shrink: 0;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+
+.resp-user-avatar:hover {
+    filter: brightness(1.1);
 }
 
 .resp-btn-logout {
@@ -80,6 +86,26 @@
     color: #a0aec0;
     padding: 40px 16px;
     font-size: 14px;
+}
+
+/* ── Groupes par entreprise (responsable "toutes entreprises") ─── */
+
+.resp-entreprise-groupe {
+    margin-bottom: 20px;
+    border-left: 3px solid hsl(var(--entreprise-hue, 200), 65%, 55%);
+    padding-left: 12px;
+}
+
+.resp-entreprise-header {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: hsl(var(--entreprise-hue, 200), 70%, 65%);
+    background: hsla(var(--entreprise-hue, 200), 70%, 55%, 0.12);
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
 }
 
 /* ── Cartes techniciens ──────────────────────────────────────── */

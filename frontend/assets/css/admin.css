@@ -87,17 +87,32 @@
 .role-responsable { background: var(--teal-soft);  color: var(--teal); }
 .role-admin       { background: var(--amber-soft); color: var(--amber-deep); }
 
-/* Bouton Modifier dans le tableau */
+.form-group-checkbox label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.form-group-checkbox input[type="checkbox"] { width: 16px; height: 16px; }
+
+/* Boutons Modifier / Supprimer dans le tableau (icônes seules) */
+.btn-admin-modifier,
+.btn-admin-supprimer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
 .btn-admin-modifier {
     background: var(--surface-mid);
     border: 1px solid var(--border);
     color: var(--gray-mid);
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s;
 }
 .btn-admin-modifier:hover { background: var(--border-mid); }
 
@@ -105,13 +120,7 @@
     background: var(--surface-mid);
     border: 1px solid #e5484d;
     color: #e5484d;
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
     margin-left: 6px;
-    transition: background 0.15s;
 }
 .btn-admin-supprimer:hover { background: rgba(229, 72, 77, 0.12); }
 

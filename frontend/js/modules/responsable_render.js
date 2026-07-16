@@ -23,13 +23,33 @@ export function moisCourant() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export function grouperParTech(feuilles) {
+export function grouperParTech(feuilles, profils = []) {
+    const companyParUid = new Map(profils.map(p => [p.id, p.company || '—']));
     const map = new Map();
     feuilles.forEach(f => {
-        if (!map.has(f.user_id)) map.set(f.user_id, { nom: f.tech || '—', feuilles: [] });
+        if (!map.has(f.user_id)) {
+            map.set(f.user_id, { nom: f.tech || '—', company: companyParUid.get(f.user_id) || '—', feuilles: [] });
+        }
         map.get(f.user_id).feuilles.push(f);
     });
     return map;
+}
+
+// Couleur stable dérivée du nom de l'entreprise, pour distinguer visuellement
+// les sections sans avoir à connaître la liste des entreprises à l'avance.
+function couleurEntreprise(nom) {
+    let hash = 0;
+    for (let i = 0; i < nom.length; i++) hash = (hash * 31 + nom.charCodeAt(i)) >>> 0;
+    return hash % 360;
+}
+
+function grouperParEntreprise(techMap) {
+    const parEntreprise = new Map();
+    for (const [uid, tech] of techMap) {
+        if (!parEntreprise.has(tech.company)) parEntreprise.set(tech.company, new Map());
+        parEntreprise.get(tech.company).set(uid, tech);
+    }
+    return parEntreprise;
 }
 
 function renderFeuilles(feuilles, vues) {
@@ -67,29 +87,46 @@ function renderFeuilles(feuilles, vues) {
         }).join('');
 }
 
-export function renderTechs(techMap, vues) {
+function renderTechCard(uid, { nom, feuilles }, vues) {
     const mois = moisCourant();
     const joursOuvres = joursOuvresMois();
-    let html = '';
-    for (const [uid, { nom, feuilles }] of techMap) {
-        const remplisMois = feuilles.filter(f => f.date?.startsWith(mois)).length;
-        const ratio = joursOuvres ? remplisMois / joursOuvres : 1;
-        const couleur = ratio >= 1 ? 'vert' : ratio >= 0.5 ? 'orange' : 'rouge';
-        const nonVues = feuilles.filter(f => !vues.has(f.id)).length;
-        const contrat = feuilles[0]?.contrat ? `${feuilles[0].contrat}h` : '';
-        html += `<div class="resp-tech-card" data-uid="${uid}">
-            <div class="resp-tech-header">
-                <span class="resp-avatar">${escHtml(initiales(nom))}</span>
-                <div class="resp-tech-info">
-                    <span class="resp-tech-nom">${escHtml(nom)}</span>
-                    ${contrat ? `<span class="resp-tech-contrat">${contrat}</span>` : ''}
-                </div>
-                <span class="resp-pastille resp-pastille-${couleur}">${remplisMois}/${joursOuvres} j.</span>
-                ${nonVues ? `<span class="resp-badge-nonvue">${nonVues}</span>` : ''}
-                <span class="resp-chevron">▼</span>
+    const remplisMois = feuilles.filter(f => f.date?.startsWith(mois)).length;
+    const ratio = joursOuvres ? remplisMois / joursOuvres : 1;
+    const couleur = ratio >= 1 ? 'vert' : ratio >= 0.5 ? 'orange' : 'rouge';
+    const nonVues = feuilles.filter(f => !vues.has(f.id)).length;
+    const contrat = feuilles[0]?.contrat ? `${feuilles[0].contrat}h` : '';
+    return `<div class="resp-tech-card" data-uid="${uid}">
+        <div class="resp-tech-header">
+            <span class="resp-avatar">${escHtml(initiales(nom))}</span>
+            <div class="resp-tech-info">
+                <span class="resp-tech-nom">${escHtml(nom)}</span>
+                ${contrat ? `<span class="resp-tech-contrat">${contrat}</span>` : ''}
             </div>
-            <div class="resp-tech-body hidden">${renderFeuilles(feuilles, vues)}</div>
-        </div>`;
+            <span class="resp-pastille resp-pastille-${couleur}">${remplisMois}/${joursOuvres} j.</span>
+            ${nonVues ? `<span class="resp-badge-nonvue">${nonVues}</span>` : ''}
+            <span class="resp-chevron">▼</span>
+        </div>
+        <div class="resp-tech-body hidden">${renderFeuilles(feuilles, vues)}</div>
+    </div>`;
+}
+
+export function renderTechs(techMap, vues) {
+    if (!techMap.size) return '<p class="resp-empty">Aucune feuille enregistrée.</p>';
+
+    const parEntreprise = grouperParEntreprise(techMap);
+    if (parEntreprise.size < 2) {
+        let html = '';
+        for (const [uid, tech] of techMap) html += renderTechCard(uid, tech, vues);
+        return html;
     }
-    return html || '<p class="resp-empty">Aucune feuille enregistrée.</p>';
+
+    let html = '';
+    for (const [entreprise, techs] of [...parEntreprise.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+        const hue = couleurEntreprise(entreprise);
+        html += `<div class="resp-entreprise-groupe" style="--entreprise-hue:${hue}">
+            <div class="resp-entreprise-header">${escHtml(entreprise)}</div>`;
+        for (const [uid, tech] of techs) html += renderTechCard(uid, tech, vues);
+        html += `</div>`;
+    }
+    return html;
 }

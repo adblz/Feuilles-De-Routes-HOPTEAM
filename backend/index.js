@@ -40,7 +40,9 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(path.join(__dirname, '../frontend'), {
+    setHeaders: (res) => res.setHeader('Cache-Control', 'no-store'),
+}));
 
 // Le backend sert uniquement à la création de comptes (page Admin).
 app.use('/admin', adminRoutes);

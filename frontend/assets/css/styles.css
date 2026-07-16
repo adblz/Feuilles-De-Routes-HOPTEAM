@@ -446,6 +446,29 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .btn-move:hover { background: var(--border); }
 .btn-move:active { background: var(--border-mid); }
 
+/* Collapse intervention/pause */
+.intervention-card.card-collapsed,
+.pause-card.card-collapsed { cursor: pointer; }
+.intervention-card.card-collapsed .form-grid,
+.pause-card.card-collapsed .form-grid { display: none; }
+.intervention-card.card-collapsed .int-header,
+.pause-card.card-collapsed .int-header { margin-bottom: 0; }
+.card-summary {
+    display: none;
+    font-size: 12px;
+    color: var(--ink-body);
+    padding: 6px 0 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.card-collapsed .card-summary { display: block; }
+.int-number::after,
+.pause-number::after { content: ' ▼'; font-size: 9px; color: var(--muted); }
+.card-collapsed .int-number::after,
+.card-collapsed .pause-number::after { content: ' ▶'; }
+
 /* Boutons d'ajout */
 .add-buttons-row { display: flex; gap: 10px; }
 .btn-add-int {
@@ -546,6 +569,18 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 
 .hidden { display: none !important; }
 
+#vue-dashboard:not(.hidden),
+#vue-formulaire:not(.hidden),
+#vue-resume:not(.hidden),
+#vue-heures:not(.hidden) {
+    animation: vue-fadein 0.22s ease;
+}
+
+@keyframes vue-fadein {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 .dash-hero {
     display: flex;
     flex-direction: column;
@@ -586,28 +621,41 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     letter-spacing: 0.5px;
 }
 
-/* Carte heures supplémentaires — épurée : mois + heures supp */
+/* Carte heures supplémentaires — vue semaine */
 .dash-supp-card {
-    display: block;
-    width: 100%;
-    text-align: left;
-    border: none;
-    cursor: default;
-    font-family: inherit;
+    display: block; width: 100%; text-align: left;
+    border: none; cursor: pointer; font-family: inherit;
 }
-.dash-supp-mois {
-    font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif;
-    font-size: 30px; font-weight: 800; color: var(--ink-title);
-    line-height: 1; margin: 0 0 12px;
+.dash-supp-card:focus-visible { outline: 2px solid var(--steel); outline-offset: 3px; }
+.dash-supp-meta {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; color: var(--muted); margin-bottom: 8px;
 }
-.dash-supp-total {
-    font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif;
-    font-size: 48px; font-weight: 800; color: var(--ink-title);
+.dash-supp-hero {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 38px; font-weight: 500; color: var(--ink-title);
     line-height: 1; margin-bottom: 4px;
 }
-.dash-supp-label {
-    font-size: 12px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.6px; margin: 0;
+.dash-supp-context {
+    font-size: 13px; color: var(--muted); margin: 0 0 14px;
+}
+.dash-supp-bar-track {
+    display: flex; height: 10px; border-radius: 5px;
+    background: #DDD6C6; overflow: hidden; margin-bottom: 8px;
+}
+.dash-supp-seg { height: 100%; transition: width 240ms ease-out; }
+.dash-supp-seg-base { background: #B6AE9C; }
+.dash-supp-seg-25   { background: var(--amber); }
+.dash-supp-seg-50   { background: #F2647A; }
+.dash-supp-legend {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    font-size: 11px; color: var(--muted);
+}
+.dash-supp-lbl-25  { color: #7a4b10; }
+.dash-supp-lbl-50  { color: #a0253c; }
+.dash-supp-lbl-ast { color: var(--teal); }
+@media (prefers-reduced-motion: reduce) {
+    .dash-supp-seg { transition: none; }
 }
 
 /* ── Calendrier du mois (dashboard) ─────────────────────────── */
@@ -663,10 +711,13 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .dash-day-missing:active { transform: scale(0.92); }
 .dash-day-pending { background: var(--paper-dim); color: var(--ink-title); border: 1.5px dashed var(--steel); cursor: pointer; }
 .dash-day-pending:active { transform: scale(0.92); }
-.dash-day-off     { background: transparent; color: #b9b29c; }
-.dash-day-future  { background: transparent; color: var(--stone-light); opacity: 0.5; }
-.dash-day-outside { visibility: hidden; }
-.dash-day-today   { box-shadow: 0 0 0 2px var(--steel) inset; }
+.dash-day-off      { background: transparent; color: #b9b29c; }
+.dash-day-ferie    { background: rgba(168,85,247,.14); color: #6b21a8; cursor: pointer; }
+.dash-day-ferie:active { transform: scale(0.92); }
+.dash-day-ferie-badge { outline: 2px solid rgba(168,85,247,.55); outline-offset: -2px; }
+.dash-day-future   { background: transparent; color: var(--stone-light); opacity: 0.5; }
+.dash-day-outside  { visibility: hidden; }
+.dash-day-today    { box-shadow: 0 0 0 2px var(--steel) inset; }
 
 .dash-cal-legend {
     display: flex;
@@ -682,6 +733,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .ldot-missing { background: var(--amber); }
 .ldot-pending { background: var(--steel); }
 .ldot-off     { background: var(--stone-light); }
+.ldot-ferie   { background: #a855f7; }
 
 /* Panneau jour sélectionné (calendrier) */
 .dash-cal-selected {
@@ -742,57 +794,6 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     font-weight: 700;
     color: var(--ink-title);
 }
-.dash-action-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 4px;
-}
-.dash-action-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: var(--paper-dim);
-    border-radius: 12px;
-}
-.dash-action-ico {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-.dash-action-ico svg { width: 16px; height: 16px; }
-.dash-action-row.is-pending .dash-action-ico { background: var(--steel-soft); color: var(--steel); }
-.dash-action-row.is-missing .dash-action-ico { background: var(--amber-soft); color: var(--amber); }
-.dash-action-info { flex: 1; }
-.dash-action-info strong { display: block; font-size: 13px; color: var(--ink-body); }
-.dash-action-info span   { font-size: 11px; color: var(--muted); }
-.dash-action-btn {
-    background: var(--ink);
-    color: #fff;
-    border: none;
-    padding: 7px 12px;
-    border-radius: 9px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: opacity 0.2s;
-    font-family: inherit;
-}
-.dash-action-btn:hover { opacity: 0.82; }
-.dash-action-empty {
-    text-align: center;
-    padding: 18px 10px;
-    color: var(--muted);
-    font-size: 12.5px;
-}
-
 /* Carte brouillon en cours */
 .dash-brouillon-card {
     border-left: 5px solid var(--amber);
@@ -862,16 +863,6 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     transition: color 0.15s, background 0.15s;
 }
 .btn-brouillon-item-del:hover { color: var(--red); background: var(--red-pale); }
-/* Lien "afficher plus" dans la liste À régulariser */
-.dash-action-toggle {
-    list-style: none;
-    text-align: center;
-    padding: 8px 0 2px;
-    font-size: 12px; font-weight: 700;
-    color: var(--steel); cursor: pointer;
-    letter-spacing: 0.02em;
-}
-.dash-action-toggle:hover { color: var(--steel-light); }
 
 
 /* Bouton retour vers le dashboard (vue formulaire) */
@@ -930,46 +921,13 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     margin: 0;
 }
 
-/* Historique */
+/* Modal (partagé : heures supplémentaires) */
 .modal-histo { max-width: 560px; max-height: 80vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
 .modal-histo-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .modal-histo-header h3 { font-size: 17px; font-weight: 700; color: var(--navy); margin: 0; }
 .btn-histo-close { background: none; border: none; font-size: 20px; color: var(--gray); cursor: pointer; padding: 4px 8px; line-height: 1; }
 .btn-histo-close:hover { color: var(--gray-dark); }
 .modal-histo-body { overflow-y: auto; flex: 1; padding: 12px 16px; }
-.histo-empty { text-align: center; color: var(--gray-blue); font-size: 14px; padding: 40px 0; }
-.histo-entry {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px; border-radius: 10px; cursor: pointer;
-    border: 1.5px solid var(--border); margin-bottom: 8px;
-    transition: border-color 0.15s, background 0.15s;
-}
-.histo-entry:hover { border-color: #90cdf4; background: var(--blue-pale); }
-.histo-entry-main { flex: 1; min-width: 0; }
-.histo-entry-date { font-size: 14px; font-weight: 700; color: var(--navy); }
-.histo-entry-tech { font-size: 12px; color: var(--gray-mid); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.histo-entry-meta { font-size: 11px; color: var(--gray-blue); margin-top: 3px; }
-.histo-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
-.histo-badge-pdf   { background: var(--blue-pale); color: var(--blue-dark); }
-.histo-badge-email { background: var(--green-pale); color: var(--green-supp); }
-.btn-histo-del { background: none; border: none; color: var(--border-mid); cursor: pointer; font-size: 16px; padding: 4px; flex-shrink: 0; transition: color 0.15s; }
-.btn-histo-del:hover { color: var(--red); }
-
-/* Détail historique */
-.histo-detail-back { background: none; border: none; color: var(--blue-dark); font-size: 13px; font-weight: 600; cursor: pointer; padding: 0 0 4px; display: inline-flex; align-items: center; gap: 4px; }
-.histo-detail-back:hover { text-decoration: underline; }
-.histo-detail-section { background: var(--surface-light); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; }
-.histo-detail-section .lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--gray); letter-spacing: 0.4px; margin-bottom: 6px; }
-.histo-detail-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--surface-mid); }
-.histo-detail-row:last-child { border: none; }
-.histo-int-item { padding: 6px 0; border-bottom: 1px solid var(--surface-mid); font-size: 13px; color: var(--gray-dark); }
-.histo-int-item:last-child { border: none; }
-.histo-int-item-title { font-weight: 600; color: var(--navy); }
-.histo-int-item-sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
-.btn-restaurer { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--blue-dark), var(--blue)); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: opacity 0.2s; }
-.btn-restaurer:hover { opacity: 0.9; }
-.btn-voir-pdf { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--amber-login), #F7C72E); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: opacity 0.2s; }
-.btn-voir-pdf:hover { opacity: 0.9; }
 
 /* Aperçu PDF */
 .modal-pdf-box { max-width: 780px; width: 94%; height: 90vh; max-height: 90vh; padding: 0; display: flex; flex-direction: column; overflow: hidden; }
@@ -1092,22 +1050,6 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 }
 .pdf-details-row .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-pdf); font-weight: 700; margin-bottom: 3px; }
 
-/* Filtre année dans l'historique */
-.histo-filtre-select {
-    font-size: 12px; padding: 4px 8px;
-    border: 1.5px solid var(--border); border-radius: 6px;
-    color: var(--gray-mid); background: white; cursor: pointer;
-}
-
-/* Séparateur mois dans la liste historique */
-.histo-month-header {
-    font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--gray); background: var(--surface-light);
-    padding: 6px 10px; border-radius: 6px;
-    margin: 10px 0 6px;
-}
-
 /* Récap heures supplémentaires */
 .supp-filters {
     display: flex; align-items: flex-end; gap: 10px;
@@ -1162,7 +1104,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 
     /* Dashboard */
     .dash-hero-name { font-size: 19px; }
-    .dash-supp-total { font-size: 38px; }
+    .dash-supp-hero { font-size: 32px; }
     .dash-semaine-chips { gap: 5px; }
     .dash-jour { padding: 10px 2px; }
     .dash-jour-nom { font-size: 10px; }
@@ -1221,8 +1163,8 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
         max-height: 90vh;
         overflow-y: auto;
     }
-    /* Historique (supp + feuilles) : s'ouvre sous l'entête, jusqu'en bas */
-    #modal-historique, #modal-supp {
+    /* Heures supp : s'ouvre sous l'entête, jusqu'en bas */
+    #modal-supp {
         top: var(--app-header-h, 64px);
     }
     .modal-histo {

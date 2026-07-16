@@ -1,5 +1,6 @@
 import { attachAutocomplete, VILLES_KEY, CLIENTS_KEY } from './autocomplete.js';
 import { setSuppManuel } from './fdr_calculs.js';
+import { expanderCarte, collapserCarte } from './fdr_collapse.js';
 
 let intCount   = 0;
 let pauseCount = 0;
@@ -26,6 +27,7 @@ export function ajouterIntervention(data = {}) {
                 <button class="btn-remove">&#10005; Supprimer</button>
             </div>
         </div>
+        <div class="card-summary"></div>
         <div class="form-grid">
             <div class="form-group">
                 <label>Heure d'arrivée</label>
@@ -37,11 +39,11 @@ export function ajouterIntervention(data = {}) {
             </div>
             <div class="form-group">
                 <label>Nom du client</label>
-                <input type="text" id="i${n}-client" placeholder="Nom du client" class="uppercase-input">
+                <input type="text" id="i${n}-client" placeholder="Nom du client" class="uppercase-input" autocomplete="off">
             </div>
             <div class="form-group">
                 <label>Ville</label>
-                <input type="text" id="i${n}-ville" placeholder="Ville" class="uppercase-input">
+                <input type="text" id="i${n}-ville" placeholder="Ville" class="uppercase-input" autocomplete="off">
             </div>
             <div class="form-group" style="grid-column:1/-1">
                 <label>Type d'intervention</label>
@@ -107,6 +109,12 @@ export function ajouterIntervention(data = {}) {
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`int-card-${n}`));
     div.querySelector('.btn-move-up').addEventListener('click', () => deplacerElement(div, -1));
     div.querySelector('.btn-move-down').addEventListener('click', () => deplacerElement(div, 1));
+
+    div.querySelector('.int-header').addEventListener('click', (e) => {
+        if (e.target.closest('.int-actions')) return;
+        if (div.classList.contains('card-collapsed')) expanderCarte(div);
+        else collapserCarte(div);
+    });
 
     div.querySelectorAll('.type-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -177,6 +185,7 @@ export function ajouterPause(data = {}) {
                 <button class="btn-remove">&#10005; Supprimer</button>
             </div>
         </div>
+        <div class="card-summary"></div>
         <div class="form-grid">
             <div class="form-group">
                 <label>Heure de début</label>
@@ -196,6 +205,12 @@ export function ajouterPause(data = {}) {
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`pause-card-${n}`));
     div.querySelector('.btn-move-up').addEventListener('click', () => deplacerElement(div, -1));
     div.querySelector('.btn-move-down').addEventListener('click', () => deplacerElement(div, 1));
+
+    div.querySelector('.int-header').addEventListener('click', (e) => {
+        if (e.target.closest('.int-actions')) return;
+        if (div.classList.contains('card-collapsed')) expanderCarte(div);
+        else collapserCarte(div);
+    });
 
     div.querySelectorAll('input').forEach(el => {
         el.addEventListener('input', notifierChangement);

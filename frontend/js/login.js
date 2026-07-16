@@ -1,17 +1,19 @@
 import { getSession, isSessionValid, connexion, refreshSession } from './modules/auth.js';
 import { getLogoBase64 } from './modules/fdr.js';
-import { chargerMonProfil } from './modules/db_responsable.js';
+import { chargerContratProfil } from './modules/db.js';
 import { attachPasswordToggle } from './utils/utils.js';
 
 async function redirigerSelonRole() {
-    const profil = await chargerMonProfil();
+    const profil = await chargerContratProfil();
     if (profil?.role === 'admin')        window.location.href = '/pages/admin.html';
     else if (profil?.role === 'responsable') window.location.href = '/pages/responsable.html';
-    else                                 window.location.href = '/index.html';
+    else                                 window.location.href = profil?.company === 'DAV' ? '/index-externe.html' : '/index.html';
 }
 
 window.addEventListener('load', async () => {
-    document.getElementById('login-logo').src = getLogoBase64();
+    const logo = getLogoBase64();
+    const logoEl = document.getElementById('login-logo');
+    if (logo) logoEl.src = logo; else logoEl.classList.add('hidden');
 
     let session = getSession();
     if (session && !isSessionValid()) {

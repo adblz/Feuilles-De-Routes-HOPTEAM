@@ -20,10 +20,22 @@ export function genererPDF() {
 
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            html2pdf()
-                .set(opts)
-                .from(el)
-                .outputPdf('blob')
+            const worker = html2pdf().set(opts).from(el);
+
+            worker
+                // La hauteur de el peut changer une fois les sauts de page insérés
+                // (une intervention poussée sur la page suivante) : on la remesure ici
+                // pour que la capture ne coupe pas ce contenu supplémentaire.
+                .toContainer()
+                .then(() => {
+                    const hReel = worker.prop.container.scrollHeight;
+                    worker.opt.html2canvas.height       = hReel;
+                    worker.opt.html2canvas.windowHeight = hReel;
+                })
+                .then(() => worker.toCanvas())
+                .then(() => worker.toImg())
+                .then(() => worker.toPdf())
+                .then(() => worker.outputPdf('blob'))
                 .then(async (blob) => {
                     nettoyer();
 
@@ -49,6 +61,7 @@ export function genererPDF() {
                             elements,
                         });
                         setBusy(false);
+                        showToast('PDF enregistré dans l\'historique', 'success', 3000);
                         effacerBrouillon(document.getElementById('date').value);
                         document.dispatchEvent(new CustomEvent('feuille:enregistree'));
                         await afficherResumeFeuille(feuilleId);

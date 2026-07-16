@@ -1,6 +1,7 @@
-import { chargerDetailFeuille, chargerPdfFeuille } from './db.js';
+import { chargerDetailFeuille, chargerPdfFeuille, supprimerFeuille } from './db.js';
 import { remplirFormulaireDepuisFeuille } from './fdr_charger.js';
 import { showToast, escHtml, hhmm } from '../utils/utils.js';
+import { afficherDashboard } from './dashboard.js';
 
 export function cacherResume() {
     document.getElementById('vue-resume')?.classList.add('hidden');
@@ -40,6 +41,18 @@ export async function afficherResumeFeuille(feuilleId) {
             document.dispatchEvent(new CustomEvent('nav:formulaire'));
             showToast('Vous pouvez compléter la feuille, puis la renvoyer', 'success', 3500);
         });
+
+        document.getElementById('btn-resume-supprimer')?.addEventListener('click', async () => {
+            if (!confirm('Supprimer définitivement cette feuille de route ?')) return;
+            try {
+                await supprimerFeuille(feuilleId);
+                showToast('Feuille supprimée', 'success', 3000);
+                document.dispatchEvent(new CustomEvent('feuille:supprimee'));
+                afficherDashboard();
+            } catch {
+                showToast('Erreur lors de la suppression', 'error');
+            }
+        });
     } catch {
         showToast('Erreur lors du chargement du résumé', 'error');
     }
@@ -78,6 +91,7 @@ function buildResumeHTML(feuille, elements) {
             <div class="resume-actions">
                 <button class="resume-btn-pdf" id="btn-resume-pdf">📄 Afficher le PDF</button>
                 <button class="resume-btn-modifier" id="btn-resume-modifier">✏️ Modifier</button>
+                <button class="resume-btn-supprimer" id="btn-resume-supprimer" title="Supprimer">🗑️</button>
             </div>
         </div>
         <div class="card">

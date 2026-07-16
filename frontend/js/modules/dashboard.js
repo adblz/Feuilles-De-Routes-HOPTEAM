@@ -3,25 +3,20 @@ import { restaurerBrouillon, viderInterventions, cfg, getBrouillonsDates } from 
 import { reinitialiserFeuille } from './ui.js';
 import { initCalendrier, rendreCalendrierMois, resetCalOffset, initCalNav } from './dashboard_calendar.js';
 import { effacerBrouillon } from './fdr.js';
-import {
-    rendreHeuresSupp, majBrouillonCard,
-    toggleBrouillonList, toggleActionList, _rendreActionList,
-    getLastManquants, getActionListExpanded, setActionListExpanded,
-} from './dashboard_stats.js';
+import { rendreHeuresSupp, majBrouillonCard, toggleBrouillonList } from './dashboard_stats.js';
 
 const aujourdhui = () => isoLocal(new Date());
 
-function montrerFormulaire() {
+function montrerFormulaire(scrollY = 0) {
     document.getElementById('vue-resume')?.classList.add('hidden');
     document.getElementById('vue-dashboard').classList.add('hidden');
     document.getElementById('vue-heures')?.classList.add('hidden');
     document.getElementById('vue-formulaire').classList.remove('hidden');
-    window.scrollTo(0, 0);
+    window.scrollTo(0, scrollY);
     document.dispatchEvent(new CustomEvent('nav:formulaire'));
 }
 
 export function afficherDashboard() {
-    setActionListExpanded(false);
     resetCalOffset();
     const bl = document.getElementById('dash-brouillon-list');
     if (bl) bl.classList.add('hidden');
@@ -46,15 +41,13 @@ export function ouvrirNouvelleFeuille(dateISO) {
 
 export function finaliserBrouillon(dateISO) {
     viderInterventions();
-    restaurerBrouillon(dateISO);
-    montrerFormulaire();
+    const scrollY = restaurerBrouillon(dateISO);
+    montrerFormulaire(scrollY);
 }
 
 export async function rafraichirDashboard() {
     majBrouillonCard();
-    const results   = await Promise.all([rendreHeuresSupp(), rendreCalendrierMois()]);
-    const manquants = results[1];
-    if (Array.isArray(manquants)) _rendreActionList(manquants);
+    await Promise.all([rendreHeuresSupp(), rendreCalendrierMois()]);
 }
 
 export function initDashboard(nomTech) {
@@ -93,18 +86,6 @@ export function initDashboard(nomTech) {
 
     document.getElementById('btn-retour-dashboard').addEventListener('click', afficherDashboard);
 
-    document.getElementById('dash-action-titre').addEventListener('click', (e) => {
-        if (getLastManquants().length > 2) { e.stopPropagation(); toggleActionList(); }
-    });
-
-    document.getElementById('dash-action-list').addEventListener('click', (e) => {
-        if (e.target.closest('#dash-action-toggle')) { e.stopPropagation(); toggleActionList(); return; }
-        const btn = e.target.closest('.dash-action-btn');
-        if (!btn) return;
-        if (btn.dataset.action === 'finaliser') finaliserBrouillon(btn.dataset.date);
-        else ouvrirNouvelleFeuille(btn.dataset.date);
-    });
-
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#dash-brouillon')) {
             const bl = document.getElementById('dash-brouillon-list');
@@ -113,9 +94,6 @@ export function initDashboard(nomTech) {
                 const chev = document.getElementById('dash-brouillon-chevron');
                 if (chev) chev.textContent = '▼';
             }
-        }
-        if (!e.target.closest('#dash-action-card') && !e.target.closest('#dash-action-titre')) {
-            if (getActionListExpanded()) toggleActionList();
         }
     });
 

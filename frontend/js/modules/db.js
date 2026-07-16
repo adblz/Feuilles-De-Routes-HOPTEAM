@@ -71,14 +71,36 @@ export async function chargerPdfFeuille(id) {
     return rows[0]?.pdf_data || null;
 }
 
+async function supprimerPdfStorage(pdfUrl) {
+    const fileName = pdfUrl.split('/pdfs/').pop();
+    const token = getSession()?.access_token;
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/pdfs/${fileName}`, {
+        method:  'DELETE',
+        headers: {
+            'apikey':        SUPABASE_KEY,
+            'Authorization': `Bearer ${token || SUPABASE_KEY}`,
+        },
+    });
+    if (!res.ok) throw new Error(`Storage delete: ${await res.text()}`);
+}
+
 export async function supprimerFeuille(id) {
+    const rows  = await dbGet(`feuilles_de_route?id=eq.${id}&select=pdf_data`);
+    const pdfUrl = rows[0]?.pdf_data;
+    if (pdfUrl) {
+        try {
+            await supprimerPdfStorage(pdfUrl);
+        } catch (e) {
+            console.warn('Suppression PDF storage échouée:', e);
+        }
+    }
     await dbDelete('feuilles_de_route', `id=eq.${id}`);
 }
 
 export async function chargerHeuresSupp(debut, fin) {
     const user = getSession()?.user;
     if (!user) return [];
-    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_travail,heures_supp,heure_debut,heure_fin,astreinte&order=date.asc`);
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_travail,heures_supp,heure_debut,heure_fin,astreinte,interventions(kind,pause_debut,pause_fin)&order=date.asc`);
 }
 
 function toTime(val) { return val || null; }

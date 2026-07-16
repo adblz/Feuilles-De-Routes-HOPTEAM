@@ -1,6 +1,6 @@
-import { isSessionValid, refreshSession } from './auth.js';
+import { isSessionValid, refreshSession, startAutoRefresh } from './auth.js';
 import { chargerMonProfil } from './db_responsable.js';
-import { chargerTousLesProfils, modifierProfil, creerUtilisateur } from '../api/admin_api.js';
+import { chargerTousLesProfils, modifierProfil, creerUtilisateur, supprimerUtilisateur } from '../api/admin_api.js';
 import { initAdminUI, renderTableau, ouvrirModalCreer } from './admin_users_ui.js';
 import { initSuggestions } from './admin_suggestions.js';
 import { initPlanning } from './admin_planning.js';
@@ -30,7 +30,8 @@ export async function initAdmin() {
     document.getElementById('btn-admin-logout').addEventListener('click', deconnecter);
     document.getElementById('btn-nouvel-utilisateur').addEventListener('click', ouvrirModalCreer);
 
-    initAdminUI({ onModifier, onCreer });
+    startAutoRefresh();
+    initAdminUI({ onModifier, onCreer, onSupprimer: (id, nom) => onSupprimer(id, nom, profil.id) });
     await chargerEtAfficher();
     await initSuggestions();
     await initPlanning();
@@ -61,10 +62,25 @@ async function onModifier(id, data) {
     }
 }
 
-async function onCreer(email, nom, contrat, password, company, emailResp) {
+async function onCreer(email, nom, role, contrat, password, company, emailResp, voitTout) {
     try {
-        await creerUtilisateur(email, nom, contrat, password, company, emailResp);
+        await creerUtilisateur(email, nom, role, contrat, password, company, emailResp, voitTout);
         showToast('Compte créé avec succès', 'success');
+        await chargerEtAfficher();
+    } catch (e) {
+        showToast('Erreur : ' + e.message, 'warn');
+    }
+}
+
+async function onSupprimer(id, nom, currentId) {
+    if (id === currentId) {
+        showToast('Vous ne pouvez pas supprimer votre propre compte.', 'warn');
+        return;
+    }
+    if (!confirm(`Supprimer ${nom} ? Cette action est irréversible.`)) return;
+    try {
+        await supprimerUtilisateur(id);
+        showToast(`${nom} a été supprimé.`, 'success');
         await chargerEtAfficher();
     } catch (e) {
         showToast('Erreur : ' + e.message, 'warn');

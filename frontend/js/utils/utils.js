@@ -111,3 +111,20 @@ export function scrollVersCarte(el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 }
+
+// Branche le bouton « ↻ Mettre à jour » : désinscrit le service worker et vide
+// les caches pour repartir sur une version propre du site (utile si un ancien
+// fichier reste bloqué en cache après une mise à jour).
+export function attacherBoutonMiseAJour(btnId = 'btn-refresh-app') {
+    document.getElementById(btnId)?.addEventListener('click', async () => {
+        if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const reg of regs) await reg.unregister();
+        }
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+        }
+        location.reload(true);
+    });
+}
