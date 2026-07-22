@@ -14,7 +14,9 @@ export function genererPDF() {
         return Promise.reject();
     }
 
-    validerFormulaire();
+    if (!validerFormulaire()) {
+        return Promise.reject();
+    }
     setBusy(true, 'Génération du PDF en cours…');
     const { el, opts, nettoyer } = preparerPdfElement();
 

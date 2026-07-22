@@ -15,7 +15,9 @@ export function validerFormulaire() {
     if (!document.getElementById('heure-fin').value)         manquants.push('heure de fin');
     if (manquants.length) {
         showToast('Champs incomplets : ' + manquants.join(', '), 'warn', 4000);
+        return false;
     }
+    return true;
 }
 
 export function setBusy(busy, msg = 'Génération du PDF en cours…') {
@@ -87,6 +89,15 @@ const EYE_OFF =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a13.2 13.2 0 0 1-2.16 2.9M6.6 6.6A13.2 13.2 0 0 0 2 11s3.5 7 10 7a9.1 9.1 0 0 0 4.4-1.1"/>' +
     '<path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M2 2l20 20"/></svg>';
+
+// Icônes crayon (modifier) / corbeille (supprimer), réutilisées dans les tableaux admin.
+export const ICON_MODIFIER =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">' +
+    '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+export const ICON_SUPPRIMER =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">' +
+    '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>' +
+    '<line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
 
 // Branche un bouton « œil » sur un champ mot de passe : bascule affiché/masqué.
 export function attachPasswordToggle(inputId, btnId) {

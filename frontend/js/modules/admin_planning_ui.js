@@ -1,5 +1,5 @@
 import { MOIS_FR } from './periodes_paie.js';
-import { showToast } from '../utils/utils.js';
+import { showToast, ICON_MODIFIER, ICON_SUPPRIMER } from '../utils/utils.js';
 
 let _onCreer     = null;
 let _onModifier  = null;
@@ -45,8 +45,8 @@ export function renderTableauPlanning(periodes) {
             <td>${fmtDate(p.date_debut)}</td>
             <td>${fmtDate(p.date_fin)}</td>
             <td>
-                <button class="btn-admin-modifier" data-id="${p.id}">Modifier</button>
-                <button class="btn-admin-supprimer" data-id="${p.id}">Supprimer</button>
+                <button class="btn-admin-modifier" data-id="${p.id}" title="Modifier" aria-label="Modifier cette période">${ICON_MODIFIER}</button>
+                <button class="btn-admin-supprimer" data-id="${p.id}" title="Supprimer" aria-label="Supprimer cette période">${ICON_SUPPRIMER}</button>
             </td>
         </tr>
     `).join('');

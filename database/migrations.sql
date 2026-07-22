@@ -139,3 +139,83 @@ for select
 to authenticated
 using ( public.same_company_as_caller(profiles.id) );
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-07-21 — Table des entreprises (page admin : bouton "+ Ajouter une
+-- entreprise" et champ entreprise devenu libre/optionnel sur les comptes).
+--
+-- Avant, "HopTeam" et "DAV" étaient juste des valeurs tapées à la main sur
+-- profiles.company. Cette table sert à proposer/gérer la liste depuis
+-- l'admin. Elle est pré-remplie avec les entreprises déjà utilisées, pour
+-- ne rien perdre. Seul un compte admin peut la lire/modifier.
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter tout le bloc ci-dessous.
+-- ─────────────────────────────────────────────────────────────────────────
+
+create table if not exists public.entreprises (
+  id uuid primary key default gen_random_uuid(),
+  nom text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table public.entreprises enable row level security;
+
+create policy "admin_gere_entreprises"
+on public.entreprises
+for all
+to authenticated
+using ( exists (select 1 from public.profiles where profiles.id = auth.uid() and profiles.role = 'admin') )
+with check ( exists (select 1 from public.profiles where profiles.id = auth.uid() and profiles.role = 'admin') );
+
+insert into public.entreprises (nom)
+select distinct company from public.profiles where company is not null and company <> ''
+on conflict (nom) do nothing;
+-- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-07-22 — Confort de lecture (debug dans Supabase) : nom du tech et
+-- date directement visibles sur chaque ligne "interventions", sans avoir à
+-- remonter manuellement via feuille_id.
+--
+-- Colonnes purement informatives : l'appli ne les lit ni ne les écrit, donc
+-- aucun risque de casser le code existant. Un trigger les remplit tout seul
+-- à chaque nouvel enregistrement (recopie depuis la feuille liée), et la
+-- dernière requête remplit une fois pour toutes les lignes déjà existantes.
+--
+-- Sans danger, et réversible si besoin (voir note en bas du bloc).
+-- ─────────────────────────────────────────────────────────────────────────
+
+alter table interventions add column if not exists tech text;
+alter table interventions add column if not exists date date;
+
+create or replace function public.remplir_tech_date_intervention()
+returns trigger
+language plpgsql
+as $$
+begin
+  select fdr.tech, fdr.date
+  into new.tech, new.date
+  from feuilles_de_route fdr
+  where fdr.id = new.feuille_id;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_remplir_tech_date_intervention on interventions;
+create trigger trg_remplir_tech_date_intervention
+before insert on interventions
+for each row
+execute function public.remplir_tech_date_intervention();
+
+-- Remplit tech/date pour toutes les interventions déjà enregistrées.
+update interventions i
+set tech = fdr.tech, date = fdr.date
+from feuilles_de_route fdr
+where fdr.id = i.feuille_id;
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   drop trigger if exists trg_remplir_tech_date_intervention on interventions;
+--   drop function if exists public.remplir_tech_date_intervention();
+--   alter table interventions drop column if exists tech;
+--   alter table interventions drop column if exists date;
+-- ─────────────────────────────────────────────────────────────────────────

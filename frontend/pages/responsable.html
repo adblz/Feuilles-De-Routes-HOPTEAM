@@ -17,7 +17,7 @@
     <div class="header-left">
         <img id="header-logo" class="header-logo" alt="Logo">
         <img class="header-logo-reduit" src="/assets/images/logo-reduit.png" alt="Logo">
-        <div>
+        <div class="resp-titre-bloc">
             <h1>FEUILLES DE ROUTES</h1>
             <span class="resp-badge-lecture">Lecture seule</span>
         </div>
@@ -32,15 +32,24 @@
 
 <div class="container">
 
-    <div class="card resp-compteur-card">
-        <p class="dash-eyebrow">Feuilles du mois en cours</p>
-        <div class="resp-compteur-nb" id="resp-compteur-nb">…</div>
-        <div class="resp-compteur-texte" id="resp-compteur-texte"></div>
+    <div class="resp-toolbar">
+        <div class="resp-filtre-periode hidden" id="resp-filtre-periode">
+            <label for="resp-select-periode" class="resp-filtre-label">Période</label>
+            <select id="resp-select-periode"></select>
+        </div>
+        <button type="button" class="resp-btn-select" id="btn-resp-selection">Sélectionner</button>
     </div>
 
-    <div id="resp-list">
-        <div class="resp-loading">Chargement…</div>
+    <div class="resp-selection-bar hidden" id="resp-selection-bar">
+        <span id="resp-selection-count">Aucune feuille sélectionnée</span>
+        <div class="resp-selection-actions">
+            <button type="button" id="btn-resp-enregistrer" disabled>Enregistrer</button>
+            <button type="button" id="btn-resp-imprimer" disabled>Imprimer</button>
+            <button type="button" class="resp-btn-annuler" id="btn-resp-annuler-selection">Annuler</button>
+        </div>
     </div>
+
+    <div id="resp-list"></div>
 
 </div>
 

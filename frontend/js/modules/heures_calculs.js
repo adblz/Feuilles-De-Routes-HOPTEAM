@@ -37,7 +37,7 @@ function getLundiSemaine(dateStr) {
     return lundi;
 }
 
-function getSemaineISO(dateStr) {
+export function getSemaineISO(dateStr) {
     const d = new Date(dateStr + 'T12:00');
     const day = d.getDay() || 7;
     const jeudi = new Date(d);
@@ -47,7 +47,7 @@ function getSemaineISO(dateStr) {
     return `${jeudi.getFullYear()}-S${String(num).padStart(2, '0')}`;
 }
 
-function labelSemaine(dateStr) {
+export function labelSemaine(dateStr) {
     const d = new Date(dateStr + 'T12:00');
     const day = d.getDay() || 7;
     const lundi = new Date(d);

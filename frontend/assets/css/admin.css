@@ -47,6 +47,24 @@
 }
 .btn-admin-nouveau:hover { background: var(--amber-light); }
 
+/* Le modal "nouvelle entreprise" peut s'ouvrir par-dessus le modal créer/modifier
+   utilisateur (même menu déroulant) : il doit toujours rester au-dessus. */
+#modal-entreprise { z-index: 1000; }
+
+/* Groupes par entreprise (tableau utilisateurs), pliables au clic */
+.admin-groupe-header td {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+    background: var(--surface-light);
+}
+.admin-groupe-header:hover td { background: var(--surface-mid); }
+.admin-groupe-fleche { display: inline-block; width: 12px; }
+.admin-groupe-count { font-weight: 500; text-transform: none; letter-spacing: normal; }
+
 /* Tableau utilisateurs */
 .admin-table-wrapper { overflow-x: auto; }
 

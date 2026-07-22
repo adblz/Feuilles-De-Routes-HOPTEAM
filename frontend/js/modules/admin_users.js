@@ -1,10 +1,14 @@
 import { isSessionValid, refreshSession, startAutoRefresh } from './auth.js';
 import { chargerMonProfil } from './db_responsable.js';
-import { chargerTousLesProfils, modifierProfil, creerUtilisateur, supprimerUtilisateur } from '../api/admin_api.js';
-import { initAdminUI, renderTableau, ouvrirModalCreer } from './admin_users_ui.js';
+import { chargerTousLesProfils, modifierProfil, creerUtilisateur, supprimerUtilisateur, chargerEntreprises, creerEntreprise } from '../api/admin_api.js';
+import { initAdminUI, ouvrirModalCreer, ouvrirModalModifier } from './admin_users_ui.js';
+import { renderTableau } from './admin_users_table.js';
+import { initEntreprisesUI, remplirEntreprises } from './admin_entreprises_ui.js';
 import { initSuggestions } from './admin_suggestions.js';
 import { initPlanning } from './admin_planning.js';
 import { showToast } from '../utils/utils.js';
+
+let _monId = null;
 
 export async function initAdmin() {
     if (!isSessionValid()) {
@@ -25,13 +29,15 @@ export async function initAdmin() {
             </div>`;
         return;
     }
+    _monId = profil.id;
 
     document.getElementById('admin-user-nom').textContent = profil.nom || '';
     document.getElementById('btn-admin-logout').addEventListener('click', deconnecter);
     document.getElementById('btn-nouvel-utilisateur').addEventListener('click', ouvrirModalCreer);
 
     startAutoRefresh();
-    initAdminUI({ onModifier, onCreer, onSupprimer: (id, nom) => onSupprimer(id, nom, profil.id) });
+    initAdminUI({ onModifier, onCreer });
+    initEntreprisesUI(onCreerEntreprise);
     await chargerEtAfficher();
     await initSuggestions();
     await initPlanning();
@@ -45,10 +51,21 @@ async function deconnecter() {
 
 async function chargerEtAfficher() {
     try {
-        const profils = await chargerTousLesProfils();
-        renderTableau(profils);
+        const [profils, entreprises] = await Promise.all([chargerTousLesProfils(), chargerEntreprises()]);
+        renderTableau(profils, { onModifier: ouvrirModalModifier, onSupprimer: (id, nom) => onSupprimer(id, nom, _monId) });
+        remplirEntreprises(entreprises);
     } catch (e) {
         showToast('Erreur de chargement : ' + e.message, 'warn');
+    }
+}
+
+async function onCreerEntreprise(nom) {
+    try {
+        await creerEntreprise(nom);
+        remplirEntreprises(await chargerEntreprises());
+        showToast('Entreprise ajoutée', 'success');
+    } catch (e) {
+        showToast('Erreur : ' + e.message, 'warn');
     }
 }
 

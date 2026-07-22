@@ -1,4 +1,5 @@
 import { escHtml } from '../utils/utils.js';
+import { renderFeuilles } from './responsable_feuilles.js';
 
 export function initiales(texte) {
     if (!texte) return '?';
@@ -7,20 +8,17 @@ export function initiales(texte) {
     return (p[0][0] + p[p.length - 1][0]).toUpperCase();
 }
 
-export function joursOuvresMois() {
-    const d = new Date();
-    const [y, m] = [d.getFullYear(), d.getMonth()];
+// Nombre de jours ouvrés (lun-ven) entre deux dates ISO, bornes incluses.
+export function joursOuvres(dateDebut, dateFin) {
+    if (!dateDebut || !dateFin) return 0;
     let n = 0;
-    for (let i = 1; i <= new Date(y, m + 1, 0).getDate(); i++) {
-        const dow = new Date(y, m, i).getDay();
+    const d = new Date(dateDebut + 'T12:00');
+    const fin = new Date(dateFin + 'T12:00');
+    for (; d <= fin; d.setDate(d.getDate() + 1)) {
+        const dow = d.getDay();
         if (dow !== 0 && dow !== 6) n++;
     }
     return n;
-}
-
-export function moisCourant() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export function grouperParTech(feuilles, profils = []) {
@@ -35,14 +33,6 @@ export function grouperParTech(feuilles, profils = []) {
     return map;
 }
 
-// Couleur stable dérivée du nom de l'entreprise, pour distinguer visuellement
-// les sections sans avoir à connaître la liste des entreprises à l'avance.
-function couleurEntreprise(nom) {
-    let hash = 0;
-    for (let i = 0; i < nom.length; i++) hash = (hash * 31 + nom.charCodeAt(i)) >>> 0;
-    return hash % 360;
-}
-
 function grouperParEntreprise(techMap) {
     const parEntreprise = new Map();
     for (const [uid, tech] of techMap) {
@@ -52,81 +42,81 @@ function grouperParEntreprise(techMap) {
     return parEntreprise;
 }
 
-function renderFeuilles(feuilles, vues) {
-    const parMois = new Map();
-    feuilles.forEach(f => {
-        const k = f.date?.slice(0, 7) || '0000-00';
-        if (!parMois.has(k)) parMois.set(k, []);
-        parMois.get(k).push(f);
-    });
-
-    return [...parMois.entries()]
-        .sort((a, b) => b[0].localeCompare(a[0]))
-        .map(([mois, items]) => {
-            const [y, m] = mois.split('-');
-            const label = mois !== '0000-00'
-                ? new Date(+y, +m - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-                : 'Date inconnue';
-            const lignes = items.map(f => {
-                const dateAff = f.date
-                    ? new Date(f.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
-                    : '—';
-                const nbInts = (f.interventions || []).filter(i => i.kind === 'intervention').length;
-                const vue = vues.has(f.id);
-                return `<div class="resp-feuille-row">
-                    <span class="resp-feuille-date">${dateAff}</span>
-                    <span class="resp-feuille-heures">${f.heures_travail || '—'}</span>
-                    <span class="resp-feuille-ints">${nbInts} int.</span>
-                    <button class="btn-voir-pdf-resp${vue ? '' : ' nonvue'}" data-pdf-id="${f.id}">
-                        ${vue ? 'Voir PDF' : '● Voir PDF'}
-                    </button>
-                </div>`;
-            }).join('');
-            const labelCap = label.charAt(0).toUpperCase() + label.slice(1);
-            return `<div class="resp-mois-header">${labelCap}</div>${lignes}`;
-        }).join('');
+function nonVues(feuilles, vues) {
+    return feuilles.filter(f => !vues.has(f.id)).length;
 }
 
-function renderTechCard(uid, { nom, feuilles }, vues) {
-    const mois = moisCourant();
-    const joursOuvres = joursOuvresMois();
-    const remplisMois = feuilles.filter(f => f.date?.startsWith(mois)).length;
-    const ratio = joursOuvres ? remplisMois / joursOuvres : 1;
-    const couleur = ratio >= 1 ? 'vert' : ratio >= 0.5 ? 'orange' : 'rouge';
-    const nonVues = feuilles.filter(f => !vues.has(f.id)).length;
-    const contrat = feuilles[0]?.contrat ? `${feuilles[0].contrat}h` : '';
-    return `<div class="resp-tech-card" data-uid="${uid}">
+function renderTechCard(uid, { nom, feuilles }, periode, ctx) {
+    const rempli = feuilles.length;
+    const dispo = joursOuvres(periode.date_debut, periode.date_fin) || rempli;
+    const contrat = feuilles[0]?.contrat ? `${feuilles[0].contrat}h · ` : '';
+    const nb = nonVues(feuilles, ctx.vues);
+    const aJour = nb === 0;
+    const sousTitre = `${contrat}${rempli} feuille${rempli > 1 ? 's' : ''} remplie${rempli > 1 ? 's' : ''} sur ${dispo} j.`;
+    const badge = aJour
+        ? '<span class="resp-badge-a-jour">✓ À jour</span>'
+        : `<span class="resp-badge-nonvue">${nb} à lire</span>`;
+    return `<div class="resp-tech-card${aJour ? ' resp-tech-a-jour' : ''}" data-uid="${uid}">
         <div class="resp-tech-header">
             <span class="resp-avatar">${escHtml(initiales(nom))}</span>
             <div class="resp-tech-info">
                 <span class="resp-tech-nom">${escHtml(nom)}</span>
-                ${contrat ? `<span class="resp-tech-contrat">${contrat}</span>` : ''}
+                <span class="resp-tech-sous-titre">${escHtml(sousTitre)}</span>
             </div>
-            <span class="resp-pastille resp-pastille-${couleur}">${remplisMois}/${joursOuvres} j.</span>
-            ${nonVues ? `<span class="resp-badge-nonvue">${nonVues}</span>` : ''}
+            ${badge}
             <span class="resp-chevron">▼</span>
         </div>
-        <div class="resp-tech-body hidden">${renderFeuilles(feuilles, vues)}</div>
+        <div class="resp-tech-body hidden">${renderFeuilles(feuilles, ctx)}</div>
     </div>`;
 }
 
-export function renderTechs(techMap, vues) {
-    if (!techMap.size) return '<p class="resp-empty">Aucune feuille enregistrée.</p>';
+function trierTechs(entries, vues) {
+    return [...entries].sort(([, a], [, b]) => {
+        const diff = nonVues(b.feuilles, vues) - nonVues(a.feuilles, vues);
+        return diff !== 0 ? diff : a.nom.localeCompare(b.nom);
+    });
+}
+
+function totalNonVues(techs, vues) {
+    let total = 0;
+    for (const [, tech] of techs) total += nonVues(tech.feuilles, vues);
+    return total;
+}
+
+export function renderSquelette(n = 4) {
+    return Array.from({ length: n }, () => '<div class="resp-skeleton-card"></div>').join('');
+}
+
+// periode = { date_debut, date_fin } (période sélectionnée ou mois calendaire de repli)
+// ctx = { vues, selectionMode, estSelectionnee(id), statutSemaine(ids) }
+export function renderTechs(techMap, periode, ctx) {
+    if (!techMap.size) return '<p class="resp-empty">Aucune feuille pour cette période.</p>';
 
     const parEntreprise = grouperParEntreprise(techMap);
     if (parEntreprise.size < 2) {
-        let html = '';
-        for (const [uid, tech] of techMap) html += renderTechCard(uid, tech, vues);
-        return html;
+        return trierTechs([...techMap], ctx.vues)
+            .map(([uid, tech]) => renderTechCard(uid, tech, periode, ctx))
+            .join('');
     }
 
-    let html = '';
-    for (const [entreprise, techs] of [...parEntreprise.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-        const hue = couleurEntreprise(entreprise);
-        html += `<div class="resp-entreprise-groupe" style="--entreprise-hue:${hue}">
-            <div class="resp-entreprise-header">${escHtml(entreprise)}</div>`;
-        for (const [uid, tech] of techs) html += renderTechCard(uid, tech, vues);
-        html += `</div>`;
-    }
-    return html;
+    const groupes = [...parEntreprise.entries()].sort(([nomA, techsA], [nomB, techsB]) => {
+        const diff = totalNonVues(techsB, ctx.vues) - totalNonVues(techsA, ctx.vues);
+        return diff !== 0 ? diff : nomA.localeCompare(nomB);
+    });
+
+    return groupes.map(([entreprise, techs]) => {
+        const n = techs.size;
+        const nb = totalNonVues(techs, ctx.vues);
+        const badge = nb ? `<span class="resp-badge-nonvue">${nb} non vue${nb > 1 ? 's' : ''}</span>` : '';
+        const cartes = trierTechs([...techs], ctx.vues)
+            .map(([uid, tech]) => renderTechCard(uid, tech, periode, ctx))
+            .join('');
+        return `<div class="resp-entreprise-groupe">
+            <div class="resp-entreprise-header">
+                <span>${escHtml(entreprise)} · ${n} technicien${n > 1 ? 's' : ''}</span>
+                ${badge}
+            </div>
+            ${cartes}
+        </div>`;
+    }).join('');
 }

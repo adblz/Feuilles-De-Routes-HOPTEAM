@@ -24,6 +24,17 @@ export function nomMois(periode) {
     return MOIS_FR[periode.mois - 1] || `mois ${periode.mois}`;
 }
 
+// Renvoie la période dont le nom correspond au mois calendaire donné (par
+// défaut aujourd'hui) — pas celle dont la plage de dates contient la date,
+// qui peut chevaucher deux mois (ex. période « juillet » du 22/06 au 19/07).
+// À défaut, renvoie la période la plus récente ; null si la liste est vide.
+export function trouverPeriodeParMoisCourant(periodes, date = new Date()) {
+    if (!periodes?.length) return null;
+    const mois  = date.getMonth() + 1;
+    const annee = date.getFullYear();
+    return periodes.find(p => p.mois === mois && p.annee === annee) || periodes[0];
+}
+
 // Plage de dates courte, ex. « du 22/06 au 19/07 ».
 export function rangeLabel(debut, fin) {
     return `du ${jourMois(debut)} au ${jourMois(fin)}`;

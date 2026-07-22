@@ -91,6 +91,26 @@
 
 </div>
 
+<!-- Modal : Nouvelle entreprise -->
+<div class="modal-overlay" id="modal-entreprise">
+    <div class="modal admin-modal">
+        <div class="modal-histo-header">
+            <h3>Nouvelle entreprise</h3>
+            <button class="btn-histo-close" id="btn-close-entreprise">&#10005;</button>
+        </div>
+        <div class="admin-modal-body">
+            <div class="form-group">
+                <label>Nom de l'entreprise <span class="req">*</span></label>
+                <input type="text" id="form-entreprise-nom" placeholder="Ex : Entreprise C">
+            </div>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin-annuler" id="btn-annuler-entreprise">Annuler</button>
+            <button class="btn-admin-valider" id="btn-submit-entreprise">Ajouter</button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal : Créer un utilisateur -->
 <div class="modal-overlay" id="modal-creer">
     <div class="modal admin-modal">
@@ -125,10 +145,7 @@
             </div>
             <div class="form-group">
                 <label>Nom de l'entreprise</label>
-                <select id="form-creer-company">
-                    <option value="HopTeam">HopTeam</option>
-                    <option value="DAV">DAV</option>
-                </select>
+                <select id="form-creer-company"></select>
             </div>
             <div class="form-group">
                 <label>Email du responsable</label>
@@ -187,10 +204,7 @@
             </div>
             <div class="form-group">
                 <label>Nom de l'entreprise</label>
-                <select id="modifier-company">
-                    <option value="HopTeam">HopTeam</option>
-                    <option value="DAV">DAV</option>
-                </select>
+                <select id="modifier-company"></select>
             </div>
             <div class="form-group">
                 <label>Email du responsable</label>

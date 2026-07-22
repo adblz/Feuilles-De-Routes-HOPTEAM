@@ -1,5 +1,6 @@
 import { getSession } from '../modules/auth.js';
 import { SUPABASE_URL, SUPABASE_KEY } from '../modules/config.js';
+import { fetchBackend } from './backend_retry.js';
 
 const BACKEND       = 'https://feuilles-de-routes-hopteam.onrender.com';
 const ERROR_API_KEY = 'fdr-hopteam-errors-k7x2m9p';
@@ -20,6 +21,25 @@ export async function chargerTousLesProfils() {
     );
     if (!res.ok) throw new Error(`Chargement utilisateurs : ${await res.text()}`);
     return res.json();
+}
+
+export async function chargerEntreprises() {
+    const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/entreprises?select=id,nom&order=nom.asc`,
+        { headers: buildHeaders() }
+    );
+    if (!res.ok) throw new Error(`Chargement entreprises : ${await res.text()}`);
+    return res.json();
+}
+
+export async function creerEntreprise(nom) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/entreprises`, {
+        method:  'POST',
+        headers: { ...buildHeaders(), Prefer: 'return=representation' },
+        body:    JSON.stringify({ nom }),
+    });
+    if (!res.ok) throw new Error(`Création entreprise : ${await res.text()}`);
+    return (await res.json())[0];
 }
 
 export async function modifierProfil(id, data) {
@@ -83,7 +103,7 @@ export async function reportError({ message, source, userEmail, userRole, page }
 
 export async function supprimerUtilisateur(id) {
     const token = getSession()?.access_token;
-    const res = await fetch(`${BACKEND}/admin/delete-user/${id}`, {
+    const res = await fetchBackend(`${BACKEND}/admin/delete-user/${id}`, {
         method:  'DELETE',
         headers: {
             'Content-Type':  'application/json',
@@ -99,7 +119,7 @@ export async function supprimerUtilisateur(id) {
 
 export async function creerUtilisateur(email, nom, role, contrat, password, company, emailResp, voitToutesEntreprises) {
     const token = getSession()?.access_token;
-    const res = await fetch(`${BACKEND}/admin/create-user`, {
+    const res = await fetchBackend(`${BACKEND}/admin/create-user`, {
         method:  'POST',
         headers: {
             'Content-Type':  'application/json',
