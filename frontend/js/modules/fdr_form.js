@@ -31,11 +31,11 @@ export function ajouterIntervention(data = {}) {
         <div class="form-grid">
             <div class="form-group">
                 <label>Heure d'arrivée</label>
-                <input type="time" id="i${n}-arrivee">
+                <input type="time" id="i${n}-arrivee" class="heure-molette">
             </div>
             <div class="form-group">
                 <label>Heure de départ</label>
-                <input type="time" id="i${n}-depart">
+                <input type="time" id="i${n}-depart" class="heure-molette">
             </div>
             <div class="form-group">
                 <label>Nom du client</label>
@@ -189,11 +189,11 @@ export function ajouterPause(data = {}) {
         <div class="form-grid">
             <div class="form-group">
                 <label>Heure de début</label>
-                <input type="time" id="p${n}-debut">
+                <input type="time" id="p${n}-debut" class="heure-molette">
             </div>
             <div class="form-group">
                 <label>Heure de fin</label>
-                <input type="time" id="p${n}-fin">
+                <input type="time" id="p${n}-fin" class="heure-molette">
             </div>
         </div>`;
 

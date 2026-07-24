@@ -9,15 +9,41 @@ export function showToast(msg, type = '', duration = 3000) {
 }
 
 export function validerFormulaire() {
-    const manquants = [];
-    if (!document.getElementById('technicien').value.trim()) manquants.push('nom du technicien');
-    if (!document.getElementById('heure-debut').value)       manquants.push('heure de début');
-    if (!document.getElementById('heure-fin').value)         manquants.push('heure de fin');
-    if (manquants.length) {
+    const manquants     = [];
+    const champsMauvais = [];
+
+    const technicien = document.getElementById('technicien');
+    if (!technicien.value.trim()) { manquants.push('nom du technicien'); champsMauvais.push(technicien); }
+
+    const debut = document.getElementById('heure-debut');
+    if (!debut.value) { manquants.push('heure de début'); champsMauvais.push(debut); }
+
+    const fin = document.getElementById('heure-fin');
+    if (!fin.value) { manquants.push('heure de fin'); champsMauvais.push(fin); }
+
+    const repas = document.getElementById('repas');
+    if (!repas.value) { manquants.push('pause repas'); champsMauvais.push(repas); }
+
+    if (champsMauvais.length) {
         showToast('Champs incomplets : ' + manquants.join(', '), 'warn', 4000);
+        signalerChampsManquants(champsMauvais);
         return false;
     }
     return true;
+}
+
+// Surligne les champs en erreur et fait défiler l'écran vers le premier d'entre eux.
+// Le surlignage disparaît dès que l'utilisateur corrige le champ concerné.
+function signalerChampsManquants(elements) {
+    elements.forEach(el => {
+        el.classList.add('champ-erreur');
+        const retirer = () => el.classList.remove('champ-erreur');
+        el.addEventListener('input',  retirer, { once: true });
+        el.addEventListener('change', retirer, { once: true });
+    });
+    const premier = elements[0];
+    premier.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    premier.focus({ preventScroll: true });
 }
 
 export function setBusy(busy, msg = 'Génération du PDF en cours…') {

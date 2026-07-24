@@ -1,0 +1,49 @@
+/* timepicker.css — molette de sélection d'heure (style iPhone) */
+/* Utilisée sur Android et ordinateur ; sur iPhone/iPad la molette native reste active. */
+
+.tp-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;
+    display:flex;align-items:flex-end;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.tp-overlay.ouvert{opacity:1;pointer-events:auto;}
+
+.tp-panneau{
+    background:var(--panel);width:100%;max-width:420px;border-radius:20px 20px 0 0;
+    padding:14px 16px 22px;transform:translateY(100%);transition:transform .25s ease;
+    box-shadow:0 -8px 30px rgba(0,0,0,.4);
+}
+.tp-overlay.ouvert .tp-panneau{transform:translateY(0);}
+
+.tp-barre{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.tp-barre button{
+    background:none;border:none;font-size:16px;font-weight:600;padding:8px 6px;cursor:pointer;
+    font-family:inherit;
+}
+.tp-annuler{color:var(--muted);}
+.tp-ok{color:var(--amber);}
+.tp-titre{font-size:15px;font-weight:600;color:var(--paper);}
+
+.tp-roues{position:relative;display:flex;justify-content:center;align-items:stretch;gap:6px;
+    height:220px;overflow:hidden;}
+.tp-roues::before,.tp-roues::after{content:"";position:absolute;left:0;right:0;height:88px;z-index:3;pointer-events:none;}
+.tp-roues::before{top:0;background:linear-gradient(var(--panel),rgba(31,38,54,0));}
+.tp-roues::after{bottom:0;background:linear-gradient(rgba(31,38,54,0),var(--panel));}
+
+.tp-selection{
+    position:absolute;top:50%;left:8px;right:8px;height:44px;transform:translateY(-50%);
+    background:rgba(226,135,46,.14);border-top:1px solid var(--amber);border-bottom:1px solid var(--amber);
+    border-radius:8px;z-index:1;pointer-events:none;
+}
+.tp-colonne{
+    flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;position:relative;z-index:2;
+}
+.tp-colonne::-webkit-scrollbar{display:none;}
+.tp-item{
+    height:44px;display:flex;align-items:center;justify-content:center;
+    scroll-snap-align:center;font-size:24px;font-weight:600;color:var(--paper);
+    opacity:.35;transition:opacity .15s,transform .15s;
+}
+.tp-item.actif{opacity:1;transform:scale(1.08);color:var(--amber);}
+.tp-sep{display:flex;align-items:center;font-size:26px;font-weight:700;color:var(--paper);padding:0 2px;z-index:2;}

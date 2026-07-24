@@ -17,6 +17,7 @@ import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSess
 import { chargerContratProfil, sauvegarderContratProfil } from './modules/db.js';
 import { showToast, scrollVersCarte, attachPasswordToggle, attacherBoutonMiseAJour } from './utils/utils.js';
 import { collapserToutesSauf } from './modules/fdr_collapse.js';
+import { initTimePicker } from './modules/timepicker.js';
 
 // ── Initialisation de l'app après auth ────────────────────────
 
@@ -35,6 +36,7 @@ function initApp(user, nomProfil) {
     initDashboard(nomTech);
     afficherDashboard();
     initToolbar();
+    initTimePicker();
     document.getElementById('dash-supp-card')?.addEventListener('click', afficherHeures);
 
     // ── Formulaire principal ───────────────────────────────────

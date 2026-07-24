@@ -16,7 +16,7 @@ export function remplirFormulaireDepuisFeuille(feuille, elements) {
     document.getElementById('date').value        = feuille.date        || '';
     document.getElementById('heure-debut').value = hhmm(feuille.heure_debut) || '';
     document.getElementById('heure-fin').value   = hhmm(feuille.heure_fin)   || '';
-    document.getElementById('repas').value        = feuille.repas_min ? String(feuille.repas_min) : '';
+    document.getElementById('repas').value        = feuille.repas_min != null ? String(feuille.repas_min) : '';
     document.getElementById('astreinte-jour').checked = !!feuille.astreinte;
 
     (elements || []).forEach(el => {

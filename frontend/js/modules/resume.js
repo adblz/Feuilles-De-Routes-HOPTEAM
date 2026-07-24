@@ -2,6 +2,8 @@ import { chargerDetailFeuille, chargerPdfFeuille, supprimerFeuille } from './db.
 import { remplirFormulaireDepuisFeuille } from './fdr_charger.js';
 import { showToast, escHtml, hhmm } from '../utils/utils.js';
 import { afficherDashboard } from './dashboard.js';
+import { partagerPdfFeuille } from './pdf_partage.js';
+import { nomFichierPdf } from './pdf_layout.js';
 
 export function cacherResume() {
     document.getElementById('vue-resume')?.classList.add('hidden');
@@ -17,6 +19,10 @@ export async function afficherResumeFeuille(feuilleId) {
         document.getElementById('vue-resume').classList.remove('hidden');
         window.scrollTo(0, 0);
         document.dispatchEvent(new CustomEvent('nav:resume'));
+
+        document.getElementById('btn-resume-envoyer')?.addEventListener('click', () => {
+            partagerPdfFeuille(feuilleId, nomFichierPdf(feuille.tech, feuille.date));
+        });
 
         document.getElementById('btn-resume-pdf')?.addEventListener('click', async () => {
             const win = window.open('', '_blank');
@@ -89,7 +95,8 @@ function buildResumeHTML(feuille, elements) {
             ${rappelRange ? `<p class="resume-time-range">↩ Sortie suppl. ${rappelRange}${rappel && rappel.astreinte ? ' (astreinte)' : ''}</p>` : ''}
             ${totaux      ? `<p class="resume-totaux">${totaux}</p>`        : ''}
             <div class="resume-actions">
-                <button class="resume-btn-pdf" id="btn-resume-pdf">📄 Afficher le PDF</button>
+                <button class="resume-btn-envoyer" id="btn-resume-envoyer">📤 Envoyer</button>
+                <button class="resume-btn-pdf" id="btn-resume-pdf">📄 PDF</button>
                 <button class="resume-btn-modifier" id="btn-resume-modifier">✏️ Modifier</button>
                 <button class="resume-btn-supprimer" id="btn-resume-supprimer" title="Supprimer">🗑️</button>
             </div>

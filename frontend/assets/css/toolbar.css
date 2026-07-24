@@ -180,6 +180,10 @@
     font-weight: 700;
     cursor: pointer;
 }
+.resume-btn-envoyer {
+    background: var(--teal);
+    color: #fff;
+}
 .resume-btn-pdf {
     background: var(--steel);
     color: #fff;

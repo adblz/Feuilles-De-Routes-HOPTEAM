@@ -69,9 +69,9 @@ ${rappel ? `
         ${itemsHTML}`;
 }
 
-export function nomFichierPdf() {
-    const tech     = document.getElementById('technicien').value || 'technicien';
-    const date     = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+export function nomFichierPdf(tech, date) {
+    tech           = tech || document.getElementById('technicien').value || 'technicien';
+    date           = date || document.getElementById('date').value || new Date().toISOString().split('T')[0];
     const techSlug = tech.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-').toLowerCase();
     return `feuille-route_${techSlug}_${date}.pdf`;
 }

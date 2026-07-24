@@ -188,6 +188,14 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 }
 .form-group textarea { resize: vertical; min-height: 80px; }
 
+.form-group input.champ-erreur,
+.form-group select.champ-erreur,
+.form-group textarea.champ-erreur {
+    border-color: var(--red);
+    background: var(--red-pale);
+    box-shadow: 0 0 0 3px rgba(197,48,48,0.15);
+}
+
 /* Autocomplete */
 .autocomplete-wrapper {
     position: relative;
