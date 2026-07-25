@@ -12,7 +12,7 @@ async function getFreshToken() {
     return getSession()?.access_token;
 }
 
-async function buildHeaders() {
+export async function buildHeaders() {
     const token = await getFreshToken();
     return {
         'apikey':        SUPABASE_KEY,
@@ -28,25 +28,6 @@ export async function chargerTousLesProfils() {
     );
     if (!res.ok) throw new Error(`Chargement utilisateurs : ${await res.text()}`);
     return res.json();
-}
-
-export async function chargerEntreprises() {
-    const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/entreprises?select=id,nom&order=nom.asc`,
-        { headers: await buildHeaders() }
-    );
-    if (!res.ok) throw new Error(`Chargement entreprises : ${await res.text()}`);
-    return res.json();
-}
-
-export async function creerEntreprise(nom) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/entreprises`, {
-        method:  'POST',
-        headers: { ...(await buildHeaders()), Prefer: 'return=representation' },
-        body:    JSON.stringify({ nom }),
-    });
-    if (!res.ok) throw new Error(`Création entreprise : ${await res.text()}`);
-    return (await res.json())[0];
 }
 
 export async function modifierProfil(id, data) {

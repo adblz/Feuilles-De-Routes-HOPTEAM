@@ -27,11 +27,24 @@ export function estExterne() {
 
 // ── Configuration ──────────────────────────────────────────────
 
+function normInt(val, def) {
+    const n = parseInt(val, 10);
+    return Number.isFinite(n) ? n : def;
+}
+
 export let cfg = {
     company: localStorage.getItem('cfg_company') || '',
     email:   localStorage.getItem('cfg_email')   || '',
     contrat: localStorage.getItem('cfg_contrat') || '39',
+    // Temps de trajet retiré par jour (minutes), réglé par entreprise. 60 par défaut.
+    trajetMinutes: normInt(localStorage.getItem('cfg_trajet_minutes'), 60),
 };
+
+// Mémorise le temps de trajet de l'entreprise (lu à la connexion depuis Supabase).
+export function setTrajetMinutes(min) {
+    cfg.trajetMinutes = normInt(min, 60);
+    localStorage.setItem('cfg_trajet_minutes', String(cfg.trajetMinutes));
+}
 
 export function saveCfg(company, email, contrat) {
     cfg.company = company;

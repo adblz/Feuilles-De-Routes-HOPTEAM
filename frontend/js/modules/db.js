@@ -113,6 +113,14 @@ export async function chargerContratProfil() {
     return rows[0] || null;
 }
 
+// Règles de calcul de l'entreprise du technicien (phase 1 : temps de trajet).
+// Renvoie null si l'entreprise est inconnue ou introuvable.
+export async function chargerReglesEntreprise(company) {
+    if (!company) return null;
+    const rows = await dbGet(`entreprises?nom=eq.${encodeURIComponent(company)}&select=trajet_minutes`);
+    return rows[0] || null;
+}
+
 export async function sauvegarderContratProfil(contrat) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/set_mon_contrat`, {
         method: 'POST',

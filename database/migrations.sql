@@ -219,3 +219,35 @@ where fdr.id = i.feuille_id;
 --   alter table interventions drop column if exists tech;
 --   alter table interventions drop column if exists date;
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-07-25 — Règles de calcul par entreprise (phase 1 : temps de trajet)
+--
+-- Jusqu'ici le calcul des heures retirait « en dur » 1h de trajet par jour
+-- (30 min matin + 30 min soir), sauf pour DAV. On rend cette valeur réglable
+-- par entreprise depuis l'admin (onglet « Entreprises »). Défaut 60 min =
+-- comportement historique inchangé ; DAV reste à 0.
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter tout le bloc ci-dessous.
+-- ─────────────────────────────────────────────────────────────────────────
+
+alter table public.entreprises
+  add column if not exists trajet_minutes int not null default 60;
+
+-- DAV ne retire aucun trajet (comportement historique).
+update public.entreprises set trajet_minutes = 0 where nom = 'DAV';
+
+-- Lecture des entreprises pour tout utilisateur connecté : nécessaire pour que
+-- le calcul lise le trajet sur le téléphone du technicien. L'écriture reste
+-- réservée à l'admin (policy « admin_gere_entreprises » déjà en place).
+drop policy if exists "lecture_entreprises_connectes" on public.entreprises;
+create policy "lecture_entreprises_connectes"
+on public.entreprises
+for select
+to authenticated
+using ( true );
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   drop policy if exists "lecture_entreprises_connectes" on public.entreprises;
+--   alter table public.entreprises drop column if exists trajet_minutes;
+-- ─────────────────────────────────────────────────────────────────────────

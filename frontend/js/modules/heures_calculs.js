@@ -1,6 +1,6 @@
 import { parseDuree } from '../utils/utils.js';
 import { feriesEnSemaine } from './jours_feries.js';
-import { estExterne } from './fdr_config.js';
+import { estExterne, cfg } from './fdr_config.js';
 
 // ── Barème heures supplémentaires (défaut légal — à vérifier convention 3044) ──
 const SEUIL_HEBDO_MIN = 35 * 60;   // au-delà de 35h/semaine = heures supplémentaires
@@ -10,17 +10,17 @@ const PALIER_25_MIN   = 8 * 60;    // 8 premières heures supp à +25% (36e→43
 // Gère le passage de minuit et retire le trajet (30 min matin + 30 min soir)
 // pour ne compter que le temps de travail effectif.
 
-// trajet=true : retire 30 min matin + 30 min soir (journée normale).
-// trajet=false : compte toute la plage (ex. rappel / sortie de nuit).
-export function calcHeuresNuit(heureDebut, heureFin, trajet = true) {
+// margeMin : minutes de trajet retirées à CHAQUE extrémité (matin et soir),
+// soit la moitié du trajet du jour (trajet 60 → marge 30 ; trajet 90 → marge 45).
+// margeMin = 0 → on compte toute la plage (ex. rappel / sortie de nuit).
+export function calcHeuresNuit(heureDebut, heureFin, margeMin = 0) {
     if (!heureDebut || !heureFin) return 0;
     const toMin = h => { const [hh, mm] = h.split(':').map(Number); return hh * 60 + mm; };
     let debut = toMin(heureDebut);
     let fin   = toMin(heureFin);
     if (fin <= debut) fin += 1440;   // passage de minuit → fin le lendemain
-    const marge = trajet ? 30 : 0;
-    debut += marge;                  // ½h trajet matin non comptée
-    fin   -= marge;                  // ½h trajet soir non comptée
+    debut += margeMin;               // trajet matin non compté
+    fin   -= margeMin;               // trajet soir non compté
 
     // Nuit = 21h→6h. Deux fenêtres : minuit→6h (0–360) et 21h→6h du lendemain (1260–1800)
     const chevauche = (a, b, c, d) => Math.max(0, Math.min(b, d) - Math.max(a, c));
@@ -82,12 +82,14 @@ export function calcHebdomadaire(feuilles) {
         let totalTravailMin   = 0;
         let totalNuitMin      = 0;
         let totalAstreinteMin = 0;   // heures travaillées des jours cochés « astreinte » (récupérables)
+        // Marge de nuit = moitié du trajet (0 pour la page externe DAV).
+        const margeNuit = estExterne() ? 0 : cfg.trajetMinutes / 2;
         for (const f of fs) {
             const travailMin = parseDuree(f.heures_travail);
             totalTravailMin += travailMin;
-            totalNuitMin    += calcHeuresNuit(f.heure_debut, f.heure_fin, !estExterne());
+            totalNuitMin    += calcHeuresNuit(f.heure_debut, f.heure_fin, margeNuit);
             const rappel = f.interventions?.find(i => i.kind === 'rappel');
-            if (rappel) totalNuitMin += calcHeuresNuit(rappel.pause_debut, rappel.pause_fin, false);
+            if (rappel) totalNuitMin += calcHeuresNuit(rappel.pause_debut, rappel.pause_fin, 0);
             if (f.astreinte) totalAstreinteMin += travailMin;
         }
 

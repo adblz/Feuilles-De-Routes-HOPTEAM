@@ -1,5 +1,5 @@
 import {
-    cfg, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto, validerSuppInput,
+    cfg, setTrajetMinutes, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto, validerSuppInput,
     ajouterIntervention, ajouterPause, sauvegarderBrouillon,
     afficherBlocRappel, viderRappel,
 } from './modules/fdr.js';
@@ -14,7 +14,7 @@ import { initToolbar } from './modules/toolbar.js';
 import { afficherHeures } from './modules/heures_history.js';
 import { fermerPdfViewer } from './modules/pdfviewer.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession, startAutoRefresh } from './modules/auth.js';
-import { chargerContratProfil, sauvegarderContratProfil } from './modules/db.js';
+import { chargerContratProfil, sauvegarderContratProfil, chargerReglesEntreprise } from './modules/db.js';
 import { showToast, scrollVersCarte, attachPasswordToggle, attacherBoutonMiseAJour } from './utils/utils.js';
 import { collapserToutesSauf } from './modules/fdr_collapse.js';
 import { initTimePicker } from './modules/timepicker.js';
@@ -263,6 +263,10 @@ window.addEventListener('load', async () => {
             localStorage.setItem('cfg_contrat', profil.contrat);
             localStorage.setItem('cfg_company', cfg.company);
             localStorage.setItem('cfg_email',   cfg.email);
+            try {
+                const regles = await chargerReglesEntreprise(cfg.company);
+                if (regles) setTrajetMinutes(regles.trajet_minutes);
+            } catch { /* on garde la dernière valeur connue en cache */ }
             initApp(session.user, profil.nom || '');
         } else {
             afficherModalPremierContrat(session.user, profil?.nom || '');

@@ -55,8 +55,10 @@ export function calcHeures() {
     if (finMin <= debutMin) finMin += 1440;   // passage de minuit (retour après 00h)
 
     const astreinteJour = document.getElementById('astreinte-jour')?.checked;
-    const trajetMin     = (astreinteJour || estExterne()) ? 0 : 60;   // astreinte ou page externe : aucun trajet retiré
-    let totalMin = finMin - debutMin - repas - trajetMin;   // −60 = 30 min matin + 30 min soir
+    // Trajet retiré = réglage de l'entreprise (cfg.trajetMinutes, 60 par défaut).
+    // Astreinte ou page externe (DAV) : aucun trajet retiré.
+    const trajetMin     = (astreinteJour || estExterne()) ? 0 : cfg.trajetMinutes;
+    let totalMin = finMin - debutMin - repas - trajetMin;   // trajet = 30 min matin + 30 min soir par défaut
     if (totalMin < 0) totalMin = 0;
 
     // Rappel / sortie supplémentaire : on ajoute la 2ᵉ plage horaire.
@@ -68,10 +70,12 @@ export function calcHeures() {
         document.getElementById('heures-supp').value = affH(Math.max(0, totalMin - sMin));
     }
 
-    // Nuit = journée principale (avec trajet) + rappel éventuel (compté en entier)
+    // Nuit = journée principale + rappel éventuel (compté en entier).
+    // Marge non comptée à chaque bout = moitié du trajet du jour (trajet 60 → 30
+    // matin + 30 soir ; trajet 90 → 45 + 45). Rappel : aucune marge (0).
     const rDebut   = document.getElementById('rappel-debut')?.value;
     const rFin     = document.getElementById('rappel-fin')?.value;
-    const nuitMin  = calcHeuresNuit(debut, fin, !astreinteJour && !estExterne()) + calcHeuresNuit(rDebut, rFin, false);
+    const nuitMin  = calcHeuresNuit(debut, fin, trajetMin / 2) + calcHeuresNuit(rDebut, rFin, 0);
     const nuitEl   = document.getElementById('heures-nuit');
     const nuitGrp  = document.getElementById('heures-nuit-group');
     if (nuitEl && nuitGrp) {
