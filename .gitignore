@@ -1,2 +1,6 @@
 node_modules/
 .env
+
+# Sauvegardes locales de la base (contiennent des données réelles + le mot de
+# passe de connexion). NE JAMAIS envoyer en ligne.
+sauvegardes/
