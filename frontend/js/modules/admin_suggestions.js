@@ -8,7 +8,7 @@ import { showToast } from '../utils/utils.js';
 
 let _eventsInit = false;
 let _toutes     = [];
-let _filtre     = 'tous';
+let _filtre     = 'nouveau';
 
 export async function initSuggestions() {
     if (!_eventsInit) {
