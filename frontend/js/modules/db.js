@@ -144,9 +144,12 @@ export async function sauvegarderContratProfil(contrat) {
 export async function enregistrerSuggestion(categorie, message) {
     const user = getSession()?.user;
     if (!user) throw new Error('Non connecté');
+    // Le nom du technicien vit dans la table profiles, pas dans user_metadata.
+    // On le récupère depuis le champ verrouillé du formulaire (rempli au démarrage).
+    const nomChamp = document.getElementById('technicien')?.value.trim();
     await dbPost('suggestions', {
         user_id:        user.id,
-        technicien_nom: user.user_metadata?.nom || null,
+        technicien_nom: nomChamp || user.user_metadata?.nom || null,
         categorie,
         message,
         statut:         'nouveau',
