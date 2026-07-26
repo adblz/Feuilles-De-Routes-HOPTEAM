@@ -1,5 +1,5 @@
 import { affH, normaliserSupp, showToast } from '../utils/utils.js';
-import { cfg, estExterne } from './fdr_config.js';
+import { cfg } from './fdr_config.js';
 import { calcHeuresNuit } from './heures_calculs.js';
 
 // ── État heures supplémentaires ────────────────────────────────
@@ -55,9 +55,9 @@ export function calcHeures() {
     if (finMin <= debutMin) finMin += 1440;   // passage de minuit (retour après 00h)
 
     const astreinteJour = document.getElementById('astreinte-jour')?.checked;
-    // Trajet retiré = réglage de l'entreprise (cfg.trajetMinutes, 60 par défaut).
-    // Astreinte ou page externe (DAV) : aucun trajet retiré.
-    const trajetMin     = (astreinteJour || estExterne()) ? 0 : cfg.trajetMinutes;
+    // Trajet retiré = réglage de l'entreprise (cfg.trajetMinutes, 60 par défaut ;
+    // 0 pour une entreprise comme DAV). En astreinte : aucun trajet retiré.
+    const trajetMin     = astreinteJour ? 0 : cfg.trajetMinutes;
     let totalMin = finMin - debutMin - repas - trajetMin;   // trajet = 30 min matin + 30 min soir par défaut
     if (totalMin < 0) totalMin = 0;
 

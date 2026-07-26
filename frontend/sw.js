@@ -1,17 +1,13 @@
-const CACHE    = 'fdr-v21';
+const CACHE    = 'fdr-v22';
 const PRECACHE = [
   '/',
   '/index.html',
-  '/index-externe.html',
   '/pages/login.html',
-  '/pages/login-externe.html',
   '/pages/responsable.html',
   '/pages/admin.html',
   '/assets/images/logo.png',
   '/assets/images/logo-reduit.png',
-  '/assets/images/davlogo.png',
   '/manifest.json',
-  '/manifest-externe.json',
   'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
 ];
 
@@ -38,7 +34,7 @@ self.addEventListener('fetch', event => {
   if (url.hostname.includes('supabase.co')) return;
 
   if (event.request.mode === 'navigate') {
-    const PAGES_DIRECTES = ['/pages/login.html', '/pages/login-externe.html', '/pages/responsable.html', '/pages/admin.html', '/index-externe.html'];
+    const PAGES_DIRECTES = ['/pages/login.html', '/pages/responsable.html', '/pages/admin.html'];
     const target = PAGES_DIRECTES.includes(url.pathname) ? url.pathname : '/index.html';
     // On demande toujours la dernière version de la page au réseau en premier :
     // c'est ce qui garantit qu'on affiche la version la plus récente du site.

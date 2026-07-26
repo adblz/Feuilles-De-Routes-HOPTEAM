@@ -1,12 +1,13 @@
 import { parseDuree } from '../utils/utils.js';
 import { feriesEnSemaine } from './jours_feries.js';
-import { estExterne, cfg } from './fdr_config.js';
+import { cfg } from './fdr_config.js';
 
-// ── Barème heures supplémentaires (défaut légal — à vérifier convention 3044) ──
-const SEUIL_HEBDO_MIN = 35 * 60;   // au-delà de 35h/semaine = heures supplémentaires
-const PALIER_25_MIN   = 8 * 60;    // 8 premières heures supp à +25% (36e→43e), puis +50%
+// ── Barème heures supplémentaires ──────────────────────────────
+// Le seuil hebdo (défaut 35h) et le palier +25% (défaut 8h) sont réglés par
+// entreprise (cfg.seuilHebdoMinutes / cfg.palier25Minutes), défaut légal — à
+// vérifier convention 3044.
 
-// ── Heures de nuit (21h–6h) ────────────────────────────────────
+// ── Heures de nuit (plage réglée par entreprise, défaut 21h–6h) ─
 // Gère le passage de minuit et retire le trajet (30 min matin + 30 min soir)
 // pour ne compter que le temps de travail effectif.
 
@@ -22,9 +23,10 @@ export function calcHeuresNuit(heureDebut, heureFin, margeMin = 0) {
     debut += margeMin;               // trajet matin non compté
     fin   -= margeMin;               // trajet soir non compté
 
-    // Nuit = 21h→6h. Deux fenêtres : minuit→6h (0–360) et 21h→6h du lendemain (1260–1800)
+    // Nuit = plage réglée par l'entreprise (défaut 21h→6h). Deux fenêtres :
+    // minuit→fin (0 → nuitFin) et début→fin du lendemain (nuitDebut → nuitFin+1440).
     const chevauche = (a, b, c, d) => Math.max(0, Math.min(b, d) - Math.max(a, c));
-    return Math.max(0, chevauche(debut, fin, 0, 360) + chevauche(debut, fin, 1260, 1800));
+    return Math.max(0, chevauche(debut, fin, 0, cfg.nuitFin) + chevauche(debut, fin, cfg.nuitDebut, cfg.nuitFin + 1440));
 }
 
 // ── Calcul hebdomadaire ────────────────────────────────────────
@@ -82,8 +84,9 @@ export function calcHebdomadaire(feuilles) {
         let totalTravailMin   = 0;
         let totalNuitMin      = 0;
         let totalAstreinteMin = 0;   // heures travaillées des jours cochés « astreinte » (récupérables)
-        // Marge de nuit = moitié du trajet (0 pour la page externe DAV).
-        const margeNuit = estExterne() ? 0 : cfg.trajetMinutes / 2;
+        // Marge de nuit = moitié du trajet du jour (0 si l'entreprise ne retire
+        // aucun trajet, ex. DAV avec trajet_minutes = 0).
+        const margeNuit = cfg.trajetMinutes / 2;
         for (const f of fs) {
             const travailMin = parseDuree(f.heures_travail);
             totalTravailMin += travailMin;
@@ -95,13 +98,13 @@ export function calcHebdomadaire(feuilles) {
 
         // Seuil réduit de 7h par jour férié tombant lun→ven dans la semaine.
         const nbFeries = feriesEnSemaine(getLundiSemaine(fs[0].date));
-        const seuilMin = Math.max(0, SEUIL_HEBDO_MIN - nbFeries * 7 * 60);
+        const seuilMin = Math.max(0, cfg.seuilHebdoMinutes - nbFeries * 7 * 60);
 
         const totalSuppMin = Math.max(0, totalTravailMin - seuilMin);
-        const supp25 = Math.min(totalSuppMin, PALIER_25_MIN);      // premières 8h supp à +25%
-        const supp50 = Math.max(0, totalSuppMin - PALIER_25_MIN);  // au-delà à +50%
+        const supp25 = Math.min(totalSuppMin, cfg.palier25Minutes);      // premières 8h supp à +25%
+        const supp50 = Math.max(0, totalSuppMin - cfg.palier25Minutes);  // au-delà à +50%
 
-        return { cle, label, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin, nbFeries, seuilMin };
+        return { cle, label, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin, nbFeries, seuilMin, feuilles: fs };
     });
 }
 

@@ -1,6 +1,21 @@
-import { cfg, seuilJour, lireTousLesElements, getLogoBase64, estExterne } from './fdr.js';
+import { cfg, seuilJour, lireTousLesElements, getLogoBase64 } from './fdr.js';
 import { renderItems } from './pdf_items.js';
 import { dureeCourte } from '../utils/utils.js';
+
+// Libellé de la case « heures travaillées » selon le trajet retiré par
+// l'entreprise : « Heures trav. » si 0 min, sinon « Heures trav. (−1h30 trajet) ».
+function labelHeuresTrav(min) {
+    if (!min) return 'Heures trav.';
+    const h = Math.floor(min / 60), m = min % 60;
+    const txt = h && m ? `${h}h${String(m).padStart(2, '0')}` : h ? `${h}h` : `${m}min`;
+    return `Heures trav. (−${txt} trajet)`;
+}
+
+// Échappe le texte libre des mentions PDF (saisi dans l'admin) et garde les
+// retours à la ligne.
+function escPdf(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+}
 
 export function construirePDF() {
     const dateVal = document.getElementById('date').value;
@@ -54,7 +69,7 @@ export function construirePDF() {
             <div class="pdf-hour-box"><div class="lbl">Début journée</div><div class="val">${debut}</div></div>
             <div class="pdf-hour-box"><div class="lbl">Fin journée</div><div class="val">${fin}</div></div>
             <div class="pdf-hour-box repas"><div class="lbl">Pause repas</div><div class="val">${repas}</div></div>
-            <div class="pdf-hour-box supp"><div class="lbl">${astreinteJour ? 'Heures travaillées (astreinte)' : (estExterne() ? 'Heures trav.' : 'Heures trav. (−1h trajet)')}</div><div class="val">${travail}</div></div>
+            <div class="pdf-hour-box supp"><div class="lbl">${astreinteJour ? 'Heures travaillées (astreinte)' : labelHeuresTrav(cfg.trajetMinutes)}</div><div class="val">${travail}</div></div>
         </div>
 ${rappel ? `
         <div class="pdf-hours-row">
@@ -66,7 +81,8 @@ ${rappel ? `
         ${suppBanner}
 
         <div class="pdf-section-title">Interventions &amp; Pauses (${nbInts} intervention${nbInts > 1 ? 's' : ''})</div>
-        ${itemsHTML}`;
+        ${itemsHTML}
+        ${cfg.pdfMentions ? `<div class="pdf-mentions" style="margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:10px;color:#64748b;line-height:1.4;">${escPdf(cfg.pdfMentions)}</div>` : ''}`;
 }
 
 export function nomFichierPdf(tech, date) {

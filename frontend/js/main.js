@@ -1,5 +1,5 @@
 import {
-    cfg, setTrajetMinutes, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto, validerSuppInput,
+    cfg, setReglesEntreprise, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto, validerSuppInput,
     ajouterIntervention, ajouterPause, sauvegarderBrouillon,
     afficherBlocRappel, viderRappel,
 } from './modules/fdr.js';
@@ -202,12 +202,24 @@ function attacherBoutonsSecours() {
     }
 }
 
+// Applique le logo de l'entreprise (ou HopTeam par défaut) à l'en-tête : le
+// logo principal, et le logo réduit (affiché sur petit écran) uniquement si
+// l'entreprise a son propre logo — sinon on garde le logo réduit HopTeam du HTML.
+function appliquerLogo() {
+    const logo = getLogoBase64();
+    const principal = document.getElementById('header-logo');
+    if (principal) {
+        if (logo) { principal.src = logo; principal.classList.remove('hidden'); }
+        else principal.classList.add('hidden');
+    }
+    const reduit = document.querySelector('.header-logo-reduit');
+    if (reduit && cfg.logoB64) reduit.src = cfg.logoB64;
+}
+
 window.addEventListener('load', async () => {
     attacherBoutonsSecours();
 
-    const logo = getLogoBase64();
-    const logoEl = document.getElementById('header-logo');
-    if (logo) logoEl.src = logo; else logoEl.classList.add('hidden');
+    appliquerLogo();
     majHauteurHeader();
 
     if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
@@ -250,12 +262,6 @@ window.addEventListener('load', async () => {
             window.location.href = '/pages/responsable.html';
             return;
         }
-        const estExterne = document.body.dataset.branding === 'externe';
-        const estDav = profil?.company === 'DAV';
-        if (estExterne !== estDav) {
-            window.location.href = estDav ? '/index-externe.html' : '/index.html';
-            return;
-        }
         if (profil?.contrat) {
             cfg.contrat = profil.contrat;
             cfg.company = profil.company || '';
@@ -265,7 +271,8 @@ window.addEventListener('load', async () => {
             localStorage.setItem('cfg_email',   cfg.email);
             try {
                 const regles = await chargerReglesEntreprise(cfg.company);
-                if (regles) setTrajetMinutes(regles.trajet_minutes);
+                setReglesEntreprise(regles);
+                appliquerLogo();   // rafraîchit l'en-tête avec le logo de l'entreprise
             } catch { /* on garde la dernière valeur connue en cache */ }
             initApp(session.user, profil.nom || '');
         } else {

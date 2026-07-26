@@ -251,3 +251,41 @@ using ( true );
 --   drop policy if exists "lecture_entreprises_connectes" on public.entreprises;
 --   alter table public.entreprises drop column if exists trajet_minutes;
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-07-26 — Config complète par entreprise (logo, règles d'heures, PDF)
+--
+-- On généralise la « phase 1 : temps de trajet » : toute la config qui doit
+-- changer d'une entreprise à l'autre vit désormais dans la table entreprises.
+-- Objectif : supprimer les pages dupliquées (index-externe / login-externe /
+-- manifest-externe pour DAV) et piloter une seule page par les données.
+--
+-- Tous les défauts reproduisent le comportement historique HopTeam :
+--   • seuil_hebdo_minutes = 2100 (35 h)   • palier_25_minutes = 480 (8 h)
+--   • nuit_debut = 1260 (21 h)            • nuit_fin = 360 (6 h)
+-- Le logo (logo_b64) et les mentions PDF restent vides tant que l'admin ne les
+-- renseigne pas ; le code retombe alors sur le logo HopTeam par défaut.
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter tout le bloc ci-dessous.
+-- ─────────────────────────────────────────────────────────────────────────
+
+alter table public.entreprises
+  add column if not exists logo_b64            text,
+  add column if not exists seuil_hebdo_minutes int  not null default 2100,
+  add column if not exists palier_25_minutes   int  not null default 480,
+  add column if not exists nuit_debut          int  not null default 1260,
+  add column if not exists nuit_fin            int  not null default 360,
+  add column if not exists pdf_mentions        text;
+
+-- Le logo DAV sera chargé via l'onglet « Entreprises » de l'admin (import
+-- d'image). En attendant, DAV affiche le logo HopTeam par défaut.
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   alter table public.entreprises
+--     drop column if exists logo_b64,
+--     drop column if exists seuil_hebdo_minutes,
+--     drop column if exists palier_25_minutes,
+--     drop column if exists nuit_debut,
+--     drop column if exists nuit_fin,
+--     drop column if exists pdf_mentions;
+-- ─────────────────────────────────────────────────────────────────────────

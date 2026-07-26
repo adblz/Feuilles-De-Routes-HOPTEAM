@@ -1,5 +1,5 @@
 import { getSession, isSessionValid, connexion, refreshSession } from './modules/auth.js';
-import { getLogoBase64 } from './modules/fdr.js';
+import { getLogoDefaut } from './modules/fdr.js';
 import { chargerContratProfil } from './modules/db.js';
 import { attachPasswordToggle } from './utils/utils.js';
 
@@ -7,11 +7,11 @@ async function redirigerSelonRole() {
     const profil = await chargerContratProfil();
     if (profil?.role === 'admin')        window.location.href = '/pages/admin.html';
     else if (profil?.role === 'responsable') window.location.href = '/pages/responsable.html';
-    else                                 window.location.href = profil?.company === 'DAV' ? '/index-externe.html' : '/index.html';
+    else                                 window.location.href = '/index.html';
 }
 
 window.addEventListener('load', async () => {
-    const logo = getLogoBase64();
+    const logo = getLogoDefaut();
     const logoEl = document.getElementById('login-logo');
     if (logo) logoEl.src = logo; else logoEl.classList.add('hidden');
 

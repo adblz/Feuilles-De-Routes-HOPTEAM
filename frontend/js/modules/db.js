@@ -113,12 +113,22 @@ export async function chargerContratProfil() {
     return rows[0] || null;
 }
 
-// Règles de calcul de l'entreprise du technicien (phase 1 : temps de trajet).
+// Config complète de l'entreprise du technicien : logo, règles de calcul
+// d'heures (trajet, seuil hebdo, palier 25/50, plage de nuit) et mentions PDF.
 // Renvoie null si l'entreprise est inconnue ou introuvable.
 export async function chargerReglesEntreprise(company) {
     if (!company) return null;
-    const rows = await dbGet(`entreprises?nom=eq.${encodeURIComponent(company)}&select=trajet_minutes`);
-    return rows[0] || null;
+    const cols = 'trajet_minutes,logo_b64,seuil_hebdo_minutes,palier_25_minutes,nuit_debut,nuit_fin,pdf_mentions';
+    try {
+        const rows = await dbGet(`entreprises?nom=eq.${encodeURIComponent(company)}&select=${cols}`);
+        return rows[0] || null;
+    } catch {
+        // Colonnes de config pas encore ajoutées (migration 2026-07-26 non
+        // exécutée) : on retombe sur le seul temps de trajet, comportement
+        // historique. Les autres règles gardent alors leurs valeurs par défaut.
+        const rows = await dbGet(`entreprises?nom=eq.${encodeURIComponent(company)}&select=trajet_minutes`);
+        return rows[0] || null;
+    }
 }
 
 export async function sauvegarderContratProfil(contrat) {

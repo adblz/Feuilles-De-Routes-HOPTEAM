@@ -497,18 +497,49 @@ body.admin-body {
     border-top: 1px solid var(--adm-border);
     font-size: 13px; color: var(--adm-muted);
 }
-.ent-row-trajet { display: inline-flex; align-items: center; gap: 8px; }
-.ent-row-trajet-input {
-    width: 72px;
+.ent-champ { display: inline-flex; align-items: center; gap: 6px; }
+.ent-inp, .ent-inp-time {
     padding: 7px 10px;
     border: 1px solid var(--adm-border);
     border-radius: 8px;
     font-size: 14px; font-family: inherit;
     color: var(--adm-text);
     background: var(--adm-card);
-    text-align: right;
 }
-.ent-row-trajet-input:focus { outline: none; border-color: var(--adm-indigo); box-shadow: 0 0 0 3px var(--adm-indigo-50); }
+.ent-inp { width: 72px; text-align: right; }
+.ent-inp:focus, .ent-inp-time:focus, .ent-inp-mentions:focus { outline: none; border-color: var(--adm-indigo); box-shadow: 0 0 0 3px var(--adm-indigo-50); }
+.ent-champ-mentions { flex-basis: 100%; flex-direction: column; align-items: flex-start; gap: 4px; }
+.ent-inp-mentions {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--adm-border);
+    border-radius: 8px;
+    font-size: 13px; font-family: inherit;
+    color: var(--adm-text);
+    background: var(--adm-card);
+    resize: vertical;
+}
+.ent-logo { display: inline-flex; align-items: center; gap: 8px; }
+.ent-logo-apercu { height: 34px; width: auto; max-width: 120px; padding: 2px; border: 1px solid var(--adm-border); border-radius: 6px; background: #fff; }
+.ent-logo-btn {
+    padding: 7px 12px;
+    border: 1px dashed var(--adm-border);
+    border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    color: var(--adm-indigo);
+    background: var(--adm-card);
+    cursor: pointer;
+}
+.ent-logo-btn:hover { border-color: var(--adm-indigo); }
+.ent-logo-suppr {
+    padding: 6px 10px;
+    border: 1px solid #fecdd3;
+    border-radius: 8px;
+    font-size: 12px; font-weight: 600; font-family: inherit;
+    color: var(--adm-red);
+    background: var(--adm-card);
+    cursor: pointer;
+}
 .ent-row-input {
     flex: 1;
     min-width: 0;

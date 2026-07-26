@@ -5,8 +5,9 @@ import { SUPABASE_URL } from '../modules/config.js';
 import { buildHeaders } from './admin_api.js';
 
 export async function chargerEntreprises() {
+    const cols = 'id,nom,trajet_minutes,logo_b64,seuil_hebdo_minutes,palier_25_minutes,nuit_debut,nuit_fin,pdf_mentions';
     const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/entreprises?select=id,nom,trajet_minutes&order=nom.asc`,
+        `${SUPABASE_URL}/rest/v1/entreprises?select=${cols}&order=nom.asc`,
         { headers: await buildHeaders() }
     );
     if (!res.ok) throw new Error(`Chargement entreprises : ${await res.text()}`);
