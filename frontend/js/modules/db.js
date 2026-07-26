@@ -100,7 +100,7 @@ export async function supprimerFeuille(id) {
 export async function chargerHeuresSupp(debut, fin) {
     const user = getSession()?.user;
     if (!user) return [];
-    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_travail,heures_supp,heure_debut,heure_fin,astreinte,interventions(kind,pause_debut,pause_fin)&order=date.asc`);
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_travail,heures_supp,heure_debut,heure_fin,astreinte,interventions(kind,heure_arrivee,heure_depart,client,ville,pause_debut,pause_fin)&order=date.asc`);
 }
 
 function toTime(val) { return val || null; }

@@ -1,4 +1,5 @@
 import { affH } from '../utils/utils.js';
+import { timelineSemaine } from './heures_timeline.js';
 
 // Échelle fixe pour que les barres des semaines soient comparables entre elles.
 const ECHELLE_MIN = 60 * 60;   // 60h = pleine largeur
@@ -68,18 +69,21 @@ function carteSemaine(s) {
     const badgesHtml = badges.length ? `<div class="heures-badges">${badges.join('')}</div>` : '';
 
     return `
-    <div class="heures-carte heures-semaine-carte${partielle}">
-        <div class="heures-semaine-entete">
-            <span class="heures-semaine-label">${s.label}</span>
-            <span class="heures-semaine-jours">${s.nbJours} jour${s.nbJours > 1 ? 's' : ''}</span>
-        </div>
-        <div class="heures-barre">${barre}</div>
-        <div class="heures-semaine-pied">
-            <span>${affH(s.totalTravailMin)} travaillées</span>
-            ${pied}
-        </div>
-        ${badgesHtml}
-    </div>`;
+    <details name="heures-semaine" class="heures-carte heures-semaine-carte${partielle}">
+        <summary class="heures-semaine-resume">
+            <div class="heures-semaine-entete">
+                <span class="heures-semaine-label">${s.label}</span>
+                <span class="heures-semaine-jours">${s.nbJours} jour${s.nbJours > 1 ? 's' : ''}</span>
+            </div>
+            <div class="heures-barre">${barre}</div>
+            <div class="heures-semaine-pied">
+                <span>${affH(s.totalTravailMin)} travaillées</span>
+                ${pied}
+            </div>
+            ${badgesHtml}
+        </summary>
+        <div class="heures-detail">${timelineSemaine(s.feuilles)}</div>
+    </details>`;
 }
 
 // ── Point d'entrée ─────────────────────────────────────────────

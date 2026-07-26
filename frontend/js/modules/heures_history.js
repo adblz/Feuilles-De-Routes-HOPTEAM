@@ -4,6 +4,7 @@ import { trouverPeriodeCourante, nomMois, rangeLabel } from './periodes_paie.js'
 import { calcHebdomadaire, totauxSuppPeriode } from './heures_calculs.js';
 import { renderHeures } from './heures_render.js';
 import { isoLocal, escHtml } from '../utils/utils.js';
+import { montrerInfoBloc } from './heures_tooltip.js';
 
 let initialized = false;
 let periodes    = [];
@@ -31,6 +32,12 @@ export function afficherHeures() {
             chargerEtRendre();
         });
         document.getElementById('heures-periode').addEventListener('change', appliquerSelection);
+        // Sur téléphone, l'infobulle « title » ne s'affiche pas : un appui sur un
+        // bloc de la frise ouvre une bulle ancrée dessus (client, horaires).
+        document.getElementById('heures-tableau').addEventListener('click', e => {
+            const bloc = e.target.closest('.heures-bloc');
+            if (bloc?.dataset.info) montrerInfoBloc(bloc, bloc.dataset.info);
+        });
     }
     peuplerPeriodes();
 }

@@ -467,9 +467,9 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     color: var(--ink-body);
     padding: 6px 0 4px;
     font-family: 'IBM Plex Mono', monospace;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 .card-collapsed .card-summary { display: block; }
 .int-number::after,
