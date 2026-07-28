@@ -45,8 +45,8 @@ publicRouter.post('/report-error', errorLimiter, async (req, res) => {
     if (!KEY) return res.status(503).json({ error: 'Service non configuré.' });
     if (req.headers['x-api-key'] !== KEY) return res.status(401).json({ error: 'Clé invalide.' });
 
-    const { message, source, userEmail, userRole, page } = req.body;
-    await sendTelegram(formatErreur({ message, source, userEmail, userRole, page }));
+    const { message, source, stack, userAgent, userEmail, userRole, page } = req.body;
+    await sendTelegram(formatErreur({ message, source, stack, userAgent, userEmail, userRole, page }));
     res.json({ ok: true });
 });
 

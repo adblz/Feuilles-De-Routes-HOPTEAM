@@ -78,12 +78,12 @@ export async function notifySuggestion(categorie, message) {
     } catch { /* notification silencieuse */ }
 }
 
-export async function reportError({ message, source, userEmail, userRole, page }) {
+export async function reportError({ message, source, stack, userAgent, userEmail, userRole, page }) {
     try {
         await fetch(`${BACKEND}/report-error`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'x-api-key': ERROR_API_KEY },
-            body:    JSON.stringify({ message, source, userEmail, userRole, page }),
+            body:    JSON.stringify({ message, source, stack, userAgent, userEmail, userRole, page }),
             keepalive: true,
         });
     } catch { /* notification silencieuse */ }

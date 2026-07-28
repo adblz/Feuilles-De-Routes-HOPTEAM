@@ -31,7 +31,7 @@ function markReported(fp) {
     try { localStorage.setItem(LS_KEY, JSON.stringify(entries)); } catch { /* */ }
 }
 
-function handleError(message, source) {
+function handleError(message, source, stack) {
     if (!message) return;
     const fp = (message + '|' + (source || '')).slice(0, 150);
     if (!shouldReport(fp)) return;
@@ -40,18 +40,21 @@ function handleError(message, source) {
     reportError({
         message:   String(message).slice(0, 500),
         source:    String(source  || '').slice(0, 200),
+        stack:     String(stack   || '').slice(0, 1000),
+        userAgent: navigator.userAgent,
         userEmail: email,
         userRole:  role,
         page:      window.location.pathname,
     });
 }
 
-window.onerror = function(message, url, line) {
-    handleError(message, url ? `${url}:${line}` : '');
+window.onerror = function(message, url, line, col, error) {
+    handleError(message, url ? `${url}:${line}:${col}` : '', error?.stack);
 };
 
 window.addEventListener('unhandledrejection', function(event) {
-    const msg = event.reason?.message || String(event.reason) || 'Unhandled rejection';
-    const src = event.reason?.stack?.split('\n')[1]?.trim() || '';
-    handleError(msg, src);
+    const reason = event.reason;
+    const msg = reason?.message || (reason == null ? 'Promesse rejetée sans détail (aucune information fournie par le code)' : String(reason));
+    const src = reason?.stack?.split('\n')[1]?.trim() || '';
+    handleError(msg, src, reason?.stack);
 });

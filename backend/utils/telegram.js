@@ -71,13 +71,20 @@ function expliquerErreur(message) {
     return regle ? regle.explication : null;
 }
 
-function formatErreur({ userEmail, userRole, page, message, source }) {
+function formatErreur({ userEmail, userRole, page, message, source, stack, userAgent }) {
     const user = userEmail
         ? `${esc(userEmail)}${userRole ? ` (${esc(userRole)})` : ''}`
         : 'Non connecté';
     const explication = expliquerErreur(message);
     const ligneExplication = explication ? `\n💡 <b>Explication :</b> ${esc(explication)}` : '';
-    return `🚨 <b>Erreur frontend</b>\n\n👤 <b>Utilisateur :</b> ${user}\n📄 <b>Page :</b> ${esc(page || '?')}\n💥 <b>Erreur :</b> ${esc((message || '').slice(0, 300))}\n📍 <b>Source :</b> ${esc((source || '').slice(0, 150))}${ligneExplication}\n\n🕐 ${heure()}`;
+    const ligneAppareil = userAgent ? `\n📱 <b>Appareil :</b> ${esc(String(userAgent).slice(0, 150))}` : '';
+    const ligneDetail = stack ? `\n🧵 <b>Détail technique :</b>\n<pre>${esc(String(stack).slice(0, 600))}</pre>` : '';
+    return `🚨 <b>Erreur frontend</b>\n\n👤 <b>Utilisateur :</b> ${user}\n📄 <b>Page :</b> ${esc(page || '?')}${ligneAppareil}\n💥 <b>Erreur :</b> ${esc((message || '').slice(0, 300))}\n📍 <b>Source :</b> ${esc((source || '').slice(0, 150))}${ligneExplication}${ligneDetail}\n\n🕐 ${heure()}`;
 }
 
-module.exports = { sendTelegram, formatSuggestion, formatErreur };
+function formatResume({ nbFeuilles, techniciens }) {
+    const liste = techniciens.length ? techniciens.map(esc).join(', ') : 'aucun';
+    return `📊 <b>Résumé du jour</b>\n\n📝 <b>Feuilles envoyées :</b> ${nbFeuilles}\n👥 <b>Techniciens :</b> ${liste}\n\n🕐 ${heure()}`;
+}
+
+module.exports = { sendTelegram, formatSuggestion, formatErreur, formatResume };

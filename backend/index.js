@@ -3,6 +3,7 @@ const cors         = require('cors');
 const path         = require('path');
 const adminRoutes  = require('./routes/admin');
 const { adminRouter: notifyAdmin, publicRouter: notifyPublic } = require('./routes/notify');
+const { demarrerResumeQuotidien } = require('./utils/dailySummary');
 
 const app = express();
 
@@ -44,6 +45,9 @@ app.use(express.static(path.join(__dirname, '../frontend'), {
     setHeaders: (res) => res.setHeader('Cache-Control', 'no-store'),
 }));
 
+// Petite page de vérification, utilisée par le contrôle de disponibilité automatique.
+app.get('/health', (req, res) => res.json({ ok: true }));
+
 // Le backend sert uniquement à la création de comptes (page Admin).
 app.use('/admin', adminRoutes);
 app.use('/admin', notifyAdmin);
@@ -65,6 +69,8 @@ if (!process.env.SUPABASE_SERVICE_KEY) {
 if (!process.env.TELEGRAM_BOT_TOKEN) {
     console.warn("⚠️  TELEGRAM_BOT_TOKEN manquant — notifications Telegram désactivées.");
 }
+
+demarrerResumeQuotidien();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));

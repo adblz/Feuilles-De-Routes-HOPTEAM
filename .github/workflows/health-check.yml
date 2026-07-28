@@ -1,0 +1,19 @@
+name: Vérification serveur
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifier que le serveur répond, sinon alerter sur Telegram
+        run: |
+          if ! curl -sf --max-time 15 "https://feuilles-de-routes-hopteam.onrender.com/health" > /dev/null; then
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d parse_mode="HTML" \
+              --data-urlencode "text=🔴 <b>Serveur injoignable</b> — feuilles-de-routes-hopteam.onrender.com ne répond plus."
+          fi
