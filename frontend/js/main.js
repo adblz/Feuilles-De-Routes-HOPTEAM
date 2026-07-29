@@ -119,7 +119,9 @@ function initApp(user, nomProfil) {
         sauvegarderBrouillon();
     });
 
-    document.getElementById('btn-pdf').addEventListener('click', genererPDF);
+    document.getElementById('btn-pdf').addEventListener('click', () => {
+        genererPDF().catch(() => { /* déjà signalé au technicien via showToast() */ });
+    });
 
     // ── Modal aperçu PDF ───────────────────────────────────────
 

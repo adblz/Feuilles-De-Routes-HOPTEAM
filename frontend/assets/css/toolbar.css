@@ -147,11 +147,11 @@
     flex-shrink: 0;
 }
 
-.resume-item-pause {
-    color: var(--muted);
+/* Pause intercalée entre les interventions : repérée par le picto et l'orange */
+.resume-item-pause-txt {
+    font-weight: 700;
     font-size: 13px;
-    justify-content: flex-start;
-    gap: 8px;
+    color: var(--amber-deep);
 }
 
 .resume-empty {
@@ -534,6 +534,40 @@
 .heures-timeline.a-focus .heures-bloc.est-actif {
     opacity: 1;
     box-shadow: 0 0 0 2px rgba(255,255,255,.9), 0 0 10px rgba(255,255,255,.4);
+}
+
+/* ── Frise de la journée (vue résumé) ───────────────────
+   Même frise que celle de la semaine, mais posée sur une carte claire :
+   on rattrape ici les couleurs pensées pour le fond sombre. */
+.resume-frise { margin-bottom: 12px; }
+.resume-frise .heures-axe::before { flex: 0 0 0; }
+.resume-frise .heures-jour-ligne { margin-bottom: 0; }
+.resume-frise .heures-jour-track { background: rgba(0,0,0,.05); }
+.resume-frise .heures-jour-bar   { background: rgba(0,0,0,.12); }
+.resume-frise .heures-bloc--pause {
+    background: var(--amber);
+    opacity: 1;
+}
+.resume-frise.a-focus .heures-bloc.est-actif {
+    box-shadow: 0 0 0 2px rgba(0,0,0,.45);
+}
+
+.resume-frise-legende {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--muted);
+}
+.heures-puce.puce-interv { background: var(--teal); }
+.heures-puce.puce-pause  { background: var(--amber); }
+.heures-puce.puce-rappel { background: #a78bfa; }
+
+.resume-frise-aide {
+    margin-top: 8px;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--muted);
 }
 
 /* Bulle d'info ancrée sur le bloc cliqué, avec flèche pointant dessus */
