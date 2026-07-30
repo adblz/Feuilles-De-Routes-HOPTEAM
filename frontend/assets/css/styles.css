@@ -639,31 +639,15 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     display: flex; justify-content: space-between; align-items: baseline;
     font-size: 13px; color: var(--muted); margin-bottom: 8px;
 }
+/* Big Shoulders est une police condensée : à taille égale elle paraît plus
+   petite que l'IBM Plex Mono d'avant, d'où la taille augmentée. */
 .dash-supp-hero {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 38px; font-weight: 500; color: var(--ink-title);
-    line-height: 1; margin-bottom: 4px;
+    font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif;
+    font-size: 52px; font-weight: 700; color: var(--amber);
+    line-height: 0.95; letter-spacing: 0.5px; margin-bottom: 4px;
 }
 .dash-supp-context {
-    font-size: 13px; color: var(--muted); margin: 0 0 14px;
-}
-.dash-supp-bar-track {
-    display: flex; height: 10px; border-radius: 5px;
-    background: #DDD6C6; overflow: hidden; margin-bottom: 8px;
-}
-.dash-supp-seg { height: 100%; transition: width 240ms ease-out; }
-.dash-supp-seg-base { background: #B6AE9C; }
-.dash-supp-seg-25   { background: var(--amber); }
-.dash-supp-seg-50   { background: #F2647A; }
-.dash-supp-legend {
-    display: flex; flex-wrap: wrap; gap: 10px;
-    font-size: 11px; color: var(--muted);
-}
-.dash-supp-lbl-25  { color: #7a4b10; }
-.dash-supp-lbl-50  { color: #a0253c; }
-.dash-supp-lbl-ast { color: var(--teal); }
-@media (prefers-reduced-motion: reduce) {
-    .dash-supp-seg { transition: none; }
+    font-size: 13px; color: var(--muted); margin: 0;
 }
 
 /* ── Calendrier du mois (dashboard) ─────────────────────────── */
@@ -1112,7 +1096,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 
     /* Dashboard */
     .dash-hero-name { font-size: 19px; }
-    .dash-supp-hero { font-size: 32px; }
+    .dash-supp-hero { font-size: 44px; }
     .dash-semaine-chips { gap: 5px; }
     .dash-jour { padding: 10px 2px; }
     .dash-jour-nom { font-size: 10px; }
