@@ -1,6 +1,7 @@
 import { affH, normaliserSupp, showToast } from '../utils/utils.js';
 import { cfg } from './fdr_config.js';
 import { calcHeuresNuit } from './heures_calculs.js';
+import { seuilJourPour } from './seuil_jour.js';
 
 // ── État heures supplémentaires ────────────────────────────────
 
@@ -10,14 +11,10 @@ export function setSuppManuel(v) { suppManuel = v; }
 
 // ── Calcul des heures ──────────────────────────────────────────
 
+// Seuil du jour affiché dans le formulaire : la date vient du champ « date »,
+// le calcul lui-même vit dans seuil_jour.js (partagé avec le tableau de bord).
 export function seuilJour() {
-    if (cfg.contrat === '35') return 7 * 60;
-    const dateVal = document.getElementById('date').value;
-    if (dateVal) {
-        const jour = new Date(dateVal + 'T12:00').getDay();
-        return jour === 5 ? 7 * 60 : 8 * 60;
-    }
-    return 8 * 60;
+    return seuilJourPour(document.getElementById('date')?.value, cfg.contrat);
 }
 
 // Durée du rappel en minutes (lu directement dans le DOM pour éviter

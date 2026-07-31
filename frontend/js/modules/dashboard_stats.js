@@ -1,6 +1,7 @@
 import { chargerHeuresSupp } from './db.js';
-import { affH, isoLocal, parseDuree } from '../utils/utils.js';
+import { affH, isoLocal } from '../utils/utils.js';
 import { calcHebdomadaire } from './heures_calculs.js';
+import { totalSuppNet, baseSemaine, affHSigne } from './dashboard_supp.js';
 import { getBrouillonsDates } from './fdr.js';
 
 export async function rendreHeuresSupp() {
@@ -37,18 +38,23 @@ export async function rendreHeuresSupp() {
 
     const { label, totalTravailMin, nbJours } = semaines[0];
 
-    // Choix produit : sur cette carte les heures supp. sont la SOMME des heures
-    // supp. de chaque journée (heures faites au-delà du seuil du jour : 7h en
-    // contrat 35h, 8h — 7h le vendredi — en 39h), et non le dépassement du seuil
-    // hebdomadaire de 35h. Ex. 8h lundi + 10h mardi en 35h → 1h + 3h = 4h.
+    // Choix produit : sur cette carte les heures supp. se comptent JOUR PAR JOUR,
+    // chaque journée étant comparée à son propre seuil (7h en contrat 35h, 8h —
+    // 7h le vendredi — en 39h), et non au seuil hebdomadaire de 35h. Une journée
+    // plus courte que son seuil compte en négatif : voir dashboard_supp.js.
     // La page détail « Heures » garde, elle, le calcul hebdomadaire légal.
-    const totalSuppMin = histo.reduce((t, f) => t + parseDuree(f.heures_supp), 0);
+    const totalSuppMin = totalSuppNet(histo);
+    const baseMin      = baseSemaine(histo);
 
     if (datesEl) datesEl.textContent = label;
-    heroEl.textContent = totalSuppMin > 0 ? `+${affH(totalSuppMin)}` : '0h00';
+    heroEl.textContent = affHSigne(totalSuppMin);
+    heroEl.classList.toggle('est-negatif', totalSuppMin < 0);
 
     if (contextEl) {
-        contextEl.textContent = `${affH(totalTravailMin)} travaillées · ${nbJours} jour${nbJours > 1 ? 's' : ''}`;
+        const jours = `${nbJours} jour${nbJours > 1 ? 's' : ''}`;
+        contextEl.textContent = baseMin > 0
+            ? `${affH(totalTravailMin)} travaillées · base ${affH(baseMin)} · ${jours}`
+            : `${affH(totalTravailMin)} travaillées · ${jours}`;
     }
 }
 
