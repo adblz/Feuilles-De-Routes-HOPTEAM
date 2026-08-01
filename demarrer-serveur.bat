@@ -8,8 +8,8 @@ echo   DEMARRAGE DU SERVEUR LOCAL
 echo ================================================
 echo.
 
-REM Recupere l'adresse Tailscale du PC
-for /f "tokens=1" %%i in ('"C:\Program Files\Tailscale\tailscale.exe" ip 2^>nul') do set TAILSCALE_IP=%%i
+REM Recupere l'adresse Tailscale IPv4 du PC (-4 : sans ca on recupere l'IPv6, inutilisable dans un navigateur)
+for /f "tokens=1" %%i in ('"C:\Program Files\Tailscale\tailscale.exe" ip -4 2^>nul') do set TAILSCALE_IP=%%i
 
 REM Lance le serveur (accessible sur tout le reseau, pas seulement localhost)
 start "SERVEUR FEUILLE DE ROUTE" cmd /k npx --yes http-server frontend -p 3000 -a 0.0.0.0 -c-1
