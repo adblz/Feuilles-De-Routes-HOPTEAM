@@ -7,7 +7,7 @@ const RATIO     = 1.5;   // l'horizontal doit nettement dominer le vertical
 const DUREE_MAX = 800;   // au-delà c'est une hésitation, pas un glissement
 const MARGE_AXE = 8;     // en dessous, la direction n'est pas encore décidée
 
-export function activerSwipe(element, { onGauche, onDroite, onDeplacement, onAnnule } = {}) {
+export function activerSwipe(element, { onDebut, onGauche, onDroite, onDeplacement, onAnnule } = {}) {
     if (!element) return;
 
     let x0 = 0, y0 = 0, t0 = 0, actif = false, axe = null;
@@ -40,9 +40,17 @@ export function activerSwipe(element, { onGauche, onDroite, onDeplacement, onAnn
                 onAnnule?.();
                 return;
             }
+            onDebut?.();   // c'est bien un geste horizontal : on peut préparer
         }
+
+        // Le geste est horizontal : on retire au navigateur le droit de faire
+        // défiler la page pendant ce temps. Sans ça, iOS garde sa propre
+        // position de défilement dans son coin et la réimpose une fois le
+        // geste fini — ce qui annulait notre retour en haut de page.
+        if (e.cancelable) e.preventDefault();
+
         onDeplacement?.(dx);
-    }, { passive: true });
+    }, { passive: false });
 
     element.addEventListener('touchend', e => {
         if (!actif) return;

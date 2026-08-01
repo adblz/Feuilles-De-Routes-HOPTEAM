@@ -1,4 +1,5 @@
-import { chargerDetailFeuille, chargerPdfFeuille, supprimerFeuille } from './db.js';
+import { chargerPdfFeuille, supprimerFeuille } from './db.js';
+import { detailFeuille } from './resume_cache.js';
 import { remplirFormulaireDepuisFeuille } from './fdr_charger.js';
 import { showToast } from '../utils/utils.js';
 import { afficherDashboard } from './dashboard.js';
@@ -27,7 +28,7 @@ function activerFrise() {
 
 export async function afficherResumeFeuille(feuilleId) {
     try {
-        const { feuille, elements } = await chargerDetailFeuille(feuilleId);
+        const { feuille, elements } = await detailFeuille(feuilleId);
         document.getElementById('vue-dashboard').classList.add('hidden');
         document.getElementById('vue-formulaire').classList.add('hidden');
         document.getElementById('vue-heures')?.classList.add('hidden');

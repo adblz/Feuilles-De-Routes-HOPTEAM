@@ -210,16 +210,21 @@
 
 /* ── Changement de jour au doigt (voir resume_nav.js) ────────────── */
 
-/* pan-y : le défilement vertical reste natif, l'horizontal est à nous.
-   overflow-anchor : empêche le navigateur de « rattraper » la position de
-   défilement quand le contenu change, ce qui annulait le retour en haut. */
+/* pan-y : le défilement vertical reste natif, l'horizontal est à nous */
 #vue-resume {
     touch-action: pan-y;
+}
+
+/* Le navigateur « rattrape » de lui-même la position de défilement quand le
+   contenu d'une page change, pour ne pas perdre le lecteur. Ici c'est nous
+   qui décidons de revenir en haut : il faut donc le désactiver à la racine,
+   pas seulement sur la vue résumé. */
+html, body {
     overflow-anchor: none;
 }
 
 #resume-content {
-    transition: transform 0.18s ease-out;
+    transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 /* Pendant que le doigt bouge, le contenu doit coller à lui sans retard */
@@ -227,13 +232,28 @@
     transition: none;
 }
 
-@keyframes resume-entree {
-    from { opacity: 0; transform: translateX(calc(var(--sens, 1) * 28px)); }
-    to   { opacity: 1; transform: translateX(0); }
+/* Les journées voisines : posées sur l'écran, hors champ, prêtes à entrer.
+   z-index sous la barre d'outils (100) et sous l'en-tête collant (1001). */
+.resume-panneau {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--ink);
+    z-index: 50;
 }
 
-#resume-content.resume-entre {
-    animation: resume-entree 0.2s ease-out;
+.resume-panneau-anim {
+    transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Reprend la boîte du résumé normal, calée à la hauteur qu'il occupe
+   quand la page est en haut (position posée par resume_carousel.js). */
+.resume-panneau-inner {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .resume-aide-swipe {
@@ -249,8 +269,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    #resume-content { transition: none; }
-    #resume-content.resume-entre { animation: none; }
+    #resume-content,
+    .resume-panneau-anim { transition: none; }
 }
 
 @media (max-width: 620px) {
