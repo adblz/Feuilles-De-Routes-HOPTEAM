@@ -1,6 +1,13 @@
 import { escHtml, hhmm } from '../utils/utils.js';
 import { timelineJour, trierChronologique } from './resume_timeline.js';
 
+// Le repère « glissez pour changer de jour » disparaît dès que l'utilisateur a
+// glissé une fois. C'est resume_nav.js qui pose ce drapeau (même clé).
+const CLE_AIDE_SWIPE = 'fdr_swipe_vu';
+function aideSwipeDejaVue() {
+    try { return localStorage.getItem(CLE_AIDE_SWIPE) === '1'; } catch { return true; }
+}
+
 function formatDateLong(iso) {
     const d = new Date(iso + 'T12:00:00');
     const s = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -49,6 +56,7 @@ function enTete(feuille, rappel) {
         <div class="resume-hero">
             <p class="resume-label">Feuille du jour</p>
             <h2 class="resume-date-titre">${formatDateLong(feuille.date)}</h2>
+            ${aideSwipeDejaVue() ? '' : '<p class="resume-aide-swipe">‹ glissez pour changer de jour ›</p>'}
             ${astreinte ? `<p class="resume-astreinte"><span class="astreinte-badge">Astreinte</span></p>` : ''}
             ${timeRange   ? `<p class="resume-time-range">${timeRange}</p>` : ''}
             ${rappelRange ? `<p class="resume-time-range">↩ Sortie suppl. ${rappelRange}${rappel && rappel.astreinte ? ' (astreinte)' : ''}</p>` : ''}

@@ -11,6 +11,7 @@ import {
 import { genererPDF } from './modules/pdf.js';
 import { initDashboard, afficherDashboard } from './modules/dashboard.js';
 import { initToolbar } from './modules/toolbar.js';
+import { initResumeNav } from './modules/resume_nav.js';
 import { afficherHeures } from './modules/heures_history.js';
 import { fermerPdfViewer } from './modules/pdfviewer.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession, startAutoRefresh } from './modules/auth.js';
@@ -36,6 +37,7 @@ function initApp(user, nomProfil) {
     initDashboard(nomTech);
     afficherDashboard();
     initToolbar();
+    initResumeNav();
     initTimePicker();
     document.getElementById('dash-supp-card')?.addEventListener('click', afficherHeures);
 

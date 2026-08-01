@@ -208,6 +208,51 @@
     gap: 8px;
 }
 
+/* ── Changement de jour au doigt (voir resume_nav.js) ────────────── */
+
+/* pan-y : le défilement vertical reste natif, l'horizontal est à nous.
+   overflow-anchor : empêche le navigateur de « rattraper » la position de
+   défilement quand le contenu change, ce qui annulait le retour en haut. */
+#vue-resume {
+    touch-action: pan-y;
+    overflow-anchor: none;
+}
+
+#resume-content {
+    transition: transform 0.18s ease-out;
+}
+
+/* Pendant que le doigt bouge, le contenu doit coller à lui sans retard */
+#resume-content.resume-swiping {
+    transition: none;
+}
+
+@keyframes resume-entree {
+    from { opacity: 0; transform: translateX(calc(var(--sens, 1) * 28px)); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+#resume-content.resume-entre {
+    animation: resume-entree 0.2s ease-out;
+}
+
+.resume-aide-swipe {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+}
+
+/* Sur ordinateur il n'y a pas de doigt : le repère n'a pas lieu d'être */
+@media (min-width: 900px), (hover: hover) and (pointer: fine) {
+    .resume-aide-swipe { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #resume-content { transition: none; }
+    #resume-content.resume-entre { animation: none; }
+}
+
 @media (max-width: 620px) {
     body.clavier-ouvert .bottom-toolbar,
     body.clavier-ouvert .actions {

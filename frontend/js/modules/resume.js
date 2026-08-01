@@ -35,7 +35,8 @@ export async function afficherResumeFeuille(feuilleId) {
         document.getElementById('vue-resume').classList.remove('hidden');
         activerFrise();
         window.scrollTo(0, 0);
-        document.dispatchEvent(new CustomEvent('nav:resume'));
+        // Le detail sert à resume_nav.js pour savoir d'où partir au glissement
+        document.dispatchEvent(new CustomEvent('nav:resume', { detail: { feuilleId } }));
 
         document.getElementById('btn-resume-envoyer')?.addEventListener('click', () => {
             partagerPdfFeuille(feuilleId, nomFichierPdf(feuille.tech, feuille.date));
