@@ -737,7 +737,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     padding: 11px 14px; margin: 12px 0 4px;
     /* Marges de défilement : le panneau reste visible entre l'entête et la barre du bas */
     scroll-margin-top: calc(var(--app-header-h, 64px) + 12px);
-    scroll-margin-bottom: calc(var(--toolbar-h, 60px) + 16px);
+    scroll-margin-bottom: calc(var(--toolbar-h, 60px) + var(--toolbar-bas, 0px) + 16px);
 }
 .dash-cal-selected-label {
     font-size: 14px; font-weight: 600; color: var(--ink-body);
@@ -1138,7 +1138,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     /* Boutons d'action — flottants au-dessus de la toolbar */
     .actions {
         position: fixed;
-        bottom: calc(var(--toolbar-h) + env(safe-area-inset-bottom, 0px));
+        bottom: calc(var(--toolbar-h) + var(--toolbar-bas, 0px) + env(safe-area-inset-bottom, 0px));
         left: 0; right: 0;
         padding: 10px 16px 10px;
         z-index: 100;

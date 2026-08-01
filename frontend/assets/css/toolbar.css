@@ -1,14 +1,17 @@
 :root {
-    --toolbar-h: 60px;
+    --toolbar-h:   60px;   /* hauteur de la rangée de boutons */
+    --toolbar-bas: 14px;   /* dégagement au-dessus de la barre de gestes iPhone */
 }
 
+/* Le padding-bas pousse les boutons vers le haut ; le fond, lui, continue
+   jusqu'au bord de l'écran, comme dans les apps natives. */
 .bottom-toolbar {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(var(--toolbar-h) + env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(var(--toolbar-h) + var(--toolbar-bas) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--toolbar-bas) + env(safe-area-inset-bottom, 0px));
     background: var(--panel);
     border-top: 1px solid var(--hairline);
     display: flex;
@@ -55,7 +58,7 @@
 /* Décale le contenu pour que la toolbar ne le cache pas */
 .container,
 #vue-resume {
-    padding-bottom: calc(var(--toolbar-h) + env(safe-area-inset-bottom, 0px) + 24px);
+    padding-bottom: calc(var(--toolbar-h) + var(--toolbar-bas) + env(safe-area-inset-bottom, 0px) + 24px);
 }
 
 /* Styles de la vue résumé */
