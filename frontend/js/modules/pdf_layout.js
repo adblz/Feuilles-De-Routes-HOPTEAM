@@ -17,9 +17,19 @@ function escPdf(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
 }
 
-export function construirePDF() {
+// Date longue + technicien : affichés dans l'en-tête de la page 1 et rappelés
+// en haut des pages suivantes (voir pdf_pages.js).
+export function infosEntete() {
     const dateVal = document.getElementById('date').value;
     const tech    = document.getElementById('technicien').value || '—';
+    const dateAff = dateVal
+        ? new Date(dateVal + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+        : '—';
+    return { dateAff, tech };
+}
+
+export function construirePDF() {
+    const { dateAff, tech } = infosEntete();
     const debut   = document.getElementById('heure-debut').value || '—';
     const fin     = document.getElementById('heure-fin').value   || '—';
     const repas   = document.getElementById('repas').value ? document.getElementById('repas').value + ' min' : '—';
@@ -27,10 +37,6 @@ export function construirePDF() {
     const supp    = document.getElementById('heures-supp').value   || '0h00';
     const items   = lireTousLesElements();
     const nbInts  = items.filter(i => i.kind === 'intervention').length;
-
-    const dateAff = dateVal
-        ? new Date(dateVal + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-        : '—';
 
     const rappel    = items.find(i => i.kind === 'rappel');
     const itemsHTML = renderItems(items);

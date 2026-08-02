@@ -3,7 +3,8 @@ import { cfg, lireTousLesElements, effacerBrouillon } from './fdr.js';
 import { sauvegarderEnBase } from './db.js';
 import { memoriserValeurs } from './autocomplete.js';
 import { afficherResumeFeuille } from './resume.js';
-import { preparerPdfElement, nomFichierPdf } from './pdf_layout.js';
+import { preparerPdfElement, nomFichierPdf, infosEntete } from './pdf_layout.js';
+import { ajouterRappelPages } from './pdf_pages.js';
 
 // Re-exports pour api.js et tout autre fichier qui les importe depuis pdf.js
 export { preparerPdfElement, nomFichierPdf } from './pdf_layout.js';
@@ -37,6 +38,9 @@ export function genererPDF() {
                 .then(() => worker.toCanvas())
                 .then(() => worker.toImg())
                 .then(() => worker.toPdf())
+                // Rappel date + technicien en haut des pages 2, 3… (lit le
+                // formulaire, donc avant tout nettoyage).
+                .then(() => ajouterRappelPages(worker.prop.pdf, infosEntete()))
                 .then(() => worker.outputPdf('blob'))
                 .then(async (blob) => {
                     nettoyer();
