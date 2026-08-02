@@ -1,15 +1,15 @@
-// Onglet « Entreprises » : liste, ajout, renommage et suppression des entreprises.
+// Onglet « Entreprises » : grille de logos cliquables et ajout d'une entreprise.
+// L'édition (nom, logo, réglages, suppression) se fait dans admin_entreprises_modal.js.
 // Le renommage met à jour les utilisateurs rattachés ; la suppression est bloquée
-// tant qu'au moins un utilisateur y est rattaché.
+// tant qu'au moins un utilisateur y est rattaché (vérifié dans le modal).
 
 import { chargerEntreprises, creerEntreprise, modifierEntreprise, modifierReglesEntreprise, supprimerEntreprise, renommerCompagnieProfils } from '../api/admin_entreprises_api.js';
-import { blocReglages, lireReglages, lireLogoFichier } from './admin_entreprises_form.js';
+import { initEntrepriseEditModal, ouvrirModalEntrepriseEdit } from './admin_entreprises_modal.js';
 import { usageEntreprises } from './admin_users_table.js';
 import { showToast } from '../utils/utils.js';
 
-const LOGO_MAX_OCTETS = 300 * 1024;   // logo lu par chaque technicien : le garder léger
-
 let _onChange = null;
+let _parId = new Map();   // id -> entreprise, pour retrouver l'objet au clic sur sa tuile
 
 export function initEntreprisesGestion(onChange) {
     _onChange = onChange;
@@ -17,9 +17,8 @@ export function initEntreprisesGestion(onChange) {
     document.getElementById('ent-ajout-nom').addEventListener('keydown', e => {
         if (e.key === 'Enter') ajouter();
     });
-    const liste = document.getElementById('ent-gestion-liste');
-    liste.addEventListener('click', onListeClick);
-    liste.addEventListener('change', onListeChange);
+    document.getElementById('ent-gestion-liste').addEventListener('click', onTuileClick);
+    initEntrepriseEditModal({ onEnregistrer, onSupprimer });
 }
 
 export async function rafraichirEntreprises() {
@@ -27,9 +26,9 @@ export async function rafraichirEntreprises() {
     if (!box) return;
     try {
         const entreprises = await chargerEntreprises();
-        const usage = usageEntreprises();
+        _parId = new Map(entreprises.map(e => [String(e.id), e]));
         box.innerHTML = entreprises.length
-            ? entreprises.map(e => ligne(e, usage.get(e.nom) || 0)).join('')
+            ? entreprises.map(tuile).join('')
             : '<div class="ent-vide">Aucune entreprise pour le moment.</div>';
     } catch (e) {
         box.innerHTML = '<div class="ent-vide">Erreur de chargement.</div>';
@@ -37,71 +36,41 @@ export async function rafraichirEntreprises() {
     }
 }
 
-function ligne(e, nb) {
-    return `
-        <div class="ent-row" data-id="${e.id}" data-nom="${escHtml(e.nom)}">
-            <input class="ent-row-input" value="${escHtml(e.nom)}" aria-label="Nom de l'entreprise">
-            <span class="ent-row-count">${nb} utilisateur${nb > 1 ? 's' : ''}</span>
-            <button class="ent-row-save" data-action="save">Renommer</button>
-            <button class="ent-row-del" data-action="del">Supprimer</button>
-            ${blocReglages(e)}
-        </div>`;
+// Une tuile = le logo seul (nom en infobulle) ; le nom en texte s'il n'y a pas de logo.
+function tuile(e) {
+    const nom = escHtml(e.nom);
+    const contenu = e.logo_b64
+        ? `<img class="ent-tuile-logo" src="${e.logo_b64}" alt="${nom}">`
+        : `<span class="ent-tuile-nom">${nom}</span>`;
+    return `<button class="ent-tuile" type="button" data-id="${e.id}" title="${nom}">${contenu}</button>`;
 }
 
-async function onListeClick(e) {
-    const btn = e.target.closest('button[data-action]');
-    if (!btn) return;
-    const row = btn.closest('.ent-row');
-    const id = row.dataset.id, ancien = row.dataset.nom;
-    const action = btn.dataset.action;
-
-    if (action === 'save') {
-        const nouveau = row.querySelector('.ent-row-input').value.trim();
-        if (!nouveau) { showToast('Le nom ne peut pas être vide.', 'warn'); return; }
-        if (nouveau === ancien) { showToast('Aucun changement.', 'warn'); return; }
-        await agir(async () => {
-            await modifierEntreprise(id, nouveau);
-            await renommerCompagnieProfils(ancien, nouveau);
-            showToast('Entreprise renommée', 'success');
-        });
-    } else if (action === 'save-reglages') {
-        const res = lireReglages(row);
-        if (!res.ok) { showToast(res.msg, 'warn'); return; }
-        await agir(async () => {
-            await modifierReglesEntreprise(id, res.regles);
-            showToast('Réglages enregistrés', 'success');
-        });
-    } else if (action === 'logo-suppr') {
-        await agir(async () => {
-            await modifierReglesEntreprise(id, { logo_b64: null });
-            showToast('Logo retiré', 'success');
-        });
-    } else if (action === 'del') {
-        const nb = usageEntreprises().get(ancien) || 0;
-        if (nb > 0) { showToast(`Impossible : ${nb} utilisateur(s) encore rattaché(s).`, 'warn'); return; }
-        if (!confirm(`Supprimer l'entreprise « ${ancien} » ?`)) return;
-        await agir(async () => {
-            await supprimerEntreprise(id);
-            showToast('Entreprise supprimée', 'success');
-        });
-    }
+function onTuileClick(e) {
+    const tuileEl = e.target.closest('.ent-tuile');
+    if (!tuileEl) return;
+    const entreprise = _parId.get(tuileEl.dataset.id);
+    if (!entreprise) return;
+    ouvrirModalEntrepriseEdit(entreprise, usageEntreprises().get(entreprise.nom) || 0);
 }
 
-// Import d'un logo (input file) : lecture → base64 → enregistrement immédiat.
-async function onListeChange(e) {
-    const input = e.target.closest('.ent-logo-input');
-    if (!input || !input.files?.[0]) return;
-    const file = input.files[0];
-    const row  = input.closest('.ent-row');
-    if (file.size > LOGO_MAX_OCTETS) {
-        showToast('Logo trop lourd (max 300 Ko). Choisis une image plus petite.', 'warn', 4000);
-        input.value = '';
-        return;
-    }
+// Enregistre les modifications du modal : réglages, logo (si touché), nom (si changé).
+async function onEnregistrer({ id, ancien, nom, regles, logo }) {
     await agir(async () => {
-        const dataUrl = await lireLogoFichier(file);
-        await modifierReglesEntreprise(row.dataset.id, { logo_b64: dataUrl });
-        showToast('Logo enregistré', 'success');
+        const champs = { ...regles };
+        if (logo !== undefined) champs.logo_b64 = logo;
+        await modifierReglesEntreprise(id, champs);
+        if (nom !== ancien) {
+            await modifierEntreprise(id, nom);
+            await renommerCompagnieProfils(ancien, nom);
+        }
+        showToast('Entreprise enregistrée', 'success');
+    });
+}
+
+async function onSupprimer(id) {
+    await agir(async () => {
+        await supprimerEntreprise(id);
+        showToast('Entreprise supprimée', 'success');
     });
 }
 

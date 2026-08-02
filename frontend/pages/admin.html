@@ -172,7 +172,7 @@
                     <input type="text" id="ent-ajout-nom" class="admin-recherche" placeholder="Nom de la nouvelle entreprise…">
                     <button class="btn-admin-nouveau" id="btn-ent-ajouter">+ Ajouter</button>
                 </div>
-                <div id="ent-gestion-liste" class="ent-liste">
+                <div id="ent-gestion-liste" class="ent-grille">
                     <div class="ent-vide">Chargement…</div>
                 </div>
             </section>
@@ -198,6 +198,63 @@
         <div class="admin-modal-footer">
             <button class="btn-admin-annuler" id="btn-annuler-entreprise">Annuler</button>
             <button class="btn-admin-valider" id="btn-submit-entreprise">Ajouter</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal : Modifier une entreprise (ouvert en cliquant sur son logo) -->
+<div class="modal-overlay" id="modal-ent-edit">
+    <div class="modal admin-modal">
+        <div class="modal-histo-header">
+            <h3>Modifier l'entreprise</h3>
+            <button class="btn-histo-close" id="btn-close-ent-edit">&#10005;</button>
+        </div>
+        <div class="admin-modal-body">
+            <input type="hidden" id="ent-edit-id">
+            <div class="form-group">
+                <label>Logo</label>
+                <div class="ent-logo">
+                    <img class="ent-logo-apercu hidden" id="ent-edit-logo-apercu" alt="">
+                    <label class="ent-logo-btn">Choisir un logo…<input type="file" accept="image/*" id="ent-edit-logo-input" hidden></label>
+                    <button class="ent-logo-suppr hidden" id="btn-ent-edit-logo-suppr" type="button">Retirer</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nom de l'entreprise <span class="req">*</span></label>
+                <input type="text" id="ent-edit-nom">
+            </div>
+            <div class="form-group">
+                <label>Utilisateurs rattachés</label>
+                <p class="admin-email-display" id="ent-edit-count">—</p>
+            </div>
+            <div class="form-group">
+                <label>Trajet retiré (min/jour)</label>
+                <input type="number" min="0" step="15" id="ent-edit-trajet">
+            </div>
+            <div class="form-group">
+                <label>Seuil heures supp par semaine (h)</label>
+                <input type="number" min="0" step="0.5" id="ent-edit-seuil">
+            </div>
+            <div class="form-group">
+                <label>Palier +25 % (h)</label>
+                <input type="number" min="0" step="0.5" id="ent-edit-palier">
+            </div>
+            <div class="form-group">
+                <label>Plage de nuit</label>
+                <div class="ent-champ">
+                    de <input type="time" id="ent-edit-nuit-d">
+                    à <input type="time" id="ent-edit-nuit-f">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Mentions PDF</label>
+                <textarea id="ent-edit-mentions" rows="2" placeholder="Texte affiché en bas du PDF (optionnel)"></textarea>
+            </div>
+        </div>
+        <div class="admin-modal-footer ent-edit-footer">
+            <button class="ent-row-del" id="btn-ent-edit-suppr" type="button">Supprimer</button>
+            <button class="btn-admin-annuler" id="btn-annuler-ent-edit">Annuler</button>
+            <button class="btn-admin-valider" id="btn-submit-ent-edit">Enregistrer</button>
         </div>
     </div>
 </div>

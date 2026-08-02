@@ -442,7 +442,7 @@ body.admin-body {
 .form-group-checkbox input[type="checkbox"] { width: 16px; height: 16px; }
 
 /* Le modal entreprise doit rester au-dessus du modal créer/modifier */
-#modal-entreprise { z-index: 1000; }
+#modal-entreprise, #modal-ent-edit { z-index: 1000; }
 
 /* ── Page « Accès refusé » ────────────────────────────────── */
 .admin-acces-refuse { text-align: center; padding: 80px 20px; margin: auto; }
@@ -475,51 +475,38 @@ body.admin-body {
 .ent-ajout-bloc { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
 .ent-ajout-bloc .admin-recherche { margin-bottom: 0; padding-left: 14px; }
 
-.ent-liste { display: flex; flex-direction: column; gap: 10px; }
-.ent-vide { text-align: center; padding: 40px; color: var(--adm-muted); font-size: 14px; background: var(--adm-card); border: 1px solid var(--adm-border); border-radius: 14px; }
-.ent-row {
+/* Grille de logos : une tuile par entreprise, cliquable pour ouvrir l'édition. */
+.ent-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.ent-vide { grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--adm-muted); font-size: 14px; background: var(--adm-card); border: 1px solid var(--adm-border); border-radius: 14px; }
+.ent-tuile {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    justify-content: center;
+    height: 110px;
+    padding: 14px;
     background: var(--adm-card);
     border: 1px solid var(--adm-border);
-    border-radius: 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
-.ent-row-regles {
-    flex-basis: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--adm-border);
-    font-size: 13px; color: var(--adm-muted);
+.ent-tuile:hover {
+    border-color: var(--adm-indigo);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+    transform: translateY(-2px);
 }
-.ent-champ { display: inline-flex; align-items: center; gap: 6px; }
-.ent-inp, .ent-inp-time {
-    padding: 7px 10px;
-    border: 1px solid var(--adm-border);
-    border-radius: 8px;
-    font-size: 14px; font-family: inherit;
+.ent-tuile:focus-visible { outline: none; border-color: var(--adm-indigo); box-shadow: 0 0 0 3px var(--adm-indigo-50); }
+.ent-tuile-logo { max-width: 100%; max-height: 76px; object-fit: contain; }
+.ent-tuile-nom {
+    text-align: center;
+    font-size: 15px; font-weight: 700; font-family: inherit;
     color: var(--adm-text);
-    background: var(--adm-card);
+    overflow-wrap: anywhere;
 }
-.ent-inp { width: 72px; text-align: right; }
-.ent-inp:focus, .ent-inp-time:focus, .ent-inp-mentions:focus { outline: none; border-color: var(--adm-indigo); box-shadow: 0 0 0 3px var(--adm-indigo-50); }
-.ent-champ-mentions { flex-basis: 100%; flex-direction: column; align-items: flex-start; gap: 4px; }
-.ent-inp-mentions {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--adm-border);
-    border-radius: 8px;
-    font-size: 13px; font-family: inherit;
-    color: var(--adm-text);
-    background: var(--adm-card);
-    resize: vertical;
-}
-.ent-logo { display: inline-flex; align-items: center; gap: 8px; }
+/* Plage de nuit : les deux champs « de … à … » sur une même ligne. */
+.ent-champ { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--adm-muted); }
+.ent-champ input { flex: 1; min-width: 0; }
+.ent-logo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .ent-logo-apercu { height: 34px; width: auto; max-width: 120px; padding: 2px; border: 1px solid var(--adm-border); border-radius: 6px; background: #fff; }
 .ent-logo-btn {
     padding: 7px 12px;
@@ -540,29 +527,17 @@ body.admin-body {
     background: var(--adm-card);
     cursor: pointer;
 }
-.ent-row-input {
-    flex: 1;
-    min-width: 0;
-    padding: 9px 12px;
-    border: 1px solid var(--adm-border);
-    border-radius: 8px;
-    font-size: 14px; font-family: inherit;
-    color: var(--adm-text);
-    background: var(--adm-card);
-}
-.ent-row-input:focus { outline: none; border-color: var(--adm-indigo); box-shadow: 0 0 0 3px var(--adm-indigo-50); }
-.ent-row-count { flex-shrink: 0; font-size: 12px; color: var(--adm-muted); white-space: nowrap; }
-.ent-row-save, .ent-row-del {
+/* Le bouton « Supprimer » du modal d'édition est poussé à gauche, loin d'« Enregistrer ». */
+.ent-edit-footer #btn-ent-edit-suppr { margin-right: auto; }
+.ent-row-del {
     flex-shrink: 0;
-    padding: 8px 14px;
-    border-radius: 8px;
+    padding: 9px 20px;
+    border-radius: 9px;
     font-size: 13px; font-weight: 600; font-family: inherit;
     cursor: pointer;
     transition: background 0.15s;
+    background: var(--adm-card); border: 1px solid #fecdd3; color: var(--adm-red);
 }
-.ent-row-save { background: var(--adm-indigo); border: none; color: #fff; }
-.ent-row-save:hover { background: var(--adm-indigo-hover); }
-.ent-row-del { background: var(--adm-card); border: 1px solid #fecdd3; color: var(--adm-red); }
 .ent-row-del:hover { background: var(--adm-red-50); }
 
 /* ── Repli responsive (fenêtre étroite) ───────────────────── */
@@ -575,4 +550,5 @@ body.admin-body {
     .admin-main { overflow: visible; }
     .admin-content { overflow: visible; }
     .admin-kpis { grid-template-columns: 1fr; }
+    .ent-grille { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 }
