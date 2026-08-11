@@ -1045,6 +1045,66 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 }
 .pdf-details-row .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-pdf); font-weight: 700; margin-bottom: 3px; }
 
+/* ── PDF récapitulatif d'une période (mois) ───────────────────── */
+
+.pdf-mois-totaux { display: flex; gap: 10px; margin-bottom: 12px; }
+.pdf-mois-box {
+    flex: 1; background: var(--surface-light); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+}
+.pdf-mois-box.supp { background: #ecfdf5; border-color: #a7f3d0; }
+.pdf-mois-box .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-pdf); font-weight: 700; }
+.pdf-mois-box .val { font-size: 18px; font-weight: 900; color: var(--navy); margin-top: 3px; }
+
+.pdf-mois-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 10px; }
+.pdf-mois-table th {
+    background: var(--navy); color: white; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px; padding: 6px 8px; text-align: left;
+}
+.pdf-mois-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); }
+.pdf-mois-table .c { text-align: center; }
+.pdf-mois-table .b { font-weight: 700; }
+.pdf-mois-table .s { color: #15803d; font-weight: 700; }
+.pdf-mois-table tbody tr:nth-child(even) td { background: #f8fafc; }
+.pdf-mois-tr-astreinte td { background: #f0fdf4 !important; }
+.pdf-mois-table tfoot td {
+    background: #eef2f7; font-weight: 900; color: var(--navy);
+    font-size: 13px; padding: 8px; border-top: 2px solid var(--navy);
+}
+
+.pdf-mois-note { font-size: 10px; color: var(--gray-blue); line-height: 1.4; margin-bottom: 6px; }
+.pdf-mois-break { page-break-before: always; break-before: page; margin-top: 6px; }
+
+.pdf-mois-jour {
+    border: 1.5px solid var(--border); border-radius: 8px;
+    margin-bottom: 9px; overflow: hidden;
+    page-break-inside: avoid; break-inside: avoid;
+}
+.pdf-mois-jour-head {
+    background: var(--navy); color: white; padding: 6px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; font-weight: 700;
+}
+.pdf-mois-jour-date { text-transform: capitalize; }
+.pdf-mois-jour-h { font-weight: 400; font-size: 11px; }
+.pdf-mois-astreinte {
+    background: rgba(255,255,255,0.25); border-radius: 4px;
+    padding: 1px 6px; font-size: 9px; letter-spacing: 0.04em;
+}
+.pdf-mois-jour-body { padding: 6px 12px; }
+
+.pdf-mois-item { display: flex; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--surface-light); font-size: 12px; }
+.pdf-mois-item:last-child { border-bottom: none; }
+.pdf-mois-item-h { flex: 0 0 105px; color: var(--gray-pdf); font-weight: 700; font-size: 11px; }
+.pdf-mois-item-c { flex: 1; line-height: 1.45; }
+.pdf-mois-num { color: var(--gray-blue); font-weight: 700; margin-right: 5px; }
+.pdf-mois-ville { color: var(--gray-heavy); }
+.pdf-mois-duree { color: var(--gray-blue); font-size: 11px; margin-left: 6px; }
+.pdf-mois-extras { font-size: 11px; color: var(--gray-heavy); }
+.pdf-mois-details { font-size: 11px; color: var(--gray-heavy); background: var(--surface-light); border-radius: 4px; padding: 4px 7px; margin-top: 3px; }
+.pdf-mois-pause .pdf-mois-item-c { color: var(--amber-deep); }
+.pdf-mois-vide { font-size: 11px; color: var(--gray-blue); padding: 4px 0; }
+
 /* Récap heures supplémentaires */
 .supp-filters {
     display: flex; align-items: flex-end; gap: 10px;

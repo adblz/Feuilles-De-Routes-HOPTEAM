@@ -332,6 +332,23 @@ html, body {
     font-size: 16px;
 }
 
+/* Export PDF du mois affiché */
+.btn-heures-pdf {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    color: var(--cream);
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-heures-pdf:active { background: var(--hairline); }
+.btn-heures-pdf:disabled { opacity: .5; }
+
 /* ── Cartes ─────────────────────────────────────────── */
 .heures-carte {
     background: var(--panel);

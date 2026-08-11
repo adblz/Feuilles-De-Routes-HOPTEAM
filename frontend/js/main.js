@@ -5,7 +5,7 @@ import {
 } from './modules/fdr.js';
 import {
     openSettings, fermerModal, sauvegarderParams,
-    ouvrirSuppRecap, calculerSuppRecap,
+    ouvrirSuppRecap, calculerSuppRecap, telechargerRecapPdf,
     ouvrirSuggestion, envoyerSuggestion,
 } from './modules/ui.js';
 import { genererPDF } from './modules/pdf.js';
@@ -133,6 +133,10 @@ function initApp(user, nomProfil) {
 
     document.getElementById('btn-close-supp').addEventListener('click', () => fermerModal('modal-supp'));
     document.getElementById('btn-supp-calc').addEventListener('click', calculerSuppRecap);
+
+    // ── Écran « Heures par semaine » : export PDF de la période affichée ──
+
+    document.getElementById('btn-heures-pdf').addEventListener('click', telechargerRecapPdf);
 
     // ── Modal paramètres ───────────────────────────────────────
 

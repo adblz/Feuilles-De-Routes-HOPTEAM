@@ -85,6 +85,18 @@ function appliquerSelection() {
     chargerEtRendre();
 }
 
+// Période actuellement affichée à l'écran : les deux dates + son intitulé
+// (« Juillet 2026 ») quand elle vient du planning. Le PDF récapitulatif s'en
+// sert pour porter exactement sur ce que l'utilisateur voit.
+export function periodeAffichee() {
+    const debut = document.getElementById('heures-date-debut').value;
+    const fin   = document.getElementById('heures-date-fin').value;
+    const sel   = document.getElementById('heures-periode');
+    const p     = (sel && sel.value !== 'custom') ? periodes[parseInt(sel.value, 10)] : null;
+    const cap   = s => s.charAt(0).toUpperCase() + s.slice(1);
+    return { debut, fin, titre: p ? `${cap(nomMois(p))} ${p.annee}` : null };
+}
+
 export async function chargerEtRendre() {
     const debut = document.getElementById('heures-date-debut').value;
     const fin   = document.getElementById('heures-date-fin').value;
