@@ -14,11 +14,19 @@ function ligneJour(f) {
         .toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
     const supp = f.heures_supp || '0h00';
     const nb   = nbInterventions(f);
+
+    // Sortie supplémentaire (rappel) : ses horaires viennent se placer sous
+    // ceux de la journée, dans les mêmes colonnes Début / Fin.
+    const rappel  = f.interventions.find(i => i.kind === 'rappel');
+    const sortie  = (t, prefixe = '') => rappel
+        ? `<div class="pdf-mois-sortie">${prefixe}${hhmm(t) || '—'}</div>`
+        : '';
+
     return `
         <tr${f.astreinte ? ' class="pdf-mois-tr-astreinte"' : ''}>
-            <td>${dateAff}</td>
-            <td class="c">${hhmm(f.heure_debut) || '—'}</td>
-            <td class="c">${hhmm(f.heure_fin)   || '—'}</td>
+            <td>${dateAff}${rappel ? '<div class="pdf-mois-sortie-lbl">+ sortie suppl.</div>' : ''}</td>
+            <td class="c">${hhmm(f.heure_debut) || '—'}${sortie(rappel?.pause_debut, '+ ')}</td>
+            <td class="c">${hhmm(f.heure_fin)   || '—'}${sortie(rappel?.pause_fin)}</td>
             <td class="c">${f.repas_min ? f.repas_min + ' min' : '—'}</td>
             <td class="c b">${f.heures_travail  || '—'}</td>
             <td class="c${parseDuree(supp) > 0 ? ' s' : ''}">${supp}</td>

@@ -1090,6 +1090,10 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     padding: 4px 8px;
 }
 .pdf-mois-ferie { font-weight: 400; font-size: 10px; color: var(--gray-heavy); }
+
+/* Sortie supplémentaire (rappel) : 2e ligne d'horaires sous celle du jour */
+.pdf-mois-sortie { font-size: 10px; font-weight: 700; color: #15803d; white-space: nowrap; margin-top: 1px; }
+.pdf-mois-sortie-lbl { font-size: 9px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 1px; }
 .pdf-mois-table tfoot td {
     background: #eef2f7; font-weight: 900; color: var(--navy);
     font-size: 12.5px; padding: 6px 8px; border-top: 2px solid var(--navy);
