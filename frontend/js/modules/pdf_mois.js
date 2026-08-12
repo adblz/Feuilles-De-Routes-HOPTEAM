@@ -27,6 +27,16 @@ function caseTotal(label, valeur, accent = '') {
     return `<div class="pdf-mois-box${accent}"><div class="lbl">${label}</div><div class="val">${valeur}</div></div>`;
 }
 
+// Nuit et astreinte tiennent sur une simple bande d'une ligne plutôt que sur
+// une seconde rangée de cases : le tableau de synthèse gagne d'autant de
+// hauteur et déborde moins souvent sur une deuxième page.
+function bandeExtras(t) {
+    const items = [];
+    if (t.nuit)      items.push(`<span><em>Heures de nuit</em>${affH(t.nuit)}</span>`);
+    if (t.astreinte) items.push(`<span><em>Heures d'astreinte</em>${affH(t.astreinte)}</span>`);
+    return items.length ? `<div class="pdf-mois-bande">${items.join('')}</div>` : '';
+}
+
 function blocTotaux(feuilles) {
     const t = totauxSuppPeriode(feuilles);
     return `
@@ -34,13 +44,9 @@ function blocTotaux(feuilles) {
             ${caseTotal('Jours travaillés', feuilles.length)}
             ${caseTotal('Heures travaillées', affH(t.travail))}
             ${caseTotal('Heures supp. (hebdo)', affH(t.supp), ' supp')}
-            ${caseTotal('dont +25% / +50%', `${affH(t.supp25)} / ${affH(t.supp50)}`)}
+            ${caseTotal('dont +25% / +50%', `${affH(t.supp25)} / ${affH(t.supp50)}`, ' large')}
         </div>
-        ${(t.nuit || t.astreinte) ? `
-        <div class="pdf-mois-totaux">
-            ${t.nuit ? caseTotal('Heures de nuit', affH(t.nuit)) : ''}
-            ${t.astreinte ? caseTotal('Heures d\'astreinte', affH(t.astreinte)) : ''}
-        </div>` : ''}`;
+        ${bandeExtras(t)}`;
 }
 
 function entete(titre, sousTitre, tech) {
@@ -73,7 +79,7 @@ export function construireRecapMois(feuilles, debut, fin, titrePlanning = null) 
     return `
         ${entete(titre, sousTitre, tech)}
         ${blocTotaux(feuilles)}
-        <div class="pdf-section-title">Synthèse par jour</div>
+        <div class="pdf-section-title pdf-mois-titre">Synthèse par jour</div>
         ${tableauSynthese(feuilles)}
         <div class="pdf-mois-note">
             Les heures supplémentaires retenues sont calculées <strong>par semaine</strong>
