@@ -1067,6 +1067,12 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .pdf-mois-table .s { color: #15803d; font-weight: 700; }
 .pdf-mois-table tbody tr:nth-child(even) td { background: #f8fafc; }
 .pdf-mois-tr-astreinte td { background: #f0fdf4 !important; }
+.pdf-mois-tr-semaine td {
+    background: #eef2f7 !important; color: var(--navy); font-weight: 800;
+    border-top: 1.5px solid var(--navy); border-bottom: 1.5px solid var(--navy);
+    padding: 6px 8px;
+}
+.pdf-mois-ferie { font-weight: 400; font-size: 10px; color: var(--gray-heavy); }
 .pdf-mois-table tfoot td {
     background: #eef2f7; font-weight: 900; color: var(--navy);
     font-size: 13px; padding: 8px; border-top: 2px solid var(--navy);

@@ -2,9 +2,10 @@
 // en-tête, totaux, tableau de synthèse jour par jour, puis le détail complet.
 
 import { cfg, getLogoBase64 } from './fdr_config.js';
-import { affH, parseDuree, escHtml, hhmm } from '../utils/utils.js';
+import { affH, escHtml } from '../utils/utils.js';
 import { totauxSuppPeriode } from './heures_calculs.js';
 import { rangeLabel } from './periodes_paie.js';
+import { tableauSynthese } from './pdf_mois_table.js';
 import { renderDetailJours } from './pdf_mois_detail.js';
 
 const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -20,47 +21,6 @@ export function titrePeriode(debut, fin) {
     if (moisEntier) return `${MOIS[d.getMonth()].toUpperCase()} ${d.getFullYear()}`;
     const court = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     return `Du ${court(d)} au ${court(f)} ${f.getFullYear()}`;
-}
-
-function ligneSynthese(f) {
-    const dateAff = new Date(f.date + 'T12:00')
-        .toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
-    const nbInt = f.interventions.filter(i => i.kind === 'intervention').length;
-    const supp  = f.heures_supp || '0h00';
-    return `
-        <tr${f.astreinte ? ' class="pdf-mois-tr-astreinte"' : ''}>
-            <td>${dateAff}</td>
-            <td class="c">${hhmm(f.heure_debut) || '—'}</td>
-            <td class="c">${hhmm(f.heure_fin)   || '—'}</td>
-            <td class="c">${f.repas_min ? f.repas_min + ' min' : '—'}</td>
-            <td class="c b">${f.heures_travail  || '—'}</td>
-            <td class="c${parseDuree(supp) > 0 ? ' s' : ''}">${supp}</td>
-            <td class="c">${nbInt || '—'}</td>
-        </tr>`;
-}
-
-function tableauSynthese(feuilles) {
-    const totalTravail = feuilles.reduce((s, f) => s + parseDuree(f.heures_travail), 0);
-    const totalSuppJ   = feuilles.reduce((s, f) => s + parseDuree(f.heures_supp), 0);
-    const totalInt     = feuilles.reduce((s, f) => s + f.interventions.filter(i => i.kind === 'intervention').length, 0);
-    return `
-        <table class="pdf-mois-table">
-            <thead>
-                <tr>
-                    <th>Jour</th><th class="c">Début</th><th class="c">Fin</th><th class="c">Repas</th>
-                    <th class="c">Travail</th><th class="c">Supp.</th><th class="c">Interv.</th>
-                </tr>
-            </thead>
-            <tbody>${feuilles.map(ligneSynthese).join('')}</tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="4">TOTAL — ${feuilles.length} jour${feuilles.length > 1 ? 's' : ''}</td>
-                    <td class="c">${affH(totalTravail)}</td>
-                    <td class="c">${affH(totalSuppJ)}</td>
-                    <td class="c">${totalInt}</td>
-                </tr>
-            </tfoot>
-        </table>`;
 }
 
 function caseTotal(label, valeur, accent = '') {
@@ -116,8 +76,12 @@ export function construireRecapMois(feuilles, debut, fin, titrePlanning = null) 
         <div class="pdf-section-title">Synthèse par jour</div>
         ${tableauSynthese(feuilles)}
         <div class="pdf-mois-note">
-            Heures supplémentaires calculées par semaine (au-delà de ${cfg.seuilHebdoMinutes / 60}h),
-            sur les seules journées comprises dans la période.
+            Les heures supplémentaires retenues sont calculées <strong>par semaine</strong>
+            (au-delà de ${cfg.seuilHebdoMinutes / 60}h), sur les seules journées comprises dans la période :
+            ce sont les sous-totaux de semaine et le TOTAL ci-dessus.
+            La colonne « Supp. jour » rappelle seulement ce qui figure sur la feuille de route de la journée ;
+            elle n'est pas totalisée, car une journée courte n'y génère aucune heure supplémentaire
+            alors qu'elle compte entièrement dans le total de la semaine.
         </div>
         <div class="pdf-section-title pdf-mois-break">Détail jour par jour</div>
         ${renderDetailJours(feuilles)}`;
