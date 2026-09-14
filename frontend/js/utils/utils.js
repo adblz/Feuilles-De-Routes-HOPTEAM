@@ -142,13 +142,6 @@ export function attachPasswordToggle(inputId, btnId) {
 
 // Fait défiler l'écran en douceur vers le haut d'un élément (ex. nouvelle carte).
 // Le décalage sous l'entête fixe est géré en CSS via `scroll-margin-top`.
-export function scrollVersCarte(el) {
-    if (!el) return;
-    requestAnimationFrame(() => {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-}
-
 // Branche le bouton « ↻ Mettre à jour » : désinscrit le service worker et vide
 // les caches pour repartir sur une version propre du site (utile si un ancien
 // fichier reste bloqué en cache après une mise à jour).

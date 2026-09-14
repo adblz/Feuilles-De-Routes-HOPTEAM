@@ -16,7 +16,8 @@ import { afficherHeures } from './modules/heures_history.js';
 import { fermerPdfViewer } from './modules/pdfviewer.js';
 import { getSession, isSessionValid, deconnexion, changerMotDePasse, refreshSession, startAutoRefresh } from './modules/auth.js';
 import { chargerContratProfil, sauvegarderContratProfil, chargerReglesEntreprise } from './modules/db.js';
-import { showToast, scrollVersCarte, attachPasswordToggle, attacherBoutonMiseAJour } from './utils/utils.js';
+import { showToast, attachPasswordToggle, attacherBoutonMiseAJour } from './utils/utils.js';
+import { scrollVersCarte, sansBougerAEcran } from './utils/scroll.js';
 import { collapserToutesSauf } from './modules/fdr_collapse.js';
 import { initTimePicker } from './modules/timepicker.js';
 
@@ -73,14 +74,14 @@ function initApp(user, nomProfil) {
     });
     document.getElementById('btn-supp-auto').addEventListener('click', resetSuppAuto);
 
-    document.getElementById('btn-add-int').addEventListener('click', () => {
-        collapserToutesSauf(null);
-        scrollVersCarte(ajouterIntervention());
-    });
-    document.getElementById('btn-add-pause').addEventListener('click', () => {
-        collapserToutesSauf(null);
-        scrollVersCarte(ajouterPause());
-    });
+    // On défile d'abord doucement jusqu'à la nouvelle carte, et on replie les autres
+    // seulement une fois arrivé (elles sont alors hors écran : aucun saut visible).
+    const ajouterEtDefiler = (creer) => {
+        const card = creer();
+        scrollVersCarte(card, () => sansBougerAEcran(card, () => collapserToutesSauf(card)));
+    };
+    document.getElementById('btn-add-int').addEventListener('click',   () => ajouterEtDefiler(ajouterIntervention));
+    document.getElementById('btn-add-pause').addEventListener('click', () => ajouterEtDefiler(ajouterPause));
 
     // ── Rappel / sortie supplémentaire ─────────────────────────
     document.getElementById('btn-rappel').addEventListener('click', () => {

@@ -1,12 +1,35 @@
 import { attachAutocomplete, VILLES_KEY, CLIENTS_KEY } from './autocomplete.js';
 import { setSuppManuel } from './fdr_calculs.js';
-import { expanderCarte, collapserCarte } from './fdr_collapse.js';
+import { expanderCarte, collapserCarte, collapserToutesSauf } from './fdr_collapse.js';
+import { activerDragCarte } from './fdr_dragdrop.js';
+import { ICON_SUPPRIMER } from '../utils/utils.js';
+import { assurerCarteVisible } from '../utils/scroll.js';
 
 let intCount   = 0;
 let pauseCount = 0;
 
+// Poignée « ≡ » (glisser pour déplacer) + corbeille, communes aux interventions et aux pauses.
+const ACTIONS_HTML = `
+    <button type="button" class="btn-drag" title="Glisser pour déplacer" aria-label="Déplacer">&#8801;</button>
+    <button type="button" class="btn-remove" title="Supprimer" aria-label="Supprimer">${ICON_SUPPRIMER}</button>`;
+
 function notifierChangement() {
     document.dispatchEvent(new CustomEvent('form:changed'));
+}
+
+// Clic sur l'en-tête : plie/déplie la carte. Une seule carte ouverte à la fois,
+// et on défile pour la voir en entier.
+function brancherPliage(div) {
+    div.querySelector('.int-header').addEventListener('click', (e) => {
+        if (e.target.closest('.int-actions')) return;
+        if (div.classList.contains('card-collapsed')) {
+            collapserToutesSauf(div);
+            expanderCarte(div);
+            assurerCarteVisible(div);
+        } else {
+            collapserCarte(div);
+        }
+    });
 }
 
 // ── Interventions & Pauses ─────────────────────────────────────
@@ -21,11 +44,7 @@ export function ajouterIntervention(data = {}) {
     div.innerHTML = `
         <div class="int-header">
             <span class="int-number">Intervention #${n}</span>
-            <div class="int-actions">
-                <button class="btn-move btn-move-up" title="Monter">&#9650;</button>
-                <button class="btn-move btn-move-down" title="Descendre">&#9660;</button>
-                <button class="btn-remove">&#10005; Supprimer</button>
-            </div>
+            <div class="int-actions">${ACTIONS_HTML}</div>
         </div>
         <div class="card-summary"></div>
         <div class="form-grid">
@@ -107,14 +126,8 @@ export function ajouterIntervention(data = {}) {
     if (data.becs) document.getElementById(`i${n}-becs`).value = data.becs;
 
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`int-card-${n}`));
-    div.querySelector('.btn-move-up').addEventListener('click', () => deplacerElement(div, -1));
-    div.querySelector('.btn-move-down').addEventListener('click', () => deplacerElement(div, 1));
-
-    div.querySelector('.int-header').addEventListener('click', (e) => {
-        if (e.target.closest('.int-actions')) return;
-        if (div.classList.contains('card-collapsed')) expanderCarte(div);
-        else collapserCarte(div);
-    });
+    activerDragCarte(div, div.querySelector('.btn-drag'), apresReordonnancement);
+    brancherPliage(div);
 
     div.querySelectorAll('.type-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -179,11 +192,7 @@ export function ajouterPause(data = {}) {
     div.innerHTML = `
         <div class="int-header">
             <span class="pause-number">&#9208; Pause</span>
-            <div class="int-actions">
-                <button class="btn-move btn-move-up" title="Monter">&#9650;</button>
-                <button class="btn-move btn-move-down" title="Descendre">&#9660;</button>
-                <button class="btn-remove">&#10005; Supprimer</button>
-            </div>
+            <div class="int-actions">${ACTIONS_HTML}</div>
         </div>
         <div class="card-summary"></div>
         <div class="form-grid">
@@ -203,14 +212,8 @@ export function ajouterPause(data = {}) {
     if (data.fin)   document.getElementById(`p${n}-fin`).value   = data.fin;
 
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`pause-card-${n}`));
-    div.querySelector('.btn-move-up').addEventListener('click', () => deplacerElement(div, -1));
-    div.querySelector('.btn-move-down').addEventListener('click', () => deplacerElement(div, 1));
-
-    div.querySelector('.int-header').addEventListener('click', (e) => {
-        if (e.target.closest('.int-actions')) return;
-        if (div.classList.contains('card-collapsed')) expanderCarte(div);
-        else collapserCarte(div);
-    });
+    activerDragCarte(div, div.querySelector('.btn-drag'), apresReordonnancement);
+    brancherPliage(div);
 
     div.querySelectorAll('input').forEach(el => {
         el.addEventListener('input', notifierChangement);
@@ -221,18 +224,18 @@ export function ajouterPause(data = {}) {
 
 export function supprimerElement(id) {
     const el = document.getElementById(id);
-    if (el) { el.remove(); renumeroterInterventions(); notifierChangement(); }
+    if (!el) return;
+    const libelle = el.dataset.type === 'pause'
+        ? 'cette pause'
+        : (el.querySelector('.int-number')?.textContent || 'cette intervention').toLowerCase();
+    if (!confirm(`Supprimer ${libelle} ?`)) return;
+    el.remove();
+    renumeroterInterventions();
+    notifierChangement();
 }
 
-export function deplacerElement(card, direction) {
-    const list = document.getElementById('interventions-list');
-    if (direction < 0) {
-        const prev = card.previousElementSibling;
-        if (prev) list.insertBefore(card, prev);
-    } else {
-        const next = card.nextElementSibling;
-        if (next) list.insertBefore(next, card);
-    }
+// Appelé par le glisser-déposer une fois la carte posée à sa nouvelle place.
+export function apresReordonnancement() {
     renumeroterInterventions();
     notifierChangement();
 }

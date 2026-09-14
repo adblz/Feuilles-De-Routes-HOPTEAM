@@ -2,7 +2,7 @@
 export { cfg, saveCfg, setTrajetMinutes, setReglesEntreprise, getLogoBase64, getLogoDefaut } from './fdr_config.js';
 export { seuilJour, calcHeures, onSuppInput, resetSuppAuto, validerSuppInput, setSuppManuel } from './fdr_calculs.js';
 export {
-    ajouterIntervention, ajouterPause, supprimerElement, deplacerElement,
+    ajouterIntervention, ajouterPause, supprimerElement, apresReordonnancement,
     lireTousLesElements, viderInterventions, resetSuppState,
     afficherBlocRappel, viderRappel, remplirRappel,
 }                                                                         from './fdr_form.js';
