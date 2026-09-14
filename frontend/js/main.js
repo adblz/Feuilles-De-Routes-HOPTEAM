@@ -295,6 +295,7 @@ window.addEventListener('load', async () => {
 function afficherModalPremierContrat(user, nomProfil) {
     document.getElementById('modal-first-contrat').classList.add('open');
     document.getElementById('btn-contrat-35').addEventListener('click', () => choisirContrat('35', user, nomProfil));
+    document.getElementById('btn-contrat-37').addEventListener('click', () => choisirContrat('37', user, nomProfil));
     document.getElementById('btn-contrat-39').addEventListener('click', () => choisirContrat('39', user, nomProfil));
 }
 

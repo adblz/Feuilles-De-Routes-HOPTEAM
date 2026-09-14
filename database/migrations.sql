@@ -289,3 +289,24 @@ alter table public.entreprises
 --     drop column if exists nuit_fin,
 --     drop column if exists pdf_mentions;
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-09-14 — Onglet Heures en mois calendaire (par entreprise)
+--
+-- Le planning des heures supp (table periodes_paie, ex. « juillet » = du 22/06
+-- au 19/07) s'appliquait à tout le monde. DAV ne l'utilise pas : ses heures se
+-- lisent du 1er au dernier jour du mois. On ajoute un réglage par entreprise,
+-- coché depuis l'admin (onglet « Entreprises »). Défaut false = comportement
+-- historique (planning) ; DAV passe en mois calendaire.
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter tout le bloc ci-dessous.
+-- ─────────────────────────────────────────────────────────────────────────
+
+alter table public.entreprises
+  add column if not exists mois_calendaire boolean not null default false;
+
+update public.entreprises set mois_calendaire = true where nom = 'DAV';
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   alter table public.entreprises drop column if exists mois_calendaire;
+-- ─────────────────────────────────────────────────────────────────────────

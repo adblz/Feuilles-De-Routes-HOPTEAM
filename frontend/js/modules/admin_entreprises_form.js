@@ -27,6 +27,7 @@ export function remplirReglages(e) {
     champ('nuit-d').value   = minToTime(num(e.nuit_debut, 1260));
     champ('nuit-f').value   = minToTime(num(e.nuit_fin, 360));
     champ('mentions').value = e.pdf_mentions || '';
+    champ('mois-cal').checked = !!e.mois_calendaire;
 }
 
 // Lit et valide les réglages saisis dans le modal.
@@ -49,6 +50,7 @@ export function lireReglages() {
         nuit_debut:          nuitD,
         nuit_fin:            nuitF,
         pdf_mentions:        (val('mentions') || '').trim() || null,
+        mois_calendaire:     !!champ('mois-cal')?.checked,   // onglet Heures : mois calendaire au lieu du planning
     }};
 }
 

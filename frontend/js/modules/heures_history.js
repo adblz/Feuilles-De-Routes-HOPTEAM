@@ -1,6 +1,7 @@
 import { chargerHeuresSupp } from './db.js';
 import { chargerPeriodesPaie } from './db_planning.js';
-import { trouverPeriodeCourante, nomMois, rangeLabel } from './periodes_paie.js';
+import { trouverPeriodeCourante, nomMois, rangeLabel, periodesMoisCalendaire } from './periodes_paie.js';
+import { cfg } from './fdr_config.js';
 import { calcHebdomadaire, totauxSuppPeriode } from './heures_calculs.js';
 import { renderHeures } from './heures_render.js';
 import { isoLocal, escHtml } from '../utils/utils.js';
@@ -42,14 +43,20 @@ export function afficherHeures() {
     peuplerPeriodes();
 }
 
-// Remplit le menu déroulant des périodes du planning et affiche la période courante.
+// Remplit le menu déroulant des périodes et affiche la période courante.
+// Entreprise en « mois calendaire » (réglage admin, ex. DAV) : on ignore le
+// planning des heures supp et on propose les 12 derniers mois du 1er au 31.
 async function peuplerPeriodes() {
     const sel      = document.getElementById('heures-periode');
     const row      = document.getElementById('heures-periode-row');
     const datesRow = document.getElementById('heures-dates-row');
 
-    try { periodes = await chargerPeriodesPaie(); }
-    catch { periodes = []; }
+    if (cfg.moisCalendaire) {
+        periodes = periodesMoisCalendaire();
+    } else {
+        try { periodes = await chargerPeriodesPaie(); }
+        catch { periodes = []; }
+    }
 
     // Sans planning : on garde l'ancien comportement (mois calendaire + champs date).
     if (!periodes.length) {

@@ -48,6 +48,7 @@ export let cfg = {
     nuitDebut:         normInt(localStorage.getItem('cfg_nuit_debut'), 1260),     // début plage nuit (21 h en min)
     nuitFin:           normInt(localStorage.getItem('cfg_nuit_fin'), 360),        // fin plage nuit (6 h en min)
     pdfMentions:       localStorage.getItem('cfg_pdf_mentions') || '',            // mentions pied de PDF
+    moisCalendaire:    localStorage.getItem('cfg_mois_calendaire') === '1',       // onglet Heures : mois du 1er au 31 au lieu du planning
 };
 
 // Mémorise le temps de trajet de l'entreprise (lu à la connexion depuis Supabase).
@@ -67,12 +68,14 @@ export function setReglesEntreprise(regles) {
     cfg.nuitDebut         = normInt(regles.nuit_debut, 1260);
     cfg.nuitFin           = normInt(regles.nuit_fin, 360);
     cfg.pdfMentions       = regles.pdf_mentions || '';
+    cfg.moisCalendaire    = !!regles.mois_calendaire;
     localStorage.setItem('cfg_logo_b64',    cfg.logoB64);
     localStorage.setItem('cfg_seuil_hebdo', String(cfg.seuilHebdoMinutes));
     localStorage.setItem('cfg_palier_25',   String(cfg.palier25Minutes));
     localStorage.setItem('cfg_nuit_debut',  String(cfg.nuitDebut));
     localStorage.setItem('cfg_nuit_fin',    String(cfg.nuitFin));
     localStorage.setItem('cfg_pdf_mentions', cfg.pdfMentions);
+    localStorage.setItem('cfg_mois_calendaire', cfg.moisCalendaire ? '1' : '0');
 }
 
 export function saveCfg(company, email, contrat) {

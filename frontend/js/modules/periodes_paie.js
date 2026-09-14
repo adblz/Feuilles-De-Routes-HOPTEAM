@@ -1,6 +1,8 @@
 // ── Helpers partagés pour le planning des périodes de paie ──
 // Utilisés par le dashboard, l'onglet Heures et l'espace admin.
 
+import { isoLocal } from '../utils/utils.js';
+
 export const MOIS_FR = [
     'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
     'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
@@ -38,4 +40,23 @@ export function trouverPeriodeParMoisCourant(periodes, date = new Date()) {
 // Plage de dates courte, ex. « du 22/06 au 19/07 ».
 export function rangeLabel(debut, fin) {
     return `du ${jourMois(debut)} au ${jourMois(fin)}`;
+}
+
+// Les `nb` derniers mois calendaires (du 1er au dernier jour), le plus récent
+// en premier — même forme que les lignes de periodes_paie, pour qu'une
+// entreprise sans planning (ex. DAV, réglage `mois_calendaire`) réutilise
+// tel quel le menu déroulant de l'onglet Heures.
+export function periodesMoisCalendaire(nb = 12, date = new Date()) {
+    const liste = [];
+    for (let i = 0; i < nb; i++) {
+        const premier = new Date(date.getFullYear(), date.getMonth() - i, 1);
+        const dernier = new Date(premier.getFullYear(), premier.getMonth() + 1, 0);
+        liste.push({
+            annee:      premier.getFullYear(),
+            mois:       premier.getMonth() + 1,
+            date_debut: isoLocal(premier),
+            date_fin:   isoLocal(dernier),
+        });
+    }
+    return liste;
 }

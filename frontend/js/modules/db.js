@@ -114,13 +114,14 @@ export async function chargerContratProfil() {
 }
 
 // Config complète de l'entreprise du technicien : logo, règles de calcul
-// d'heures (trajet, seuil hebdo, palier 25/50, plage de nuit) et mentions PDF.
+// d'heures (trajet, seuil hebdo, palier 25/50, plage de nuit), mentions PDF,
+// mois calendaire. On lit toutes les colonnes (`*`) : une colonne ajoutée
+// plus tard mais dont la migration n'est pas encore passée ne casse rien.
 // Renvoie null si l'entreprise est inconnue ou introuvable.
 export async function chargerReglesEntreprise(company) {
     if (!company) return null;
-    const cols = 'trajet_minutes,logo_b64,seuil_hebdo_minutes,palier_25_minutes,nuit_debut,nuit_fin,pdf_mentions';
     try {
-        const rows = await dbGet(`entreprises?nom=eq.${encodeURIComponent(company)}&select=${cols}`);
+        const rows = await dbGet(`entreprises?nom=eq.${encodeURIComponent(company)}&select=*`);
         return rows[0] || null;
     } catch {
         // Colonnes de config pas encore ajoutées (migration 2026-07-26 non
