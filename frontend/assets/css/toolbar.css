@@ -55,6 +55,52 @@
     opacity: 0.6;
 }
 
+/* Bouton rond orange au centre de la barre (feuille du jour). Il déborde
+   au-dessus de la barre comme un bouton d'action principal. */
+.toolbar-fab-slot {
+    flex: 1;
+    position: relative;
+}
+
+.toolbar-fab {
+    position: absolute;
+    left: 50%;
+    top: -18px;
+    transform: translateX(-50%);
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    border: 4px solid var(--ink);
+    background: var(--amber);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(226, 135, 46, 0.45);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.toolbar-fab svg {
+    width: 24px;
+    height: 24px;
+}
+
+.toolbar-fab:active {
+    transform: translateX(-50%) scale(0.94);
+}
+
+.toolbar-fab.active {
+    box-shadow: 0 6px 18px rgba(226, 135, 46, 0.45), 0 0 0 3px rgba(226, 135, 46, 0.35);
+}
+
+/* Sur téléphone, le bouton « Enregistrer le PDF » est fixé juste au-dessus de
+   la barre : on le relève pour qu'il ne touche pas le bouton rond. */
+@media (max-width: 620px) {
+    .actions { padding-bottom: 22px; }
+}
+
 /* Décale le contenu pour que la toolbar ne le cache pas */
 .container,
 #vue-resume {
@@ -510,6 +556,7 @@ html, body {
 }
 
 .heures-badge.badge-ferie      { background: rgba(251,191,36,.15); color: #d97706; }
+.heures-badge.badge-conge      { background: rgba(197,48,48,.12);  color: #c53030; }
 .heures-badge.badge-25        { background: rgba(226,135,46,.15); color: var(--amber); }
 .heures-badge.badge-50        { background: rgba(248,113,113,.15); color: #f87171; }
 .heures-badge.badge-nuit      { background: rgba(167,139,250,.15); color: #a78bfa; }

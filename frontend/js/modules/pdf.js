@@ -1,6 +1,7 @@
 import { validerFormulaire, setBusy, showToast } from '../utils/utils.js';
 import { cfg, lireTousLesElements, effacerBrouillon } from './fdr.js';
 import { sauvegarderEnBase } from './db.js';
+import { marquerClientsFaits } from './db_clients.js';
 import { memoriserValeurs } from './autocomplete.js';
 import { afficherResumeFeuille } from './resume.js';
 import { preparerPdfElement, nomFichierPdf, infosEntete } from './pdf_layout.js';
@@ -66,6 +67,18 @@ export function genererPDF() {
                             pdfFileName:   nomFichierPdf(),
                             elements,
                         });
+                        // Clients venus du planning : marqués « faits » (ils sortent du listing).
+                        // Un échec ici ne remet pas en cause l'enregistrement de la feuille.
+                        // (planningId = ids des postes du client, séparés par des virgules)
+                        const idsClients = elements.filter(e => e.kind === 'intervention' && e.planningId)
+                            .flatMap(e => String(e.planningId).split(',').filter(Boolean));
+                        if (idsClients.length) {
+                            try { await marquerClientsFaits(idsClients, feuilleId, document.getElementById('date').value); }
+                            catch (e) {
+                                console.warn('Marquage clients échoué :', e);
+                                showToast('Feuille enregistrée, mais les clients n\'ont pas pu être marqués comme faits', 'warn', 6000);
+                            }
+                        }
                         setBusy(false);
                         showToast('PDF enregistré dans l\'historique', 'success', 3000);
                         effacerBrouillon(document.getElementById('date').value);

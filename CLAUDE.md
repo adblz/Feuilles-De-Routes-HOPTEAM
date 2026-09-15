@@ -47,6 +47,9 @@ Application web sans framework, vanilla HTML / CSS / JS avec modules ES natifs. 
 - `profiles` : `id, nom, role, contrat` (35 ou 39)
 - `feuilles_de_route` : en-tête de la feuille du jour (date, tech, heures…)
 - `interventions` : lignes détail liées à une feuille (`feuille_id`)
+- `clients_planning` : clients à visiter (import Excel « sanitation » par le responsable), une ligne par PDV affecté à un technicien (`user_id`) ; `fait_le` null = à faire
+- `clients_secteurs` : correspondance « Secteur technicien » (texte Excel) → compte technicien, mémorisée par entreprise
+- `clients_imports` : journal des imports du planning
 
 ## Structure des fichiers JS (frontend)
 
@@ -83,7 +86,17 @@ frontend/js/
 │   ├── responsable_render.js ← rendu HTML page responsable
 │   ├── admin_users.js   ← gestion des utilisateurs (admin)
 │   ├── admin_users_ui.js ← rendu HTML gestion utilisateurs
-│   └── resume.js        ← module résumé/récap
+│   ├── resume.js        ← module résumé/récap
+│   ├── db_clients.js    ← requêtes Supabase du planning clients (tech + responsable)
+│   ├── clients_excel.js ← lecture du fichier Excel (SheetJS, 1er onglet, statuts actifs)
+│   ├── clients_regles.js ← règles d'import : correspondance secteurs, clients déjà faits (une ligne Excel = un poste, jamais un doublon)
+│   ├── clients_import.js ← enchaînement des 3 étapes d'import (page responsable)
+│   ├── clients_import_ui.js ← HTML des 3 étapes d'import
+│   ├── clients_data.js  ← listing tech : regroupement des postes par client, tri, retard, exclusion des brouillons, cache
+│   ├── clients_render.js ← HTML du listing clients (boutons d'appel, badges retard)
+│   ├── clients_liste.js ← vue « Mes clients » (chargement, filtres)
+│   ├── clients_valider.js ← « Valider ce client » → intervention pré-remplie
+│   └── dashboard_clients.js ← carte « Clients à faire » de l'accueil
 └── utils/
     └── utils.js         ← fonctions partagées (showToast, setBusy, validerFormulaire…)
 ```

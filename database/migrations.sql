@@ -310,3 +310,225 @@ update public.entreprises set mois_calendaire = true where nom = 'DAV';
 -- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
 --   alter table public.entreprises drop column if exists mois_calendaire;
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-09-15 — Planning clients (import Excel « sanitation »)
+--
+-- Le responsable importe chaque semaine, depuis sa page, le fichier Excel du
+-- CRM qui liste les points de vente (PDV) à visiter par secteur technicien.
+-- Chaque technicien voit ensuite dans l'appli SES clients à faire (nom, ville,
+-- téléphone, tirages, date prévue, retard), les « valide » dans sa feuille de
+-- route, et à l'enregistrement de la feuille ils sont marqués faits.
+--
+-- Trois tables :
+--   • clients_imports  : journal des imports (« Dernier import : … »)
+--   • clients_planning : une ligne = un PDV à visiter, affecté à un technicien
+--                        (fait_le null = à faire ; renseigné = fait)
+--   • clients_secteurs : correspondance « Secteur technicien » (texte Excel)
+--                        → compte technicien, mémorisée par entreprise
+-- Deux fonctions appelées par l'appli :
+--   • marquer_clients_faits     : le technicien marque SES clients faits
+--   • importer_clients_planning : import tout-ou-rien côté responsable
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter tout le bloc ci-dessous.
+-- ─────────────────────────────────────────────────────────────────────────
+
+-- L'appelant est-il responsable de cette entreprise (ou « voit tout ») ?
+create or replace function public.responsable_de_company(target_company text)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from profiles p
+    where p.id = auth.uid()
+      and p.role = 'responsable'
+      and (p.company = target_company or p.voit_toutes_entreprises)
+  )
+$$;
+
+create or replace function public.est_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+$$;
+
+create table if not exists public.clients_imports (
+  id           uuid primary key default gen_random_uuid(),
+  company      text not null,
+  importe_par  uuid references auth.users(id) on delete set null,
+  importe_le   timestamptz not null default now(),
+  fichier      text,
+  nb_total     int not null default 0,   -- lignes lues dans l'Excel
+  nb_importees int not null default 0,   -- lignes écrites
+  nb_ignorees  int not null default 0    -- statuts terminés / clôturés / vides
+);
+
+create table if not exists public.clients_planning (
+  id             uuid primary key default gen_random_uuid(),
+  company        text not null,
+  import_id      uuid references public.clients_imports(id) on delete set null,
+  user_id        uuid references auth.users(id) on delete set null,   -- technicien
+  secteur        text,
+  code_pdv       text not null,
+  nom_pdv        text,
+  adresse        text,
+  ville          text,
+  code_postal    text,
+  telephone      text,
+  entrepositaire text,
+  statut         text,
+  date_prevue    date,
+  periodicite    int,
+  tirage         int,
+  fait_le        date,                                                 -- null = à faire
+  feuille_id     uuid references public.feuilles_de_route(id) on delete set null,
+  importe_le     timestamptz not null default now(),
+  created_at     timestamptz not null default now()
+);
+create index if not exists clients_planning_user_fait_idx on public.clients_planning (user_id, fait_le);
+create index if not exists clients_planning_company_idx   on public.clients_planning (company);
+create index if not exists clients_planning_code_idx      on public.clients_planning (company, code_pdv);
+
+create table if not exists public.clients_secteurs (
+  company    text not null,
+  secteur    text not null,
+  user_id    uuid references auth.users(id) on delete set null,   -- null = « ignorer »
+  updated_at timestamptz not null default now(),
+  primary key (company, secteur)
+);
+
+alter table public.clients_planning enable row level security;
+alter table public.clients_secteurs enable row level security;
+alter table public.clients_imports  enable row level security;
+
+-- Technicien : lit uniquement ses lignes. Pas d'écriture directe : il passe
+-- par la fonction marquer_clients_faits ci-dessous.
+drop policy if exists "tech_lit_ses_clients" on public.clients_planning;
+create policy "tech_lit_ses_clients"
+on public.clients_planning
+for select
+to authenticated
+using ( user_id = auth.uid() );
+
+-- Responsable : tout sur son entreprise. Admin : tout.
+drop policy if exists "responsable_gere_clients_planning" on public.clients_planning;
+create policy "responsable_gere_clients_planning"
+on public.clients_planning
+for all
+to authenticated
+using      ( public.responsable_de_company(company) or public.est_admin() )
+with check ( public.responsable_de_company(company) or public.est_admin() );
+
+drop policy if exists "responsable_gere_clients_secteurs" on public.clients_secteurs;
+create policy "responsable_gere_clients_secteurs"
+on public.clients_secteurs
+for all
+to authenticated
+using      ( public.responsable_de_company(company) or public.est_admin() )
+with check ( public.responsable_de_company(company) or public.est_admin() );
+
+drop policy if exists "responsable_gere_clients_imports" on public.clients_imports;
+create policy "responsable_gere_clients_imports"
+on public.clients_imports
+for all
+to authenticated
+using      ( public.responsable_de_company(company) or public.est_admin() )
+with check ( public.responsable_de_company(company) or public.est_admin() );
+
+-- Technicien : marque des clients comme faits (uniquement les siens, et
+-- uniquement ceux encore à faire). Renvoie le nombre de lignes modifiées.
+create or replace function public.marquer_clients_faits(p_ids uuid[], p_feuille uuid, p_date date)
+returns int
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  n int;
+begin
+  update clients_planning
+     set fait_le = p_date, feuille_id = p_feuille
+   where id = any(p_ids)
+     and user_id = auth.uid()
+     and fait_le is null;
+  get diagnostics n = row_count;
+  return n;
+end
+$$;
+
+-- Responsable : import atomique (tout ou rien, dans une seule transaction).
+--   1. supprime les lignes « à faire » de l'entreprise (remplacées par le fichier)
+--   2. supprime les lignes « faites » que le responsable veut réafficher
+--   3. purge les lignes « faites » de plus de 120 jours
+--   4. journalise l'import et insère les nouvelles lignes (JSON)
+-- Les lignes « faites » récentes sont conservées : c'est la mémoire qui permet
+-- de garder masqué un client déjà fait même s'il reste dans le fichier.
+create or replace function public.importer_clients_planning(
+  p_company          text,
+  p_lignes           jsonb,
+  p_codes_reafficher text[],
+  p_fichier          text,
+  p_nb_total         int,
+  p_nb_ignorees      int
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid;
+begin
+  if not (public.responsable_de_company(p_company) or public.est_admin()) then
+    raise exception 'Accès refusé';
+  end if;
+
+  delete from clients_planning
+   where company = p_company and fait_le is null;
+
+  delete from clients_planning
+   where company = p_company
+     and fait_le is not null
+     and code_pdv = any(coalesce(p_codes_reafficher, '{}'));
+
+  delete from clients_planning
+   where company = p_company
+     and fait_le < current_date - 120;
+
+  insert into clients_imports (company, importe_par, fichier, nb_total, nb_importees, nb_ignorees)
+  values (p_company, auth.uid(), p_fichier, p_nb_total, jsonb_array_length(p_lignes), p_nb_ignorees)
+  returning id into v_id;
+
+  insert into clients_planning
+    (company, import_id, user_id, secteur, code_pdv, nom_pdv, adresse, ville,
+     code_postal, telephone, entrepositaire, statut, date_prevue, periodicite, tirage)
+  select
+    p_company, v_id,
+    nullif(l->>'user_id', '')::uuid,
+    l->>'secteur', l->>'code_pdv', l->>'nom_pdv', l->>'adresse', l->>'ville',
+    l->>'code_postal', l->>'telephone', l->>'entrepositaire', l->>'statut',
+    nullif(l->>'date_prevue', '')::date,
+    nullif(l->>'periodicite', '')::int,
+    nullif(l->>'tirage', '')::int
+  from jsonb_array_elements(p_lignes) l;
+
+  return v_id;
+end
+$$;
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   drop function if exists public.importer_clients_planning(text, jsonb, text[], text, int, int);
+--   drop function if exists public.marquer_clients_faits(uuid[], uuid, date);
+--   drop table if exists public.clients_planning;
+--   drop table if exists public.clients_secteurs;
+--   drop table if exists public.clients_imports;
+--   drop function if exists public.responsable_de_company(text);
+--   drop function if exists public.est_admin();
+-- ─────────────────────────────────────────────────────────────────────────

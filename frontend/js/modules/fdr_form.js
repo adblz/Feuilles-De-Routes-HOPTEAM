@@ -124,6 +124,8 @@ export function ajouterIntervention(data = {}) {
     }
     if (data.mo)   document.getElementById(`i${n}-mo`).value   = data.mo;
     if (data.becs) document.getElementById(`i${n}-becs`).value = data.becs;
+    // Client venu du planning importé : son id suit la carte jusqu'à l'enregistrement.
+    if (data.planningId) div.dataset.planningId = data.planningId;
 
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`int-card-${n}`));
     activerDragCarte(div, div.querySelector('.btn-drag'), apresReordonnancement);
@@ -269,6 +271,7 @@ export function lireTousLesElements() {
                 mo:      document.getElementById(`i${rawId}-mo`)?.value       || '',
                 becs:    document.getElementById(`i${rawId}-becs`)?.value     || '',
                 details: document.getElementById(`i${rawId}-details`)?.value  || '',
+                planningId: card.dataset.planningId || '',
             });
         } else if (card.dataset.type === 'pause') {
             items.push({

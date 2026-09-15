@@ -4,6 +4,7 @@ import { reinitialiserFeuille } from './ui.js';
 import { initCalendrier, rendreCalendrierMois, resetCalOffset, initCalNav } from './dashboard_calendar.js';
 import { effacerBrouillon } from './fdr.js';
 import { rendreHeuresSupp, majBrouillonCard, toggleBrouillonList } from './dashboard_stats.js';
+import { majClientsCard, initClientsCard } from './dashboard_clients.js';
 
 const aujourdhui = () => isoLocal(new Date());
 
@@ -11,6 +12,7 @@ function montrerFormulaire(scrollY = 0) {
     document.getElementById('vue-resume')?.classList.add('hidden');
     document.getElementById('vue-dashboard').classList.add('hidden');
     document.getElementById('vue-heures')?.classList.add('hidden');
+    document.getElementById('vue-clients')?.classList.add('hidden');
     document.getElementById('vue-formulaire').classList.remove('hidden');
     window.scrollTo(0, scrollY);
     document.dispatchEvent(new CustomEvent('nav:formulaire'));
@@ -26,6 +28,7 @@ export function afficherDashboard() {
     document.getElementById('vue-formulaire').classList.add('hidden');
     document.getElementById('vue-resume')?.classList.add('hidden');
     document.getElementById('vue-heures')?.classList.add('hidden');
+    document.getElementById('vue-clients')?.classList.add('hidden');
     document.getElementById('vue-dashboard').classList.remove('hidden');
     window.scrollTo(0, 0);
     document.dispatchEvent(new CustomEvent('nav:dashboard'));
@@ -47,12 +50,13 @@ export function finaliserBrouillon(dateISO) {
 
 export async function rafraichirDashboard() {
     majBrouillonCard();
-    await Promise.all([rendreHeuresSupp(), rendreCalendrierMois()]);
+    await Promise.all([rendreHeuresSupp(), rendreCalendrierMois(), majClientsCard()]);
 }
 
 export function initDashboard(nomTech) {
     initCalendrier(ouvrirNouvelleFeuille, finaliserBrouillon);
     initCalNav();
+    initClientsCard();
 
     const greeting = document.getElementById('dash-greeting');
     if (greeting) greeting.textContent = nomTech || 'Mon espace';
@@ -99,4 +103,5 @@ export function initDashboard(nomTech) {
 
     document.addEventListener('feuille:enregistree', afficherDashboard);
     document.addEventListener('feuille:supprimee', rafraichirDashboard);
+    document.addEventListener('dashboard:refresh', rafraichirDashboard);
 }

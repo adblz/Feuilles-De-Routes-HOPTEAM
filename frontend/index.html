@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/toolbar.css">
     <link rel="stylesheet" href="assets/css/timepicker.css">
+    <link rel="stylesheet" href="assets/css/clients.css">
 </head>
 <body>
 
@@ -57,6 +58,14 @@
         </div>
         <div class="dash-supp-hero" id="dash-supp-hero">…</div>
         <p class="dash-supp-context" id="dash-supp-context"></p>
+    </button>
+
+    <!-- Clients à faire (planning importé par le responsable ; masquée si vide) -->
+    <button class="card dash-clients-card hidden" id="dash-clients-card" type="button"
+            aria-label="Voir mes clients à faire">
+        <p class="dash-eyebrow">Clients à faire</p>
+        <div class="dash-clients-hero" id="dash-clients-hero">…</div>
+        <p class="dash-clients-sub" id="dash-clients-sub"></p>
     </button>
 
     <!-- Carnet du mois -->
@@ -372,6 +381,24 @@
     <div id="heures-tableau"></div>
 </div>
 
+<!-- ════════ VUE CLIENTS À FAIRE ════════ -->
+<div class="container hidden" id="vue-clients">
+    <div class="clients-entete">
+        <h2 class="vue-heures-titre">Mes clients</h2>
+        <div class="clients-compteurs">
+            <span class="clients-badge" id="clients-nb-total">…</span>
+            <span class="clients-badge clients-badge-retard hidden" id="clients-nb-retard"></span>
+        </div>
+    </div>
+    <div class="clients-filtres" id="clients-filtres">
+        <button type="button" class="clients-chip active" data-filtre="tous">Tous</button>
+        <button type="button" class="clients-chip" data-filtre="retard">En retard</button>
+        <button type="button" class="clients-chip" data-filtre="avenir">&#192; venir</button>
+    </div>
+    <p class="clients-info hidden" id="clients-info"></p>
+    <div id="clients-liste"></div>
+</div>
+
 <!-- ════════ VUE RÉSUMÉ FEUILLE DU JOUR ════════ -->
 <div class="container hidden" id="vue-resume">
     <div id="resume-content"></div>
@@ -388,16 +415,28 @@
         <span>Accueil</span>
     </button>
 
-    <button class="toolbar-btn" id="btn-toolbar-feuille">
+    <button class="toolbar-btn" id="btn-toolbar-clients">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <line x1="10" y1="9" x2="8" y2="9"/>
+            <path d="M3 9l1.5-5h15L21 9"/>
+            <path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>
+            <path d="M5 11v10h14V11"/>
+            <path d="M10 21v-6h4v6"/>
         </svg>
-        <span>Feuille du jour</span>
+        <span>Clients</span>
     </button>
+
+    <!-- Bouton central surélevé : ouvre la feuille de route du jour -->
+    <div class="toolbar-fab-slot">
+        <button class="toolbar-fab" id="btn-toolbar-feuille" aria-label="Feuille du jour" title="Feuille du jour">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <line x1="10" y1="9" x2="8" y2="9"/>
+            </svg>
+        </button>
+    </div>
 
     <button class="toolbar-btn" id="btn-toolbar-extra">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

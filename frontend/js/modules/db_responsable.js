@@ -11,7 +11,7 @@ async function dbGet(path) {
 export async function chargerMonProfil() {
     const user = getSession()?.user;
     if (!user) return null;
-    const rows = await dbGet(`profiles?id=eq.${user.id}&select=id,role,nom`);
+    const rows = await dbGet(`profiles?id=eq.${user.id}&select=id,role,nom,company,voit_toutes_entreprises`);
     return rows[0] || null;
 }
 

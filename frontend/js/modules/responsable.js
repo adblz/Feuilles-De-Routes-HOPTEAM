@@ -6,6 +6,7 @@ import { getLogoBase64 } from './fdr.js';
 import { initiales } from './responsable_render.js';
 import * as liste from './responsable_liste.js';
 import { peuplerSelectPeriode, cablerFiltreEtSelection, cablerListe } from './responsable_evenements.js';
+import { initImportClients } from './clients_import.js';
 
 function fermerModalPassword() {
     document.getElementById('modal-password')?.classList.remove('open');
@@ -61,6 +62,8 @@ export async function initResponsable() {
     }
 
     initMotDePasse(profil);
+    // Import du planning clients : ne doit jamais bloquer l'affichage des feuilles.
+    initImportClients(profil).catch(e => console.warn('Import clients indisponible :', e));
 
     const container = document.getElementById('resp-list');
     liste.afficherChargement();

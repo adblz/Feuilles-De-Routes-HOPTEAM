@@ -421,3 +421,153 @@
 .resp-feuille-row:not(.nonvue) .resp-feuille-ints {
     color: var(--resp-text-secondary);
 }
+
+/* ── Import du planning clients (bouton + fenêtre en 3 étapes) ── */
+
+.resp-import-zone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.resp-import-info {
+    font-size: 12px;
+    color: var(--resp-text-secondary);
+}
+
+.modal-import {
+    max-width: 720px;
+    max-height: 88vh;
+}
+
+.clients-import-footer {
+    margin-top: 0;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.imp-resume {
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--gray-mid);
+    margin: 0 0 12px;
+}
+
+.imp-muted { color: var(--muted); font-weight: 400; }
+
+.imp-aide {
+    font-size: 12px;
+    color: var(--gray-mid);
+    line-height: 1.5;
+    margin: 0 0 12px;
+}
+
+.imp-attention {
+    font-size: 12px;
+    color: var(--amber-deep);
+    background: var(--amber-pale);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 12px;
+}
+
+.imp-ok {
+    font-size: 14px;
+    color: #2f855a;
+    padding: 24px 0;
+    text-align: center;
+}
+
+.imp-company {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--gray-mid);
+}
+
+.imp-company select,
+.imp-select-tech {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border-mid);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: white;
+}
+
+.imp-company select { width: auto; }
+
+.imp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.imp-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.imp-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.imp-secteur { color: var(--navy); font-weight: 600; }
+.imp-nb { text-align: right; color: var(--gray-mid); white-space: nowrap; }
+
+.imp-section-titre {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 16px 0 6px;
+}
+
+.imp-anomalie {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+}
+
+.imp-anomalie-nom { font-size: 14px; font-weight: 600; color: var(--navy); }
+.imp-anomalie-meta { font-size: 12px; color: var(--gray-mid); margin: 4px 0 8px; line-height: 1.5; }
+
+.imp-choix {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--gray-mid);
+}
+
+.imp-choix label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+.imp-liste {
+    margin: 0 0 8px 18px;
+    padding: 0;
+    font-size: 13px;
+    color: var(--gray-mid);
+    line-height: 1.7;
+}
+
+@media (max-width: 620px) {
+    .imp-table thead { display: none; }
+    .imp-table tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .imp-table td { display: block; border: none; padding: 2px 0; }
+    .imp-nb { text-align: left; font-size: 12px; }
+    .imp-choix { flex-direction: column; gap: 8px; }
+}

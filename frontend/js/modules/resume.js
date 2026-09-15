@@ -32,6 +32,7 @@ export async function afficherResumeFeuille(feuilleId) {
         document.getElementById('vue-dashboard').classList.add('hidden');
         document.getElementById('vue-formulaire').classList.add('hidden');
         document.getElementById('vue-heures')?.classList.add('hidden');
+        document.getElementById('vue-clients')?.classList.add('hidden');
         document.getElementById('resume-content').innerHTML = buildResumeHTML(feuille, elements);
         document.getElementById('vue-resume').classList.remove('hidden');
         activerFrise();
@@ -61,6 +62,7 @@ export async function afficherResumeFeuille(feuilleId) {
             document.getElementById('vue-resume')?.classList.add('hidden');
             document.getElementById('vue-dashboard')?.classList.add('hidden');
             document.getElementById('vue-heures')?.classList.add('hidden');
+            document.getElementById('vue-clients')?.classList.add('hidden');
             document.getElementById('vue-formulaire')?.classList.remove('hidden');
             window.scrollTo(0, 0);
             document.dispatchEvent(new CustomEvent('nav:formulaire'));

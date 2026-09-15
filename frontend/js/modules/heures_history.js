@@ -16,7 +16,7 @@ function debutMois() {
 }
 
 export function afficherHeures() {
-    ['vue-dashboard', 'vue-formulaire', 'vue-resume'].forEach(id => {
+    ['vue-dashboard', 'vue-formulaire', 'vue-resume', 'vue-clients'].forEach(id => {
         document.getElementById(id)?.classList.add('hidden');
     });
     document.getElementById('vue-heures').classList.remove('hidden');

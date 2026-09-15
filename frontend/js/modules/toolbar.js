@@ -5,11 +5,12 @@ import { afficherDashboard, ouvrirNouvelleFeuille, finaliserBrouillon } from './
 import { afficherResumeFeuille } from './resume.js';
 import { openSettings } from './ui.js';
 import { afficherHeures } from './heures_history.js';
+import { afficherClients } from './clients_liste.js';
 
 const aujourdhui = () => isoLocal(new Date());
 
 export function setToolbarActive(id) {
-    document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.toolbar-btn, .toolbar-fab').forEach(btn => btn.classList.remove('active'));
     const btn = document.getElementById(id);
     if (btn) btn.classList.add('active');
 }
@@ -42,8 +43,11 @@ export function initToolbar() {
     document.addEventListener('nav:formulaire', () => setToolbarActive('btn-toolbar-feuille'));
     document.addEventListener('nav:resume',     () => setToolbarActive('btn-toolbar-feuille'));
     document.addEventListener('nav:heures',     () => setToolbarActive('btn-toolbar-extra'));
+    document.addEventListener('nav:clients',    () => setToolbarActive('btn-toolbar-clients'));
 
     document.getElementById('btn-toolbar-accueil').addEventListener('click', afficherDashboard);
+    document.getElementById('btn-toolbar-clients').addEventListener('click', afficherClients);
+    // Bouton rond orange au centre de la barre : même action que l'ancien onglet « Feuille du jour ».
     document.getElementById('btn-toolbar-feuille').addEventListener('click', ouvrirFeuilleduJour);
     document.getElementById('btn-toolbar-extra').addEventListener('click', afficherHeures);
     document.getElementById('btn-toolbar-profil').addEventListener('click', openSettings);

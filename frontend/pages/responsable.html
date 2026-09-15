@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/styles.css">
     <link rel="stylesheet" href="../assets/css/responsable.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -36,6 +37,11 @@
         <div class="resp-filtre-periode hidden" id="resp-filtre-periode">
             <label for="resp-select-periode" class="resp-filtre-label">Période</label>
             <select id="resp-select-periode"></select>
+        </div>
+        <div class="resp-import-zone">
+            <button type="button" class="resp-btn-select" id="btn-clients-import">Importer le planning</button>
+            <span class="resp-import-info" id="clients-import-info"></span>
+            <input type="file" id="clients-import-file" accept=".xlsx,.xls" hidden>
         </div>
         <button type="button" class="resp-btn-select" id="btn-resp-selection">Sélectionner</button>
     </div>
@@ -85,6 +91,20 @@
                 <button type="button" class="btn-eye" id="toggle-resp-confirm-password"></button>
             </div>
             <button type="button" class="btn-settings-action btn-change-password" id="btn-resp-change-password">Changer le mot de passe</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-clients-import">
+    <div class="modal modal-histo modal-import">
+        <div class="modal-histo-header">
+            <h3 id="clients-import-titre">Importer le planning</h3>
+            <button class="btn-histo-close" id="btn-close-clients-import" aria-label="Fermer">&#10005;</button>
+        </div>
+        <div class="modal-histo-body" id="clients-import-body"></div>
+        <div class="modal-footer clients-import-footer">
+            <button type="button" class="modal-cancel" id="btn-clients-import-retour">Retour</button>
+            <button type="button" class="modal-save" id="btn-clients-import-suivant">Continuer</button>
         </div>
     </div>
 </div>
