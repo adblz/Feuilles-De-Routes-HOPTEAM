@@ -1,15 +1,13 @@
-const { verifierUtilisateur } = require('../middleware/auth');
+const { verifierUtilisateur, resolveSupabase } = require('../middleware/auth');
 
-const SUPABASE_URL         = process.env.SUPABASE_URL         || 'https://zblggovelezxxrkbqbcv.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-
-async function verifierAdmin(token) {
-    const user = await verifierUtilisateur(token);
+async function verifierAdmin(token, projectUrl) {
+    const user = await verifierUtilisateur(token, projectUrl);
     if (!user) return false;
 
+    const { url, serviceKey } = resolveSupabase(projectUrl);
     const profilRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=role`,
-        { headers: { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}` } }
+        `${url}/rest/v1/profiles?id=eq.${user.id}&select=role`,
+        { headers: { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` } }
     );
     if (!profilRes.ok) return false;
     const profils = await profilRes.json();
@@ -17,14 +15,16 @@ async function verifierAdmin(token) {
 }
 
 exports.handleCreateUser = async (req, res) => {
+    const projectUrl = req.headers['x-supabase-url'];
+    const { url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_KEY } = resolveSupabase(projectUrl);
     if (!SUPABASE_SERVICE_KEY) {
-        return res.status(500).json({ error: 'Variable SUPABASE_SERVICE_KEY manquante sur le serveur' });
+        return res.status(500).json({ error: 'Variable SUPABASE_SERVICE_KEY manquante sur le serveur pour cette base' });
     }
 
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ error: 'Non authentifié' });
 
-    const isAdmin = await verifierAdmin(token).catch(() => false);
+    const isAdmin = await verifierAdmin(token, projectUrl).catch(() => false);
     if (!isAdmin) return res.status(403).json({ error: 'Accès refusé : rôle admin requis' });
 
     const { email, nom, role, contrat, password, company, email_responsable, voit_toutes_entreprises } = req.body;
@@ -73,14 +73,16 @@ exports.handleCreateUser = async (req, res) => {
 };
 
 exports.handleDeleteUser = async (req, res) => {
+    const projectUrl = req.headers['x-supabase-url'];
+    const { url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_KEY } = resolveSupabase(projectUrl);
     if (!SUPABASE_SERVICE_KEY) {
-        return res.status(500).json({ error: 'Variable SUPABASE_SERVICE_KEY manquante sur le serveur' });
+        return res.status(500).json({ error: 'Variable SUPABASE_SERVICE_KEY manquante sur le serveur pour cette base' });
     }
 
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ error: 'Non authentifié' });
 
-    const isAdmin = await verifierAdmin(token).catch(() => false);
+    const isAdmin = await verifierAdmin(token, projectUrl).catch(() => false);
     if (!isAdmin) return res.status(403).json({ error: 'Accès refusé : rôle admin requis' });
 
     const { id } = req.params;

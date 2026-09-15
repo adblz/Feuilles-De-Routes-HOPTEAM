@@ -94,8 +94,9 @@ export async function supprimerUtilisateur(id) {
     const res = await fetchBackend(`${BACKEND}/admin/delete-user/${id}`, {
         method:  'DELETE',
         headers: {
-            'Content-Type':  'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Content-Type':   'application/json',
+            'Authorization':  `Bearer ${token}`,
+            'x-supabase-url': SUPABASE_URL,
         },
     });
     if (!res.ok) {
@@ -110,8 +111,9 @@ export async function creerUtilisateur(email, nom, role, contrat, password, comp
     const res = await fetchBackend(`${BACKEND}/admin/create-user`, {
         method:  'POST',
         headers: {
-            'Content-Type':  'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Content-Type':   'application/json',
+            'Authorization':  `Bearer ${token}`,
+            'x-supabase-url': SUPABASE_URL,
         },
         body: JSON.stringify({ email, nom, role: role || 'technicien', contrat, password, company: company || '', email_responsable: emailResp || '', voit_toutes_entreprises: !!voitToutesEntreprises }),
     });
