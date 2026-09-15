@@ -57,12 +57,10 @@ export function labelSemaine(dateStr) {
     lundi.setDate(d.getDate() - day + 1);
     const dimanche = new Date(lundi);
     dimanche.setDate(lundi.getDate() + 6);
-    const jour = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric' });
-    const full = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-    // Même mois → « 6 – 12 juil. » ; sinon « 30 juin – 6 juil. »
-    return lundi.getMonth() === dimanche.getMonth()
-        ? `${jour(lundi)} – ${full(dimanche)}`
-        : `${full(lundi)} – ${full(dimanche)}`;
+    const numSemaine = Number(getSemaineISO(dateStr).split('-S')[1]);
+    const full = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    // Ex. « Semaine 35 - 24 août au 30 août »
+    return `Semaine ${numSemaine} - ${full(lundi)} au ${full(dimanche)}`;
 }
 
 // Seuil retiré pour les jours de congé de la semaine (lundi→vendredi, comme

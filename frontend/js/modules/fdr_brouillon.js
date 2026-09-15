@@ -1,4 +1,4 @@
-import { showToast } from '../utils/utils.js';
+import { showToast, isoLocal } from '../utils/utils.js';
 import { getSuppManuel, setSuppManuel, calcHeures } from './fdr_calculs.js';
 import { ajouterIntervention, ajouterPause, lireTousLesElements, remplirRappel } from './fdr_form.js';
 import { collapserApresRestauration } from './fdr_collapse.js';
@@ -23,14 +23,22 @@ window.addEventListener('pagehide', () => {
 
 // ── Brouillons ─────────────────────────────────────────────────
 
+// Un brouillon plus vieux qu'un mois est supprimé automatiquement (il n'a plus lieu d'être proposé).
 export function getBrouillonsDates() {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - 1);
+    const cutoffISO = isoLocal(cutoff);
+
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+
     const dates = new Set();
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('fdr_brouillon_')) {
-            const date = key.slice('fdr_brouillon_'.length);
-            if (/^\d{4}-\d{2}-\d{2}$/.test(date)) dates.add(date);
-        }
+    for (const key of keys) {
+        if (!key || !key.startsWith('fdr_brouillon_')) continue;
+        const date = key.slice('fdr_brouillon_'.length);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+        if (date < cutoffISO) { localStorage.removeItem(key); continue; }
+        dates.add(date);
     }
     return dates;
 }

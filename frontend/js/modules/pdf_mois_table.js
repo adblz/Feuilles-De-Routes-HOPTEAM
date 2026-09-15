@@ -56,7 +56,7 @@ function ligneSemaine(s) {
     const supp = s.totalSuppMin > 0 ? `+${affH(s.totalSuppMin)}` : '—';
     return `
         <tr class="pdf-mois-tr-semaine">
-            <td colspan="4">Semaine ${s.label}${ferie}</td>
+            <td colspan="4">${s.label}${ferie}</td>
             <td class="c">${affH(s.totalTravailMin)}</td>
             <td class="c">${supp}</td>
             <td class="c">${nb}</td>

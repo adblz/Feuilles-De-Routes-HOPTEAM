@@ -259,10 +259,8 @@ export function lireTousLesElements() {
     document.querySelectorAll('#interventions-list > div').forEach(card => {
         const rawId = card.id.replace('int-card-', '').replace('pause-card-', '');
         if (card.dataset.type === 'intervention') {
-            intNum++;
-            items.push({
+            const item = {
                 kind:    'intervention',
-                num:     intNum,
                 arrivee: document.getElementById(`i${rawId}-arrivee`)?.value  || '',
                 depart:  document.getElementById(`i${rawId}-depart`)?.value   || '',
                 client:  document.getElementById(`i${rawId}-client`)?.value   || '',
@@ -272,7 +270,15 @@ export function lireTousLesElements() {
                 becs:    document.getElementById(`i${rawId}-becs`)?.value     || '',
                 details: document.getElementById(`i${rawId}-details`)?.value  || '',
                 planningId: card.dataset.planningId || '',
-            });
+            };
+            // Carte ajoutée mais jamais remplie : on l'ignore (n'apparaît ni dans
+            // l'enregistrement final, ni dans le PDF).
+            const estVide = !item.arrivee && !item.depart && !item.client && !item.ville
+                && !item.typeInt && !item.mo && !item.becs && !item.details;
+            if (estVide) return;
+            intNum++;
+            item.num = intNum;
+            items.push(item);
         } else if (card.dataset.type === 'pause') {
             items.push({
                 kind:  'pause',

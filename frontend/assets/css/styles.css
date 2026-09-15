@@ -812,59 +812,6 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     font-weight: 700;
     color: var(--ink-title);
 }
-/* Carte brouillon en cours */
-.dash-brouillon-card {
-    border-left: 5px solid var(--amber);
-    background: var(--amber-soft);
-    padding-bottom: 0;
-    transition: box-shadow 0.2s;
-}
-.dash-brouillon-header {
-    display: flex; align-items: center; gap: 12px;
-    cursor: pointer; padding-bottom: 18px;
-    transition: transform 0.15s;
-}
-.dash-brouillon-header:hover { transform: translateY(-1px); }
-.dash-brouillon-header:active { transform: translateY(0); }
-.dash-brouillon-icon {
-    font-size: 28px;
-    flex-shrink: 0;
-    animation: brouillon-pulse 2s ease-in-out infinite;
-}
-@keyframes brouillon-pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.12); }
-}
-.dash-brouillon-body { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-.dash-brouillon-text { font-size: 15px; font-weight: 700; color: var(--amber-dark); }
-.dash-brouillon-sub  { font-size: 12px; font-weight: 500; color: var(--amber-deep); }
-.dash-brouillon-chevron {
-    font-size: 13px; font-weight: 800; color: var(--amber-deep);
-    transition: transform 0.2s;
-}
-.dash-brouillon-list {
-    list-style: none; padding: 0; margin: 0;
-    border-top: 1px solid rgba(226,135,46,0.25);
-    padding-top: 10px; padding-bottom: 6px;
-    display: flex; flex-direction: column; gap: 6px;
-}
-.dash-brouillon-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 12px;
-    background: white; border-radius: 10px;
-    font-size: 13px; font-weight: 600; color: var(--ink-body);
-    cursor: pointer; border: none; font-family: inherit;
-    transition: background 0.15s;
-}
-.dash-brouillon-item:hover { background: var(--paper-dim); }
-.dash-brouillon-item-actions {
-    display: flex; align-items: center; gap: 6px;
-    flex-shrink: 0; margin-left: 10px;
-}
-.dash-brouillon-item-btn {
-    font-size: 12px; font-weight: 800; color: var(--amber-deep);
-    white-space: nowrap;
-}
 .btn-brouillon-del {
     background: none; border: none;
     color: var(--muted); font-size: 13px; line-height: 1;

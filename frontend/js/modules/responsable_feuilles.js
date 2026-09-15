@@ -39,7 +39,7 @@ function renderSemaine([, groupe], ctx) {
     const ids = groupe.feuilles.map(f => f.id);
     const statut = ctx.selectionMode ? ctx.statutSemaine(ids) : 'aucune';
     const checkHtml = ctx.selectionMode
-        ? `<input type="checkbox" class="resp-check resp-check-semaine" data-ids="${ids.join(',')}"${statut === 'toutes' ? ' checked' : ''} data-indetermine="${statut === 'partielle'}" aria-label="Sélectionner la semaine du ${escHtml(groupe.label)}">`
+        ? `<input type="checkbox" class="resp-check resp-check-semaine" data-ids="${ids.join(',')}"${statut === 'toutes' ? ' checked' : ''} data-indetermine="${statut === 'partielle'}" aria-label="Sélectionner ${escHtml(groupe.label)}">`
         : '';
     const lignes = groupe.feuilles.map(f => ligneFeuille(f, ctx)).join('');
     return `<div class="resp-semaine">

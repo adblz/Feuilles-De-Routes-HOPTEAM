@@ -2,7 +2,6 @@ import { chargerHeuresSupp } from './db.js';
 import { affH, isoLocal } from '../utils/utils.js';
 import { calcHebdomadaire } from './heures_calculs.js';
 import { totalSuppNet, baseSemaine, affHSigne } from './dashboard_supp.js';
-import { getBrouillonsDates } from './fdr.js';
 
 export async function rendreHeuresSupp() {
     const heroEl    = document.getElementById('dash-supp-hero');
@@ -56,40 +55,5 @@ export async function rendreHeuresSupp() {
             ? `${affH(totalTravailMin)} travaillées · base ${affH(baseMin)} · ${jours}`
             : `${affH(totalTravailMin)} travaillées · ${jours}`;
     }
-}
-
-export function majBrouillonCard() {
-    const nb  = getBrouillonsDates().size;
-    const el  = document.getElementById('dash-brouillon');
-    el.classList.toggle('hidden', nb === 0);
-    if (nb <= 0) return;
-
-    const sub = document.getElementById('dash-brouillon-sub');
-    if (sub) sub.textContent = nb === 1
-        ? '1 feuille non envoyée — appuie pour continuer'
-        : `${nb} feuilles non envoyées — appuie pour choisir`;
-
-    const listEl = document.getElementById('dash-brouillon-list');
-    if (!listEl) return;
-    const dates = [...getBrouillonsDates()].sort().reverse();
-    listEl.innerHTML = dates.map(dateISO => {
-        const d     = new Date(dateISO + 'T12:00');
-        const label = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-        return `<li class="dash-brouillon-item" data-date="${dateISO}">
-            <span>${label.charAt(0).toUpperCase() + label.slice(1)}</span>
-            <span class="dash-brouillon-item-actions">
-                <span class="dash-brouillon-item-btn">Continuer →</span>
-                <button type="button" class="btn-brouillon-item-del" data-del-date="${dateISO}" title="Supprimer">&#10005;</button>
-            </span>
-        </li>`;
-    }).join('');
-}
-
-export function toggleBrouillonList() {
-    const listEl = document.getElementById('dash-brouillon-list');
-    if (!listEl) return;
-    const isHidden = listEl.classList.toggle('hidden');
-    const chev = document.getElementById('dash-brouillon-chevron');
-    if (chev) chev.textContent = isHidden ? '▼' : '▲';
 }
 
