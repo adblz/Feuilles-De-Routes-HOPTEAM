@@ -1,69 +1,59 @@
-const { verifierUtilisateur, resolveSupabase } = require('../middleware/auth');
+// Création et suppression de comptes (admin, ou responsable pour ses techniciens).
+// Les droits sont vérifiés dans adminGuard.js.
+const { chargerAppelant, verifierCible, headersService } = require('./adminGuard');
 
-async function verifierAdmin(token, projectUrl) {
-    const user = await verifierUtilisateur(token, projectUrl);
-    if (!user) return false;
-
-    const { url, serviceKey } = resolveSupabase(projectUrl);
-    const profilRes = await fetch(
-        `${url}/rest/v1/profiles?id=eq.${user.id}&select=role`,
-        { headers: { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` } }
-    );
-    if (!profilRes.ok) return false;
-    const profils = await profilRes.json();
-    return profils[0]?.role === 'admin';
-}
+const ROLES_VALIDES    = ['technicien', 'responsable', 'admin'];
+const CONTRATS_VALIDES = ['35', '37', '39'];
 
 exports.handleCreateUser = async (req, res) => {
-    const projectUrl = req.headers['x-supabase-url'];
-    const { url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_KEY } = resolveSupabase(projectUrl);
-    if (!SUPABASE_SERVICE_KEY) {
-        return res.status(500).json({ error: 'Variable SUPABASE_SERVICE_KEY manquante sur le serveur pour cette base' });
-    }
+    const garde = await chargerAppelant(req);
+    if (garde.error) return res.status(garde.status).json({ error: garde.error });
+    const { ctx, appelant } = garde;
 
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ error: 'Non authentifié' });
-
-    const isAdmin = await verifierAdmin(token, projectUrl).catch(() => false);
-    if (!isAdmin) return res.status(403).json({ error: 'Accès refusé : rôle admin requis' });
-
-    const { email, nom, role, contrat, password, company, email_responsable, voit_toutes_entreprises } = req.body;
+    const { email, nom, password } = req.body;
     if (!email || !nom || !password) {
         return res.status(400).json({ error: 'Données manquantes : email, nom, password' });
     }
-    const rolesValides = ['technicien', 'responsable', 'admin'];
-    const roleChoisi = rolesValides.includes(role) ? role : 'technicien';
+    if (String(password).length < 6) {
+        return res.status(400).json({ error: 'Le mot de passe doit faire au moins 6 caractères' });
+    }
+
+    let { role, contrat, company, email_responsable, voit_toutes_entreprises } = req.body;
+    if (appelant.role === 'responsable') {
+        // Un responsable ne crée que des techniciens, dans sa propre entreprise.
+        role = 'technicien';
+        company = appelant.company || '';
+        voit_toutes_entreprises = false;
+        if (!email_responsable) email_responsable = appelant.email;
+    }
+    const roleChoisi    = ROLES_VALIDES.includes(role) ? role : 'technicien';
+    const contratChoisi = CONTRATS_VALIDES.includes(String(contrat)) ? String(contrat) : null;
 
     // Créer le compte dans Supabase Auth
-    const authRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+    const authRes = await fetch(`${ctx.url}/auth/v1/admin/users`, {
         method:  'POST',
-        headers: {
-            'apikey':        SUPABASE_SERVICE_KEY,
-            'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-            'Content-Type':  'application/json',
-        },
-        body: JSON.stringify({ email, password, email_confirm: true }),
+        headers: headersService(ctx),
+        body:    JSON.stringify({ email, password, email_confirm: true }),
     });
-
     if (!authRes.ok) {
         const err = await authRes.json().catch(() => ({}));
         return res.status(400).json({ error: err.msg || err.message || 'Erreur création du compte' });
     }
-
     const newUser = await authRes.json();
 
     // Créer le profil dans la table profiles
-    const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+    const profileRes = await fetch(`${ctx.url}/rest/v1/profiles`, {
         method:  'POST',
-        headers: {
-            'apikey':        SUPABASE_SERVICE_KEY,
-            'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-            'Content-Type':  'application/json',
-            'Prefer':        'return=minimal',
-        },
-        body: JSON.stringify({ id: newUser.id, email, nom, contrat: contrat || null, role: roleChoisi, company: company || '', email_responsable: email_responsable || '', voit_toutes_entreprises: !!voit_toutes_entreprises }),
+        headers: { ...headersService(ctx), 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+            id: newUser.id, email, nom,
+            contrat: contratChoisi,
+            role: roleChoisi,
+            company: company || '',
+            email_responsable: email_responsable || '',
+            voit_toutes_entreprises: !!voit_toutes_entreprises,
+        }),
     });
-
     if (!profileRes.ok) {
         const errText = await profileRes.text().catch(() => '');
         return res.status(400).json({ error: `Compte créé mais erreur profil : ${errText}` });
@@ -73,42 +63,31 @@ exports.handleCreateUser = async (req, res) => {
 };
 
 exports.handleDeleteUser = async (req, res) => {
-    const projectUrl = req.headers['x-supabase-url'];
-    const { url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_KEY } = resolveSupabase(projectUrl);
-    if (!SUPABASE_SERVICE_KEY) {
-        return res.status(500).json({ error: 'Variable SUPABASE_SERVICE_KEY manquante sur le serveur pour cette base' });
-    }
-
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ error: 'Non authentifié' });
-
-    const isAdmin = await verifierAdmin(token, projectUrl).catch(() => false);
-    if (!isAdmin) return res.status(403).json({ error: 'Accès refusé : rôle admin requis' });
+    const garde = await chargerAppelant(req);
+    if (garde.error) return res.status(garde.status).json({ error: garde.error });
+    const { ctx, appelant } = garde;
 
     const { id } = req.params;
-    if (!id) return res.status(400).json({ error: 'ID utilisateur manquant' });
+    if (id === appelant.id) {
+        return res.status(400).json({ error: 'Vous ne pouvez pas supprimer votre propre compte' });
+    }
+    const verif = await verifierCible(ctx, appelant, id);
+    if (verif.error) return res.status(verif.status).json({ error: verif.error });
 
     // Supprimer le compte dans Supabase Auth (inclut souvent un CASCADE sur profiles)
-    const authRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${id}`, {
+    const authRes = await fetch(`${ctx.url}/auth/v1/admin/users/${id}`, {
         method:  'DELETE',
-        headers: {
-            'apikey':        SUPABASE_SERVICE_KEY,
-            'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        },
+        headers: headersService(ctx),
     });
-
     if (!authRes.ok) {
         const err = await authRes.json().catch(() => ({}));
         return res.status(400).json({ error: err.msg || err.message || 'Erreur suppression du compte' });
     }
 
     // Supprimer le profil au cas où il n'y aurait pas de CASCADE
-    await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}`, {
+    await fetch(`${ctx.url}/rest/v1/profiles?id=eq.${id}`, {
         method:  'DELETE',
-        headers: {
-            'apikey':        SUPABASE_SERVICE_KEY,
-            'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        },
+        headers: headersService(ctx),
     }).catch(() => {});
 
     return res.json({ ok: true });

@@ -1,81 +1,19 @@
+/* responsable.css — page Responsable : même ossature que la page admin
+   (admin.css : menu latéral sombre, contenu clair). Ici uniquement ce qui est
+   propre au responsable : liste des feuilles, vue numérique d'une journée,
+   validation des heures supp, récap heures, import du planning. */
+
 :root {
-    --card-bg: #1c2131;
     --resp-col-duree: 52px;
+    --resp-col-supp: 96px;
     --resp-col-ints: 54px;
     --resp-col-action: 66px;
-    --resp-unread-bg: rgba(245, 157, 17, 0.07);
-    --resp-unread-bg-hover: rgba(245, 157, 17, 0.12);
-    --resp-text-secondary: #a0aec0; /* var(--gray-blue) — plus clair que #718096 pour rester au-dessus du seuil WCAG AA sur fond sombre */
 }
 
-/* ── En-tête ─────────────────────────────────────────────────── */
+/* ── Menu latéral / barre du haut ────────────────────────────── */
 
-.resp-titre-bloc {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-}
-
-.resp-header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.resp-badge-lecture {
-    color: var(--resp-text-secondary);
-    font-size: 11px;
-    font-weight: 500;
-    font-style: italic;
-}
-
-.resp-user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #F59D11;
-    color: #1a1f2e;
-    font-weight: 700;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'IBM Plex Sans', sans-serif;
-    flex-shrink: 0;
-    cursor: pointer;
-    transition: filter 0.15s ease;
-}
-
-.resp-user-avatar:hover {
-    filter: brightness(1.1);
-}
-
-.resp-btn-logout {
-    background: transparent;
-    border: 1px solid #4a5568;
-    color: var(--resp-text-secondary);
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: 'IBM Plex Sans', sans-serif;
-    transition: border-color 0.15s, color 0.15s;
-}
-
-.resp-btn-logout:hover {
-    border-color: #FC8181;
-    color: #FC8181;
-}
-
-/* ── Barre d'outils : filtre par période + bouton sélection ────── */
-
-.resp-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-}
+.resp-user-avatar { cursor: pointer; }
+.resp-user-avatar:hover { filter: brightness(1.15); }
 
 .resp-filtre-periode {
     display: flex;
@@ -88,90 +26,52 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--resp-text-secondary);
+    color: var(--adm-text-soft);
 }
 
-#resp-select-periode {
-    background: var(--card-bg);
-    color: #e2e8f0;
-    border: 1px solid #4a5568;
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 13px;
-    font-family: 'IBM Plex Sans', sans-serif;
-    cursor: pointer;
-}
+#resp-select-periode { min-width: 160px; }
 
-.resp-btn-select {
-    background: transparent;
-    border: 1px solid #4a5568;
-    color: var(--resp-text-secondary);
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: 'IBM Plex Sans', sans-serif;
-    transition: border-color 0.15s, color 0.15s;
-}
-
-.resp-btn-select:hover {
-    border-color: #F59D11;
-    color: #F59D11;
-}
-
-/* ── Barre de sélection ─────────────────────────────────────── */
+/* ── Barre de sélection (export / impression) ───────────────── */
 
 .resp-selection-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    background: var(--card-bg);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+    background: var(--adm-indigo-50);
+    border: 1px solid var(--adm-indigo-100);
     border-radius: 10px;
     padding: 10px 14px;
     margin-bottom: 14px;
     font-size: 13px;
-    color: #e2e8f0;
+    color: var(--adm-text);
 }
 
-.resp-selection-actions {
-    display: flex;
-    gap: 8px;
-}
+.resp-selection-actions { display: flex; gap: 8px; }
 
 .resp-selection-actions button {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 13px;
     padding: 6px 14px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    border: 1px solid #4a5568;
-    background: transparent;
-    color: #e2e8f0;
+    border: 1px solid var(--adm-border);
+    background: var(--adm-card);
+    color: var(--adm-text);
     transition: border-color 0.15s, color 0.15s, opacity 0.15s;
 }
 
-.resp-selection-actions button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.resp-selection-actions button:not(:disabled):hover {
-    border-color: #F59D11;
-    color: #F59D11;
-}
-
-.resp-btn-annuler {
-    color: var(--resp-text-secondary) !important;
-}
+.resp-selection-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+.resp-selection-actions button:not(:disabled):hover { border-color: var(--adm-indigo); color: var(--adm-indigo); }
+.resp-btn-annuler { color: var(--adm-text-soft) !important; }
 
 /* ── États généraux ──────────────────────────────────────────── */
 
 .resp-loading,
 .resp-empty {
     text-align: center;
-    color: var(--resp-text-secondary);
+    color: var(--adm-muted);
     padding: 40px 16px;
     font-size: 14px;
 }
@@ -180,7 +80,7 @@
     height: 64px;
     border-radius: 12px;
     margin-bottom: 10px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 37%, rgba(255,255,255,0.03) 63%);
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
     background-size: 400% 100%;
     animation: resp-pulse 1.4s ease infinite;
 }
@@ -191,23 +91,20 @@
 }
 
 /* ── Groupes par entreprise ──────────────────────────────────── */
-/* Pas de couleur ici : l'orange est réservé au signal « non lu ». */
 
-.resp-entreprise-groupe {
-    margin-bottom: 20px;
-}
+.resp-entreprise-groupe { margin-bottom: 20px; }
 
 .resp-entreprise-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    color: var(--resp-text-secondary);
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--adm-text-soft);
+    background: var(--adm-slate-100);
     padding: 8px 12px;
     border-radius: 8px;
     margin-bottom: 10px;
@@ -216,23 +113,14 @@
 /* ── Cartes techniciens ──────────────────────────────────────── */
 
 .resp-tech-card {
-    background: var(--card-bg);
+    background: var(--adm-card);
     border-radius: 12px;
     margin-bottom: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-left: 2px solid transparent;
-    /* Pas d'overflow:hidden : nécessaire pour que les séparateurs de mois
-       restent "sticky" à l'intérieur de la fiche dépliée. Léger compromis
-       visuel sur les coins arrondis, négligeable en pratique. */
+    border: 1px solid var(--adm-border);
+    border-left: 3px solid transparent;
 }
 
-.resp-tech-card:not(.resp-tech-a-jour) {
-    border-left-color: #F59D11;
-}
-
-.resp-tech-a-jour {
-    opacity: 0.72;
-}
+.resp-tech-card:not(.resp-tech-a-jour) { border-left-color: var(--adm-amber); }
 
 .resp-tech-header {
     display: flex;
@@ -244,35 +132,29 @@
     user-select: none;
 }
 
-.resp-tech-header:hover {
-    background: rgba(255, 255, 255, 0.04);
-}
+.resp-tech-header:hover { background: var(--adm-hover); }
 
 .resp-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #2d3748;
-    color: #e2e8f0;
+    background: var(--adm-indigo-100);
+    color: var(--adm-indigo);
     font-weight: 700;
     font-size: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-family: 'IBM Plex Sans', sans-serif;
 }
 
-.resp-tech-info {
-    flex: 1;
-    min-width: 0;
-}
+.resp-tech-info { flex: 1; min-width: 0; }
 
 .resp-tech-nom {
     display: block;
     font-weight: 600;
     font-size: 15px;
-    color: #e2e8f0;
+    color: var(--adm-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -281,13 +163,13 @@
 .resp-tech-sous-titre {
     display: block;
     font-size: 12px;
-    color: var(--resp-text-secondary);
+    color: var(--adm-text-soft);
     margin-top: 1px;
 }
 
 .resp-badge-nonvue {
-    background: #F59D11;
-    color: #1a1f2e;
+    background: var(--adm-amber-100);
+    color: var(--adm-amber-800);
     font-size: 11px;
     font-weight: 700;
     padding: 3px 8px;
@@ -296,31 +178,26 @@
 }
 
 .resp-badge-a-jour {
-    color: var(--resp-text-secondary);
+    color: var(--adm-emerald);
     font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
 }
 
-.resp-chevron {
-    color: var(--resp-text-secondary);
-    font-size: 11px;
-    flex-shrink: 0;
-    transition: transform 0.2s;
-}
+.resp-chevron { color: var(--adm-muted); font-size: 11px; flex-shrink: 0; }
 
-/* ── Contenu déplié ──────────────────────────────────────────── */
+/* ── Contenu déplié : semaines et lignes ─────────────────────── */
 
 .resp-tech-body {
     padding: 0 16px 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--adm-border-soft);
 }
 
 .resp-semaine-header {
     position: sticky;
     top: 0;
     z-index: 2;
-    background: var(--card-bg);
+    background: var(--adm-card);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -328,23 +205,19 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--resp-text-secondary);
+    color: var(--adm-text-soft);
     padding: 10px 0 6px;
 }
-
-/* ── Cases à cocher (mode sélection) ──────────────────────────── */
 
 .resp-check {
     width: 15px;
     height: 15px;
-    accent-color: #F59D11;
+    accent-color: var(--adm-indigo);
     cursor: pointer;
     flex-shrink: 0;
 }
 
-/* ── Lignes de feuille ─────────────────────────────────────────
-   [case à cocher optionnelle] [pastille] [date] [durée] [interventions] [action] */
-
+/* [case optionnelle] [pastille] [date] [durée] [supp + badge] [interventions] [action] */
 .resp-feuille-row {
     display: flex;
     align-items: center;
@@ -354,19 +227,12 @@
     margin: 0 -6px;
     border-radius: 6px;
     cursor: pointer;
+    color: var(--adm-text-soft);
 }
 
-.resp-feuille-row:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.resp-feuille-row.nonvue {
-    background: var(--resp-unread-bg);
-}
-
-.resp-feuille-row.nonvue:hover {
-    background: var(--resp-unread-bg-hover);
-}
+.resp-feuille-row:hover { background: var(--adm-hover); }
+.resp-feuille-row.nonvue { background: var(--adm-amber-50); color: var(--adm-text); }
+.resp-feuille-row.nonvue:hover { background: var(--adm-amber-100); }
 
 .resp-pastille-ligne {
     flex: 0 0 7px;
@@ -375,71 +241,247 @@
     border-radius: 50%;
     background: transparent;
 }
+.resp-feuille-row.nonvue .resp-pastille-ligne { background: var(--adm-amber); }
 
-.resp-feuille-row.nonvue .resp-pastille-ligne {
-    background: #F59D11;
-}
-
-.resp-feuille-date {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 13px;
-    color: #e2e8f0;
-}
+.resp-feuille-date { flex: 1 1 auto; min-width: 0; font-size: 13px; }
 
 .resp-feuille-heures {
     flex: 0 0 var(--resp-col-duree);
     font-family: 'IBM Plex Mono', monospace;
     font-variant-numeric: tabular-nums;
     font-size: 12px;
-    color: #e2e8f0;
     text-align: right;
 }
 
-.resp-feuille-ints {
-    flex: 0 0 var(--resp-col-ints);
+.resp-feuille-supp {
+    flex: 0 0 var(--resp-col-supp);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
-    color: #e2e8f0;
-    text-align: right;
+    white-space: nowrap;
 }
+
+.resp-feuille-ints { flex: 0 0 var(--resp-col-ints); font-size: 12px; text-align: right; }
 
 .resp-feuille-action {
     flex: 0 0 var(--resp-col-action);
     font-size: 12px;
-    font-weight: 500;
-    text-align: right;
-    color: var(--resp-text-secondary);
-}
-
-.resp-feuille-row.nonvue .resp-feuille-action {
-    color: #F59D11;
     font-weight: 600;
+    text-align: right;
+    color: var(--adm-indigo);
 }
 
-.resp-feuille-row:not(.nonvue) .resp-feuille-date,
-.resp-feuille-row:not(.nonvue) .resp-feuille-heures,
-.resp-feuille-row:not(.nonvue) .resp-feuille-ints {
-    color: var(--resp-text-secondary);
+/* Badges de validation (ligne de feuille et récap heures) */
+.resp-badge-valide,
+.resp-badge-obsolete,
+.resp-badge-attente {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+.resp-badge-valide   { background: var(--adm-emerald-100); color: var(--adm-emerald-800); }
+.resp-badge-obsolete { background: var(--adm-amber-100);   color: var(--adm-amber-800); }
+.resp-badge-attente  { background: var(--adm-slate-100);   color: var(--adm-text-soft); }
+
+/* ── Modale « vue numérique » d'une feuille ─────────────────── */
+
+.modal-detail { max-width: 720px; max-height: 90vh; display: flex; flex-direction: column; }
+#modal-pdf { z-index: 1000; }   /* l'aperçu PDF s'ouvre par-dessus la vue détail */
+.detail-body { overflow-y: auto; gap: 18px; }
+
+.detail-hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    align-items: baseline;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--adm-border);
 }
 
-/* ── Import du planning clients (bouton + fenêtre en 3 étapes) ── */
+.detail-hero-date {
+    font-family: 'Big Shoulders', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--adm-text);
+    text-transform: capitalize;
+    flex-basis: 100%;
+}
 
-.resp-import-zone {
+.detail-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    color: var(--adm-text-soft);
+}
+.detail-meta strong {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--adm-text);
+    font-weight: 500;
+}
+
+.detail-tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: var(--adm-slate-100);
+    color: var(--adm-text-soft);
+}
+.detail-tag.conge { background: #fee2e2; color: #991b1b; }
+
+.detail-section-titre {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--adm-muted);
+    margin: 0 0 10px;
+}
+
+/* La frise vient de resume_timeline.js, pensée pour le résumé technicien :
+   on neutralise sa carte et ses couleurs de fond sombre. */
+.detail-frise .card { background: transparent; border: none; padding: 0; box-shadow: none; }
+.detail-frise .resume-section-title { display: none; }
+.detail-frise .heures-jour-track { background: var(--adm-slate-100); }
+.detail-frise .heures-jour-bar   { background: var(--adm-border); }
+.detail-frise .heures-axe-tick   { color: var(--adm-muted); }
+.detail-frise .resume-frise-aide { color: var(--adm-muted); }
+
+.detail-interv {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--adm-border-soft);
+    font-size: 13px;
+}
+.detail-interv:last-child { border-bottom: none; }
+.detail-interv-client { font-weight: 600; color: var(--adm-text); }
+.detail-interv-meta { font-size: 12px; color: var(--adm-text-soft); margin-top: 2px; }
+.detail-interv-heures {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--adm-text);
+    white-space: nowrap;
+}
+.detail-interv.pause  { color: var(--adm-amber-800); background: var(--adm-amber-50); padding: 8px 10px; border-radius: 8px; border: none; margin: 4px 0; }
+.detail-interv.rappel { color: #5b21b6; background: #f5f3ff; padding: 8px 10px; border-radius: 8px; border: none; margin: 4px 0; }
+
+.detail-validation {
+    background: var(--adm-indigo-50);
+    border: 1px solid var(--adm-indigo-100);
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+.detail-validation .form-group { margin-bottom: 10px; }
+.detail-validation-ligne { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.detail-validation-ligne .form-group { flex: 1 1 140px; margin-bottom: 0; }
+.detail-validation-info { font-size: 12px; color: var(--adm-text-soft); margin: 10px 0 0; }
+.detail-validation-alerte {
+    font-size: 12px;
+    color: var(--adm-amber-800);
+    background: var(--adm-amber-100);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 0 0 10px;
+}
+.detail-actions { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+/* ── Onglet Heures supp ──────────────────────────────────────── */
+
+.heures-tech-card {
+    background: var(--adm-card);
+    border: 1px solid var(--adm-border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.heures-tech-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
 }
+.heures-tech-header:hover { background: var(--adm-hover); }
 
-.resp-import-info {
+.heures-tech-totaux { display: flex; gap: 18px; margin-left: auto; text-align: right; }
+.heures-tech-total { display: flex; flex-direction: column; gap: 1px; }
+.heures-tech-total span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--adm-muted); }
+.heures-tech-total strong {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--adm-text);
+}
+.heures-tech-total.valide strong { color: var(--adm-emerald); }
+
+.heures-tech-body { padding: 0 16px 12px; border-top: 1px solid var(--adm-border-soft); }
+
+.heures-jour-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+.heures-jour-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--adm-muted);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--adm-border);
+}
+.heures-jour-table td { padding: 7px 8px; border-bottom: 1px solid var(--adm-border-soft); color: var(--adm-text-soft); vertical-align: middle; }
+.heures-jour-table td.num { font-family: 'IBM Plex Mono', monospace; text-align: right; white-space: nowrap; }
+.heures-jour-table td.num.valide { color: var(--adm-emerald); font-weight: 600; }
+.heures-jour-table td.commentaire { font-size: 12px; font-style: italic; }
+.heures-jour-table tfoot td { font-weight: 700; color: var(--adm-text); border-top: 2px solid var(--adm-border); }
+.btn-heures-ouvrir {
+    background: transparent;
+    border: 1px solid var(--adm-border);
+    border-radius: 6px;
+    padding: 4px 10px;
     font-size: 12px;
-    color: var(--resp-text-secondary);
+    color: var(--adm-indigo);
+    cursor: pointer;
+    font-family: inherit;
 }
+.btn-heures-ouvrir:hover { background: var(--adm-indigo-50); }
 
-.modal-import {
-    max-width: 720px;
-    max-height: 88vh;
+/* ── Onglet Techniciens ──────────────────────────────────────── */
+
+.btn-tech-password {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    padding: 0;
+    margin-left: 8px;
+    border-radius: 8px;
+    background: var(--adm-card);
+    border: 1px solid var(--adm-border);
+    color: var(--adm-text-soft);
+    cursor: pointer;
 }
+.btn-tech-password:hover { background: var(--adm-slate-100); }
+.resp-modal-note { font-size: 12px; color: var(--adm-text-soft); margin: 0; }
+
+/* ── Onglet Import du planning ───────────────────────────────── */
+
+.resp-import-carte { max-width: 640px; }
+.resp-import-titre { margin: 0 0 8px; font-size: 16px; font-weight: 700; color: var(--adm-text); }
+.resp-import-zone { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.resp-import-info { font-size: 12px; color: var(--adm-text-soft); }
+
+.modal-import { max-width: 720px; max-height: 88vh; }
 
 .clients-import-footer {
     margin-top: 0;
@@ -459,12 +501,7 @@
 
 .imp-muted { color: var(--muted); font-weight: 400; }
 
-.imp-aide {
-    font-size: 12px;
-    color: var(--gray-mid);
-    line-height: 1.5;
-    margin: 0 0 12px;
-}
+.imp-aide { font-size: 12px; color: var(--gray-mid); line-height: 1.5; margin: 0 0 12px; }
 
 .imp-attention {
     font-size: 12px;
@@ -475,12 +512,7 @@
     margin-top: 12px;
 }
 
-.imp-ok {
-    font-size: 14px;
-    color: #2f855a;
-    padding: 24px 0;
-    text-align: center;
-}
+.imp-ok { font-size: 14px; color: #2f855a; padding: 24px 0; text-align: center; }
 
 .imp-company {
     display: flex;
@@ -504,11 +536,7 @@
 
 .imp-company select { width: auto; }
 
-.imp-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
+.imp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 .imp-table th {
     text-align: left;
@@ -520,51 +548,28 @@
     border-bottom: 1px solid var(--border);
 }
 
-.imp-table td {
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-}
+.imp-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 
 .imp-secteur { color: var(--navy); font-weight: 600; }
 .imp-nb { text-align: right; color: var(--gray-mid); white-space: nowrap; }
 
-.imp-section-titre {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--navy);
-    margin: 16px 0 6px;
-}
+.imp-section-titre { font-size: 14px; font-weight: 700; color: var(--navy); margin: 16px 0 6px; }
 
-.imp-anomalie {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-}
-
+.imp-anomalie { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
 .imp-anomalie-nom { font-size: 14px; font-weight: 600; color: var(--navy); }
 .imp-anomalie-meta { font-size: 12px; color: var(--gray-mid); margin: 4px 0 8px; line-height: 1.5; }
 
-.imp-choix {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    font-size: 13px;
-    color: var(--gray-mid);
-}
-
+.imp-choix { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--gray-mid); }
 .imp-choix label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
-.imp-liste {
-    margin: 0 0 8px 18px;
-    padding: 0;
-    font-size: 13px;
-    color: var(--gray-mid);
-    line-height: 1.7;
-}
+.imp-liste { margin: 0 0 8px 18px; padding: 0; font-size: 13px; color: var(--gray-mid); line-height: 1.7; }
+
+/* ── Téléphone ───────────────────────────────────────────────── */
 
 @media (max-width: 620px) {
+    .resp-feuille-ints { display: none; }
+    .resp-feuille-supp { flex-basis: auto; }
+    .heures-tech-totaux { gap: 12px; }
     .imp-table thead { display: none; }
     .imp-table tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--border); }
     .imp-table td { display: block; border: none; padding: 2px 0; }

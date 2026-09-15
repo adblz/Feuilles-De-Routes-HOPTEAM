@@ -40,7 +40,7 @@ Application web sans framework, vanilla HTML / CSS / JS avec modules ES natifs. 
 
 **Services externes :**
 - **Supabase** : authentification + base de données + stockage PDF. URL et clé anon dans `frontend/js/modules/config.js`
-- **Backend Express** (Render) : `https://feuilles-de-routes-hopteam.onrender.com` — sert uniquement à créer des comptes utilisateurs via `/admin/create-user` (utilise la clé `service_role` Supabase). La fonction d'envoi d'email a été retirée (pas de service d'email configuré).
+- **Backend Express** (Render) : `https://feuilles-de-routes-hopteam.onrender.com` — gestion des comptes avec la clé `service_role` Supabase : `/admin/create-user`, `/admin/delete-user/:id`, `/admin/update-user/:id` (nom, contrat), `/admin/reset-password/:id`. Accessible à l'admin, et au **responsable uniquement pour les techniciens de sa propre entreprise** (règles dans `backend/controllers/adminGuard.js` : rôle forcé à technicien, entreprise forcée à la sienne). La fonction d'envoi d'email a été retirée (pas de service d'email configuré).
 - **html2pdf.js** : chargé depuis CDN dans `index.html`, utilisé par `pdf.js`
 
 **Tables Supabase :**
@@ -50,6 +50,7 @@ Application web sans framework, vanilla HTML / CSS / JS avec modules ES natifs. 
 - `clients_planning` : clients à visiter (import Excel « sanitation » par le responsable), une ligne par PDV affecté à un technicien (`user_id`) ; `fait_le` null = à faire
 - `clients_secteurs` : correspondance « Secteur technicien » (texte Excel) → compte technicien, mémorisée par entreprise
 - `clients_imports` : journal des imports du planning
+- `validations_heures_supp` : heures supp validées par le responsable, une ligne par (`user_id`, `date`) — pas par feuille, car une feuille ré-enregistrée est supprimée puis recréée (nouvel id)
 
 ## Structure des fichiers JS (frontend)
 
@@ -58,7 +59,8 @@ frontend/js/
 ├── main.js              ← point d'entrée technicien (events DOM, init app)
 ├── login.js             ← point d'entrée login
 ├── api/
-│   └── admin_api.js     ← appels backend (création de comptes) + requêtes admin Supabase
+│   ├── admin_api.js     ← appels backend (création de comptes) + requêtes admin Supabase
+│   └── responsable_api.js ← appels backend de la page responsable (techniciens : créer, modifier, mot de passe)
 ├── modules/
 │   ├── config.js        ← URL et clé Supabase
 │   ├── auth.js          ← session localStorage, connexion/déconnexion Supabase Auth
@@ -82,8 +84,22 @@ frontend/js/
 │   ├── ui_heures.js     ← modal récap heures supp
 │   ├── autocomplete.js  ← mémorisation et suggestion des champs client/ville
 │   ├── toolbar.js       ← barre d'outils bas de page
-│   ├── responsable.js   ← logique page responsable
-│   ├── responsable_render.js ← rendu HTML page responsable
+│   ├── responsable.js   ← point d'entrée page responsable (session, profil, 4 onglets)
+│   ├── responsable_nav.js ← onglets de la barre latérale (feuilles / heures / techs / import)
+│   ├── responsable_password.js ← modale « mon mot de passe » du responsable
+│   ├── responsable_liste.js ← chargement des feuilles + rendu de la liste (onglet Feuilles)
+│   ├── responsable_render.js ← cartes techniciens (liste des feuilles)
+│   ├── responsable_feuilles.js ← lignes de feuilles par semaine + badge de validation
+│   ├── responsable_evenements.js ← événements de la liste (période, sélection, ouverture)
+│   ├── responsable_detail.js ← vue numérique d'une feuille (modale) + validation heures supp
+│   ├── responsable_detail_render.js ← HTML de la vue numérique (en-tête, frise, interventions)
+│   ├── responsable_validations.js ← cache mémoire des validations de la période
+│   ├── responsable_heures.js ← onglet Heures supp (récap déclaré / validé)
+│   ├── responsable_heures_render.js ← HTML de l'onglet Heures supp
+│   ├── responsable_techs.js ← onglet Techniciens (créer / modifier / mot de passe / supprimer)
+│   ├── responsable_techs_ui.js ← modales de l'onglet Techniciens
+│   ├── responsable_techs_table.js ← tableau des techniciens
+│   ├── db_validations.js ← requêtes Supabase de validations_heures_supp
 │   ├── admin_users.js   ← gestion des utilisateurs (admin)
 │   ├── admin_users_ui.js ← rendu HTML gestion utilisateurs
 │   ├── resume.js        ← module résumé/récap
@@ -117,7 +133,7 @@ frontend/js/
 ## Pages et optimisation
 
 - `index.html` → optimisé téléphone (techniciens)
-- `pages/responsable.html` → optimisé ordinateur (lecture seule)
+- `pages/responsable.html` → optimisé ordinateur, même ossature que la page admin (`admin.css` : barre latérale + onglets). Les styles de frise chronologique sont dans `timeline.css`, partagé avec `index.html`.
 - `pages/login.html` → optimisé téléphone et ordinateur
 
 ## Réorganisation de fichiers

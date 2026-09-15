@@ -1,5 +1,5 @@
 // Câblage des événements DOM de la liste : filtre par période, mode
-// sélection (cases à cocher), ouverture des PDF.
+// sélection (cases à cocher), ouverture d'une feuille.
 
 import { nomMois } from './periodes_paie.js';
 import * as liste from './responsable_liste.js';
@@ -8,15 +8,14 @@ import { enregistrerSelection, imprimerSelection } from './responsable_export.js
 
 export function peuplerSelectPeriode() {
     const periodes = liste.periodes();
-    const wrapper  = document.getElementById('resp-filtre-periode');
     const select   = document.getElementById('resp-select-periode');
-    if (!periodes.length) { wrapper.classList.add('hidden'); return; }
-    wrapper.classList.remove('hidden');
+    if (!periodes.length) return false;
     select.innerHTML = periodes.map(p => {
         const nom = nomMois(p);
         return `<option value="${p.id}">${nom.charAt(0).toUpperCase()}${nom.slice(1)} ${p.annee}</option>`;
     }).join('');
     select.value = liste.periodeChoisie()?.id ?? '';
+    return true;
 }
 
 function actualiserSemaineDepuisLigne(row) {
@@ -27,10 +26,12 @@ function actualiserSemaineDepuisLigne(row) {
     cbSemaine.indeterminate = statut === 'partielle';
 }
 
-export function cablerFiltreEtSelection() {
-    document.getElementById('resp-select-periode')?.addEventListener('change', e => {
+// onPeriodeChange() : appelé après changement de période (rendu des onglets).
+export function cablerFiltreEtSelection({ onPeriodeChange }) {
+    document.getElementById('resp-select-periode')?.addEventListener('change', async e => {
         liste.choisirPeriode(e.target.value);
-        liste.rendreListe();
+        await liste.chargerValidationsPeriode();
+        onPeriodeChange();
     });
 
     document.getElementById('btn-resp-selection')?.addEventListener('click', () => {
@@ -53,7 +54,8 @@ export function cablerFiltreEtSelection() {
     });
 }
 
-export function cablerListe(container) {
+// onOuvrir(id) : ouverture de la vue numérique d'une feuille.
+export function cablerListe(container, { onOuvrir }) {
     container.addEventListener('change', e => {
         if (e.target.matches('.resp-check-feuille')) {
             selection.toggleFeuille(e.target.dataset.id);
@@ -79,7 +81,7 @@ export function cablerListe(container) {
             return;
         }
         const row = e.target.closest('.resp-feuille-row');
-        if (row) liste.ouvrirPdf(row.dataset.pdfId);
+        if (row) onOuvrir(row.dataset.pdfId);
     });
 
     container.addEventListener('keydown', e => {
@@ -88,6 +90,6 @@ export function cablerListe(container) {
         const row = e.target.closest('.resp-feuille-row');
         if (!row) return;
         e.preventDefault();
-        liste.ouvrirPdf(row.dataset.pdfId);
+        onOuvrir(row.dataset.pdfId);
     });
 }

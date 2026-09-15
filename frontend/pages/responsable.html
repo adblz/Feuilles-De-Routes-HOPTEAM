@@ -3,98 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#161B26">
-    <title>Vue responsable — Feuilles de route</title>
+    <meta name="theme-color" content="#0f172a">
+    <title>Responsable — Feuilles de route</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/timeline.css">
     <link rel="stylesheet" href="../assets/css/responsable.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body>
-
-<header>
-    <div class="header-left">
-        <img id="header-logo" class="header-logo" alt="Logo">
-        <img class="header-logo-reduit" src="/assets/images/logo-reduit.png" alt="Logo">
-        <div class="resp-titre-bloc">
-            <h1>FEUILLES DE ROUTES</h1>
-            <span class="resp-badge-lecture">Lecture seule</span>
-        </div>
-    </div>
-    <div class="resp-header-right">
-        <div class="resp-user-avatar" id="resp-user-avatar">??</div>
-        <button class="resp-btn-logout" id="btn-resp-logout">Déconnexion</button>
-    </div>
-</header>
+<body class="admin-body">
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<div class="container">
+<div class="admin-layout">
 
-    <div class="resp-toolbar">
-        <div class="resp-filtre-periode hidden" id="resp-filtre-periode">
-            <label for="resp-select-periode" class="resp-filtre-label">Période</label>
-            <select id="resp-select-periode"></select>
+    <!-- MENU LATÉRAL -->
+    <aside class="admin-sidebar">
+        <div>
+            <div class="sidebar-logo">
+                <span class="sidebar-logo-mark">R</span>
+                <span class="sidebar-logo-text">Responsable</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button type="button" id="nav-feuilles" class="nav-btn actif">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span class="nav-btn-label">Feuilles de route</span>
+                </button>
+                <button type="button" id="nav-heures" class="nav-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span class="nav-btn-label">Heures supp</span>
+                </button>
+                <button type="button" id="nav-techs" class="nav-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="nav-btn-label">Techniciens</span>
+                </button>
+                <button type="button" id="nav-import" class="nav-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    <span class="nav-btn-label">Import planning</span>
+                </button>
+            </nav>
         </div>
-        <div class="resp-import-zone">
-            <button type="button" class="resp-btn-select" id="btn-clients-import">Importer le planning</button>
-            <span class="resp-import-info" id="clients-import-info"></span>
-            <input type="file" id="clients-import-file" accept=".xlsx,.xls" hidden>
+
+        <div class="sidebar-footer">
+            <button type="button" id="btn-refresh-app" class="sidebar-refresh">↻ Mettre à jour</button>
+            <div class="sidebar-profil">
+                <div class="sidebar-avatar resp-user-avatar" id="resp-user-avatar" title="Changer mon mot de passe">??</div>
+                <div class="sidebar-profil-info">
+                    <span id="resp-user-nom" class="sidebar-profil-nom"></span>
+                    <button type="button" id="btn-resp-logout" class="sidebar-logout">Déconnexion</button>
+                </div>
+            </div>
         </div>
-        <button type="button" class="resp-btn-select" id="btn-resp-selection">Sélectionner</button>
-    </div>
+    </aside>
 
-    <div class="resp-selection-bar hidden" id="resp-selection-bar">
-        <span id="resp-selection-count">Aucune feuille sélectionnée</span>
-        <div class="resp-selection-actions">
-            <button type="button" id="btn-resp-enregistrer" disabled>Enregistrer</button>
-            <button type="button" id="btn-resp-imprimer" disabled>Imprimer</button>
-            <button type="button" class="resp-btn-annuler" id="btn-resp-annuler-selection">Annuler</button>
+    <!-- CONTENU PRINCIPAL -->
+    <main class="admin-main">
+
+        <header class="admin-topbar">
+            <div>
+                <h1 id="page-title">Feuilles de route</h1>
+                <p id="page-desc" class="admin-topbar-desc">Consultez les journées de vos techniciens et validez leurs heures supp.</p>
+            </div>
+            <div class="admin-topbar-actions">
+                <div class="resp-filtre-periode hidden" id="resp-filtre-periode">
+                    <label for="resp-select-periode" class="resp-filtre-label">Période</label>
+                    <select id="resp-select-periode" class="admin-filtre-select"></select>
+                </div>
+                <button type="button" class="btn-admin-annuler" id="btn-resp-selection">Sélectionner</button>
+                <button type="button" class="btn-admin-nouveau hidden" id="btn-nouveau-tech">+ Nouveau technicien</button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+
+            <!-- ONGLET : Feuilles de route -->
+            <section id="view-feuilles" class="admin-view">
+                <div class="resp-selection-bar hidden" id="resp-selection-bar">
+                    <span id="resp-selection-count">Aucune feuille sélectionnée</span>
+                    <div class="resp-selection-actions">
+                        <button type="button" id="btn-resp-enregistrer" disabled>Enregistrer</button>
+                        <button type="button" id="btn-resp-imprimer" disabled>Imprimer</button>
+                        <button type="button" class="resp-btn-annuler" id="btn-resp-annuler-selection">Annuler</button>
+                    </div>
+                </div>
+                <div id="resp-list"></div>
+            </section>
+
+            <!-- ONGLET : Heures supp -->
+            <section id="view-heures" class="admin-view hidden">
+                <p class="admin-section-desc">Pour chaque technicien : heures supp déclarées sur la période, et heures que vous avez validées jour par jour depuis l'onglet Feuilles de route.</p>
+                <div id="resp-heures-list"></div>
+            </section>
+
+            <!-- ONGLET : Techniciens -->
+            <section id="view-techs" class="admin-view hidden">
+                <div class="admin-filtres">
+                    <div class="admin-recherche-wrap">
+                        <svg class="admin-recherche-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="search" id="resp-techs-recherche" class="admin-recherche" placeholder="Rechercher par nom ou email…">
+                    </div>
+                </div>
+                <div class="admin-card-table">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Technicien</th>
+                                <th>Contrat</th>
+                                <th class="col-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resp-techs-tbody">
+                            <tr><td colspan="3" class="admin-table-vide">Chargement…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ONGLET : Import planning -->
+            <section id="view-import" class="admin-view hidden">
+                <div class="admin-card-simple resp-import-carte">
+                    <h2 class="resp-import-titre">Planning « sanitation »</h2>
+                    <p class="admin-section-desc">Importez le fichier Excel des clients à visiter. Chaque ligne est affectée à un technicien selon son secteur ; les clients déjà faits ne sont jamais réimportés en double.</p>
+                    <div class="resp-import-zone">
+                        <button type="button" class="btn-admin-nouveau" id="btn-clients-import">Importer le planning</button>
+                        <span class="resp-import-info" id="clients-import-info"></span>
+                        <input type="file" id="clients-import-file" accept=".xlsx,.xls" hidden>
+                    </div>
+                </div>
+            </section>
+
         </div>
-    </div>
-
-    <div id="resp-list"></div>
-
+    </main>
 </div>
 
+<!-- Modal : détail d'une feuille (vue numérique + validation) -->
+<div class="modal-overlay" id="modal-detail">
+    <div class="modal admin-modal modal-detail">
+        <div class="modal-histo-header">
+            <h3 id="detail-titre">Feuille de route</h3>
+            <button class="btn-histo-close" id="btn-close-detail" aria-label="Fermer">&#10005;</button>
+        </div>
+        <div class="admin-modal-body detail-body" id="detail-body"></div>
+    </div>
+</div>
+
+<!-- Modal : aperçu PDF -->
 <div class="modal-overlay" id="modal-pdf">
     <div class="modal modal-pdf-box">
         <div class="modal-histo-header">
-            <h3>Aper&#231;u du PDF</h3>
+            <h3>Aperçu du PDF</h3>
             <button class="btn-histo-close" id="btn-close-pdf">&#10005;</button>
         </div>
         <div class="pdf-mobile-placeholder">
-            <p>L'aper&#231;u PDF n'est pas disponible sur mobile.</p>
+            <p>L'aperçu PDF n'est pas disponible sur mobile.</p>
         </div>
-        <iframe id="pdf-viewer-frame" class="pdf-viewer-frame" title="Aper&#231;u du PDF"></iframe>
+        <iframe id="pdf-viewer-frame" class="pdf-viewer-frame" title="Aperçu PDF"></iframe>
         <div class="pdf-viewer-foot">
-            <a id="pdf-viewer-open" href="#" target="_blank" rel="noopener" class="pdf-viewer-open">Ouvrir en plein &#233;cran</a>
+            <a id="pdf-viewer-open" href="#" target="_blank" rel="noopener" class="pdf-viewer-open">Ouvrir en plein écran</a>
         </div>
     </div>
 </div>
 
+<!-- Modal : changer mon mot de passe -->
 <div class="modal-overlay" id="modal-password">
-    <div class="modal">
+    <div class="modal admin-modal">
         <div class="modal-histo-header">
             <h3>Changer mon mot de passe</h3>
             <button class="btn-histo-close" id="btn-close-password">&#10005;</button>
         </div>
-        <div class="form-group">
-            <div class="input-password-wrap">
-                <input type="password" id="resp-new-password" placeholder="Nouveau mot de passe (6 car. min.)">
-                <button type="button" class="btn-eye" id="toggle-resp-new-password"></button>
+        <div class="admin-modal-body">
+            <div class="form-group">
+                <label for="resp-new-password">Nouveau mot de passe</label>
+                <div class="input-password-wrap">
+                    <input type="password" id="resp-new-password" autocomplete="new-password" placeholder="Au moins 6 caractères">
+                    <button type="button" class="btn-eye" id="toggle-resp-new-password" aria-label="Afficher le mot de passe"></button>
+                </div>
             </div>
-            <div class="input-password-wrap">
-                <input type="password" id="resp-confirm-password" placeholder="Confirmer le mot de passe">
-                <button type="button" class="btn-eye" id="toggle-resp-confirm-password"></button>
+            <div class="form-group">
+                <label for="resp-confirm-password">Confirmer</label>
+                <div class="input-password-wrap">
+                    <input type="password" id="resp-confirm-password" autocomplete="new-password" placeholder="Retapez le mot de passe">
+                    <button type="button" class="btn-eye" id="toggle-resp-confirm-password" aria-label="Afficher le mot de passe"></button>
+                </div>
             </div>
-            <button type="button" class="btn-settings-action btn-change-password" id="btn-resp-change-password">Changer le mot de passe</button>
+        </div>
+        <div class="admin-modal-footer">
+            <button type="button" class="btn-admin-valider" id="btn-resp-change-password">Changer le mot de passe</button>
         </div>
     </div>
 </div>
 
+<!-- Modal : créer un technicien -->
+<div class="modal-overlay" id="modal-tech-creer">
+    <div class="modal admin-modal">
+        <div class="modal-histo-header">
+            <h3>Nouveau technicien</h3>
+            <button class="btn-histo-close" id="btn-close-tech-creer">&#10005;</button>
+        </div>
+        <div class="admin-modal-body">
+            <div class="form-group">
+                <label>Email <span class="req">*</span></label>
+                <input type="email" id="tech-creer-email" placeholder="prenom.nom@exemple.fr">
+            </div>
+            <div class="form-group">
+                <label>Nom complet <span class="req">*</span></label>
+                <input type="text" id="tech-creer-nom" placeholder="Prénom Nom">
+            </div>
+            <div class="form-group">
+                <label>Type de contrat</label>
+                <select id="tech-creer-contrat">
+                    <option value="39">39h</option>
+                    <option value="37">37h</option>
+                    <option value="35">35h</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mot de passe provisoire <span class="req">*</span></label>
+                <input type="text" id="tech-creer-password" placeholder="À communiquer au technicien">
+            </div>
+            <p class="resp-modal-note">Le compte sera créé dans votre entreprise, avec le rôle technicien.</p>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin-annuler" id="btn-annuler-tech-creer">Annuler</button>
+            <button class="btn-admin-valider" id="btn-submit-tech-creer">Créer le compte</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal : modifier un technicien -->
+<div class="modal-overlay" id="modal-tech-modifier">
+    <div class="modal admin-modal">
+        <div class="modal-histo-header">
+            <h3>Modifier le technicien</h3>
+            <button class="btn-histo-close" id="btn-close-tech-modifier">&#10005;</button>
+        </div>
+        <div class="admin-modal-body">
+            <input type="hidden" id="tech-modifier-id">
+            <div class="form-group">
+                <label>Email (non modifiable)</label>
+                <p class="admin-email-display" id="tech-modifier-email">—</p>
+            </div>
+            <div class="form-group">
+                <label>Nom complet</label>
+                <input type="text" id="tech-modifier-nom">
+            </div>
+            <div class="form-group">
+                <label>Type de contrat</label>
+                <select id="tech-modifier-contrat">
+                    <option value="39">39h</option>
+                    <option value="37">37h</option>
+                    <option value="35">35h</option>
+                    <option value="">Aucun</option>
+                </select>
+            </div>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin-annuler" id="btn-annuler-tech-modifier">Annuler</button>
+            <button class="btn-admin-valider" id="btn-submit-tech-modifier">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal : réinitialiser le mot de passe d'un technicien -->
+<div class="modal-overlay" id="modal-tech-password">
+    <div class="modal admin-modal">
+        <div class="modal-histo-header">
+            <h3>Réinitialiser le mot de passe</h3>
+            <button class="btn-histo-close" id="btn-close-tech-password">&#10005;</button>
+        </div>
+        <div class="admin-modal-body">
+            <input type="hidden" id="tech-password-id">
+            <div class="form-group">
+                <label>Technicien</label>
+                <p class="admin-email-display" id="tech-password-nom">—</p>
+            </div>
+            <div class="form-group">
+                <label>Nouveau mot de passe <span class="req">*</span></label>
+                <input type="text" id="tech-password-new" placeholder="Au moins 6 caractères">
+            </div>
+            <p class="resp-modal-note">Communiquez ce mot de passe au technicien : il pourra ensuite le changer lui-même depuis ses paramètres.</p>
+        </div>
+        <div class="admin-modal-footer">
+            <button class="btn-admin-annuler" id="btn-annuler-tech-password">Annuler</button>
+            <button class="btn-admin-valider" id="btn-submit-tech-password">Réinitialiser</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal : import du planning clients (3 étapes) -->
 <div class="modal-overlay" id="modal-clients-import">
     <div class="modal modal-histo modal-import">
         <div class="modal-histo-header">

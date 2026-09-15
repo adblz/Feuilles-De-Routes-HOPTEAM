@@ -9,6 +9,7 @@ import { grouperParTech, renderTechs, renderSquelette } from './responsable_rend
 import { appliquerIndetermines } from './responsable_feuilles.js';
 import { getVues, marquerVue } from './responsable_vues.js';
 import * as selection from './responsable_selection.js';
+import * as validations from './responsable_validations.js';
 
 let _feuilles = [];
 let _profilsTechs = [];
@@ -17,6 +18,7 @@ let _periodeChoisie = null;
 
 export function periodes() { return _periodes; }
 export function periodeChoisie() { return _periodeChoisie; }
+export function profilsTechs() { return _profilsTechs; }
 
 export function choisirPeriode(id) {
     _periodeChoisie = _periodes.find(p => String(p.id) === String(id)) || null;
@@ -24,7 +26,7 @@ export function choisirPeriode(id) {
 
 // Période active pour le filtrage/affichage : la période choisie, ou à
 // défaut le mois calendaire en cours (comportement de repli).
-function periodeEffective() {
+export function periodeEffective() {
     if (_periodeChoisie) return _periodeChoisie;
     const d = new Date();
     const premier = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -50,6 +52,22 @@ export async function chargerDonnees() {
         _periodes = []; // le filtre par période reste optionnel : repli sur le mois calendaire
     }
     _periodeChoisie = trouverPeriodeParMoisCourant(_periodes);
+    await chargerValidationsPeriode();
+}
+
+// Validations de la période affichée (badges « validé » et onglet Heures supp).
+// Une erreur ici ne doit pas empêcher d'afficher les feuilles.
+export async function chargerValidationsPeriode() {
+    try {
+        await validations.chargerValidationsPeriode(periodeEffective());
+    } catch (e) {
+        console.warn('Validations indisponibles :', e);
+    }
+}
+
+// Recharge feuilles + techniciens (après création/suppression d'un compte).
+export async function rechargerFeuilles() {
+    [_feuilles, _profilsTechs] = await Promise.all([chargerToutesLesFeuilles(), chargerProfilsTechniciens()]);
 }
 
 // Conserve les fiches techniciens dépliées et la position de scroll à travers un re-rendu.
@@ -83,18 +101,21 @@ export function majBarreSelection() {
 export function rendreListe() {
     const container = document.getElementById('resp-list');
     const ouverts = capturerOuverts(container);
-    const scrollY = window.scrollY;
+    const scrollEl = document.querySelector('.admin-content');
+    const scrollY = scrollEl ? scrollEl.scrollTop : 0;
     const ctx = {
         vues: getVues(),
         selectionMode: selection.estActif(),
         estSelectionnee: selection.estSelectionnee,
         statutSemaine: selection.statutSemaine,
+        validationPour: validations.validationPour,
+        estObsolete: validations.estObsolete,
     };
     container.innerHTML = renderTechs(grouperParTech(feuillesFiltrees(), _profilsTechs), periodeEffective(), ctx);
     appliquerIndetermines(container);
     restaurerOuverts(container, ouverts);
     majBarreSelection();
-    window.scrollTo(0, scrollY);
+    if (scrollEl) scrollEl.scrollTop = scrollY;
 }
 
 export function afficherChargement() {

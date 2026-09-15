@@ -578,3 +578,66 @@ create index if not exists interventions_feuille_idx
 --   drop index if exists public.feuilles_de_route_user_date_idx;
 --   drop index if exists public.interventions_feuille_idx;
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-09-16 — Validation des heures supp par le responsable
+--
+-- Le responsable peut désormais valider, jour par jour, un nombre d'heures
+-- supp pour chaque feuille de route (valeur qui peut différer de ce que le
+-- technicien a déclaré). L'onglet « Heures supp » de la page responsable
+-- reprend ensuite ces validations pour un récap de fin de mois.
+--
+-- Pourquoi une table séparée ? Quand un technicien ré-enregistre sa feuille,
+-- la ligne feuilles_de_route est supprimée puis recréée (nouvel id). Une
+-- validation posée sur la feuille serait donc perdue. On la rattache au couple
+-- (technicien, date), qui lui ne change jamais. La page compare ensuite la
+-- date de validation à created_at de la feuille pour signaler « modifiée
+-- depuis la validation ».
+--
+-- Sécurité : la fonction same_company_as_caller (plus haut) vérifie déjà que
+-- l'appelant est un responsable de la même entreprise que le technicien.
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter tout le bloc ci-dessous.
+-- ─────────────────────────────────────────────────────────────────────────
+
+create table if not exists public.validations_heures_supp (
+  id                  uuid primary key default gen_random_uuid(),
+  user_id             uuid not null references auth.users(id) on delete cascade,
+  date                date not null,
+  company             text,
+  heures_validees_min integer not null default 0,
+  commentaire         text,
+  validee_par         uuid,
+  validee_le          timestamptz not null default now(),
+  unique (user_id, date)
+);
+
+alter table public.validations_heures_supp enable row level security;
+
+-- Responsable : lire / créer / modifier / supprimer pour les techniciens de
+-- son entreprise (ou de toutes si voit_toutes_entreprises).
+create policy "responsable_gere_validations"
+on public.validations_heures_supp
+for all
+to authenticated
+using ( public.same_company_as_caller(user_id) )
+with check ( public.same_company_as_caller(user_id) );
+
+-- Technicien : lecture seule de ses propres validations.
+create policy "technicien_lit_ses_validations"
+on public.validations_heures_supp
+for select
+to authenticated
+using ( user_id = auth.uid() );
+
+-- Admin : tout.
+create policy "admin_gere_validations"
+on public.validations_heures_supp
+for all
+to authenticated
+using ( public.est_admin() )
+with check ( public.est_admin() );
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   drop table if exists public.validations_heures_supp;
+-- ─────────────────────────────────────────────────────────────────────────

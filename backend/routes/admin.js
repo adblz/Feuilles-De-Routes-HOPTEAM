@@ -1,6 +1,7 @@
 const express   = require('express');
 const rateLimit = require('express-rate-limit');
 const { handleCreateUser, handleDeleteUser } = require('../controllers/adminController');
+const { handleUpdateUser, handleResetPassword } = require('../controllers/adminUsersController');
 
 const router = express.Router();
 
@@ -14,5 +15,7 @@ const adminLimiter = rateLimit({
 
 router.post('/create-user', adminLimiter, handleCreateUser);
 router.delete('/delete-user/:id', adminLimiter, handleDeleteUser);
+router.patch('/update-user/:id', adminLimiter, handleUpdateUser);
+router.put('/reset-password/:id', adminLimiter, handleResetPassword);
 
 module.exports = router;

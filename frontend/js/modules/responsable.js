@@ -1,53 +1,38 @@
+// Point d'entrée de la page responsable : session, profil, puis mise en
+// place des quatre onglets (feuilles, heures supp, techniciens, import).
+
 import { chargerMonProfil } from './db_responsable.js';
-import { getSession, deconnexion, isSessionValid, refreshSession, startAutoRefresh, changerMotDePasse } from './auth.js';
+import { deconnexion, isSessionValid, refreshSession, startAutoRefresh } from './auth.js';
 import { fermerPdfViewer } from './pdfviewer.js';
-import { showToast, attachPasswordToggle } from '../utils/utils.js';
-import { getLogoBase64 } from './fdr.js';
-import { initiales } from './responsable_render.js';
 import * as liste from './responsable_liste.js';
 import { peuplerSelectPeriode, cablerFiltreEtSelection, cablerListe } from './responsable_evenements.js';
+import { initNav, setPeriodesDisponibles, showTab } from './responsable_nav.js';
+import { initMonMotDePasse } from './responsable_password.js';
+import { initDetail, ouvrirDetail } from './responsable_detail.js';
+import { initHeures, rendreHeures } from './responsable_heures.js';
+import { initTechs } from './responsable_techs.js';
 import { initImportClients } from './clients_import.js';
 
-function fermerModalPassword() {
-    document.getElementById('modal-password')?.classList.remove('open');
-    document.getElementById('resp-new-password').value = '';
-    document.getElementById('resp-confirm-password').value = '';
+// Après une validation ou un changement de période : les deux onglets qui
+// affichent les feuilles sont re-rendus.
+function rendreOnglets() {
+    liste.rendreListe();
+    rendreHeures();
 }
 
-function initMotDePasse(profil) {
-    const avatarEl = document.getElementById('resp-user-avatar');
-    if (avatarEl) {
-        avatarEl.textContent = initiales(profil.nom || getSession()?.user?.email?.split('@')[0] || '?');
-        avatarEl.addEventListener('click', () => document.getElementById('modal-password').classList.add('open'));
+// Après création / suppression d'un technicien : la liste des feuilles doit
+// connaître le nouveau compte (nom, entreprise).
+async function onTechsChanges() {
+    try {
+        await liste.rechargerFeuilles();
+        rendreOnglets();
+    } catch (e) {
+        console.warn('Rechargement des feuilles impossible :', e);
     }
-    document.getElementById('btn-close-password')?.addEventListener('click', fermerModalPassword);
-    attachPasswordToggle('resp-new-password', 'toggle-resp-new-password');
-    attachPasswordToggle('resp-confirm-password', 'toggle-resp-confirm-password');
-
-    document.getElementById('btn-resp-change-password')?.addEventListener('click', async () => {
-        const newPass = document.getElementById('resp-new-password').value;
-        const confirm = document.getElementById('resp-confirm-password').value;
-        if (!newPass || newPass.length < 6) {
-            showToast('Le mot de passe doit faire au moins 6 caractères', 'error');
-            return;
-        }
-        if (newPass !== confirm) {
-            showToast('Les deux mots de passe ne sont pas identiques', 'error');
-            return;
-        }
-        try {
-            await changerMotDePasse(newPass);
-            fermerModalPassword();
-            showToast('Mot de passe changé avec succès', 'success', 3000);
-        } catch (err) {
-            showToast('Erreur : ' + err.message, 'error');
-        }
-    });
 }
 
 export async function initResponsable() {
-    document.getElementById('header-logo').src = getLogoBase64();
-    document.getElementById('btn-close-pdf')?.addEventListener('click', fermerPdfViewer);
+    document.getElementById('btn-close-pdf').addEventListener('click', fermerPdfViewer);
 
     if (!isSessionValid()) {
         const refreshed = await refreshSession();
@@ -61,13 +46,23 @@ export async function initResponsable() {
         return;
     }
 
-    initMotDePasse(profil);
-    // Import du planning clients : ne doit jamais bloquer l'affichage des feuilles.
+    initMonMotDePasse(profil);
+    initNav(onglet => { if (onglet === 'heures') rendreHeures(); });
+    initDetail({ onChange: rendreOnglets });
+    initHeures({ onOuvrir: ouvrirDetail });
+    cablerListe(document.getElementById('resp-list'), { onOuvrir: ouvrirDetail });
+    cablerFiltreEtSelection({ onPeriodeChange: rendreOnglets });
+
+    document.getElementById('btn-resp-logout').addEventListener('click', async () => {
+        await deconnexion();
+        window.location.href = '/pages/login.html';
+    });
+
+    // Techniciens et import : indépendants des feuilles, ne doivent jamais bloquer l'affichage.
+    initTechs(profil, { onChange: onTechsChanges }).catch(e => console.warn('Onglet techniciens indisponible :', e));
     initImportClients(profil).catch(e => console.warn('Import clients indisponible :', e));
 
-    const container = document.getElementById('resp-list');
     liste.afficherChargement();
-
     try {
         await liste.chargerDonnees();
     } catch {
@@ -75,13 +70,7 @@ export async function initResponsable() {
         return;
     }
 
-    peuplerSelectPeriode();
-    liste.rendreListe();
-    cablerListe(container);
-    cablerFiltreEtSelection();
-
-    document.getElementById('btn-resp-logout')?.addEventListener('click', async () => {
-        await deconnexion();
-        window.location.href = '/pages/login.html';
-    });
+    setPeriodesDisponibles(peuplerSelectPeriode());
+    showTab('feuilles');
+    rendreOnglets();
 }
