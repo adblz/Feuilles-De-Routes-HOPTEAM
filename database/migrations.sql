@@ -553,3 +553,28 @@ alter table public.feuilles_de_route add column if not exists conge boolean not 
 -- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
 --   alter table public.feuilles_de_route drop column if exists conge;
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-09-15 (ter) — Index de performance (préparation montée en charge)
+--
+-- feuilles_de_route.user_id et interventions.feuille_id sont des clés
+-- étrangères : Postgres ne les indexe jamais automatiquement (contrairement
+-- aux clés primaires). Or ce sont les colonnes les plus filtrées du code
+-- (historique d'un technicien, vérification de doublon du jour, récupération
+-- des lignes d'une feuille). Sans index, chaque recherche relit toute la
+-- table. Sans effet sur le fonctionnement de l'appli, juste sur la vitesse ;
+-- utile dès maintenant, indispensable une fois à ~100 techniciens.
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter tout le bloc ci-dessous.
+-- ─────────────────────────────────────────────────────────────────────────
+
+create index if not exists feuilles_de_route_user_date_idx
+  on public.feuilles_de_route (user_id, date);
+
+create index if not exists interventions_feuille_idx
+  on public.interventions (feuille_id);
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   drop index if exists public.feuilles_de_route_user_date_idx;
+--   drop index if exists public.interventions_feuille_idx;
+-- ─────────────────────────────────────────────────────────────────────────
