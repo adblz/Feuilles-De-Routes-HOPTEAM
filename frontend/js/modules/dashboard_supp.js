@@ -17,10 +17,12 @@ import { estFerie } from './jours_feries.js';
 // Seul le « manque » des journées courtes est calculé ici.
 
 // Une journée « de base » est une journée ordinaire, qui peut donc être trop
-// courte. Le week-end, l'astreinte et les jours fériés sont du travail en plus :
-// une petite journée n'y est pas un manque, elle vaut zéro.
+// courte. Le week-end, l'astreinte, les jours fériés et les congés sont du
+// travail en plus ou hors travail : une petite journée n'y est pas un manque,
+// elle vaut zéro.
 function estJourDeBase(f) {
     if (f.astreinte) return false;
+    if (f.conge) return false;
     if (estFerie(f.date)) return false;
     const jour = new Date(f.date + 'T12:00').getDay();
     return jour !== 0 && jour !== 6;

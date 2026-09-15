@@ -532,3 +532,24 @@ $$;
 --   drop function if exists public.responsable_de_company(text);
 --   drop function if exists public.est_admin();
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-09-15 (bis) — Jours de congé (calendrier du dashboard + heures supp)
+--
+-- Avant, un jour non rempli était toujours traité comme « manquant » (orange),
+-- y compris un vrai jour de congé. Or les heures supp se calculent par semaine
+-- (au-delà de 35h/39h) : une semaine avec un seul jour rempli semblait donc
+-- « en dessous » du seuil au lieu de faire ressortir les heures supp de ce
+-- jour-là. On ajoute un simple drapeau « conge » sur feuilles_de_route, posé
+-- par le technicien depuis le calendrier (case rouge). Un jour de congé réduit
+-- le seuil hebdomadaire exactement comme un jour férié (voir jours_feries.js),
+-- au lieu de compter comme un jour manquant.
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter la ligne ci-dessous.
+-- ─────────────────────────────────────────────────────────────────────────
+
+alter table public.feuilles_de_route add column if not exists conge boolean not null default false;
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   alter table public.feuilles_de_route drop column if exists conge;
+-- ─────────────────────────────────────────────────────────────────────────

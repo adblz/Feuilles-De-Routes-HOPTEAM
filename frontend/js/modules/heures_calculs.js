@@ -1,6 +1,7 @@
 import { parseDuree } from '../utils/utils.js';
 import { feriesEnSemaine } from './jours_feries.js';
 import { cfg } from './fdr_config.js';
+import { seuilJourPour } from './seuil_jour.js';
 
 // ── Barème heures supplémentaires ──────────────────────────────
 // Le seuil hebdo (défaut 35h) et le palier +25% (défaut 8h) sont réglés par
@@ -64,6 +65,18 @@ export function labelSemaine(dateStr) {
         : `${full(lundi)} – ${full(dimanche)}`;
 }
 
+// Seuil retiré pour les jours de congé de la semaine (lundi→vendredi, comme
+// les jours fériés) : un jour de congé n'est pas du travail attendu, il ne
+// doit donc pas compter comme un manque dans le total hebdomadaire.
+function seuilCongesMin(fs) {
+    return fs.reduce((t, f) => {
+        if (!f.conge) return t;
+        const jour = new Date(f.date + 'T12:00').getDay();
+        if (jour === 0 || jour === 6) return t;
+        return t + seuilJourPour(f.date, cfg.contrat);
+    }, 0);
+}
+
 // feuilles : [{date, heures_travail, heure_debut, heure_fin}]
 // Heures supp calculées sur le TOTAL HEBDOMADAIRE (au-delà de 35h), conforme
 // au Code du travail — indépendant du contrat 35h/39h.
@@ -96,15 +109,17 @@ export function calcHebdomadaire(feuilles) {
             if (f.astreinte) totalAstreinteMin += travailMin;
         }
 
-        // Seuil réduit de 7h par jour férié tombant lun→ven dans la semaine.
-        const nbFeries = feriesEnSemaine(getLundiSemaine(fs[0].date));
-        const seuilMin = Math.max(0, cfg.seuilHebdoMinutes - nbFeries * 7 * 60);
+        // Seuil réduit de 7h par jour férié tombant lun→ven dans la semaine,
+        // et du seuil propre à chaque jour de congé (7h ou 8h selon le contrat).
+        const nbFeries  = feriesEnSemaine(getLundiSemaine(fs[0].date));
+        const nbConges  = fs.filter(f => f.conge).length;
+        const seuilMin  = Math.max(0, cfg.seuilHebdoMinutes - nbFeries * 7 * 60 - seuilCongesMin(fs));
 
         const totalSuppMin = Math.max(0, totalTravailMin - seuilMin);
         const supp25 = Math.min(totalSuppMin, cfg.palier25Minutes);      // premières 8h supp à +25%
         const supp50 = Math.max(0, totalSuppMin - cfg.palier25Minutes);  // au-delà à +50%
 
-        return { cle, label, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin, nbFeries, seuilMin, feuilles: fs };
+        return { cle, label, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin, nbFeries, nbConges, seuilMin, feuilles: fs };
     });
 }
 

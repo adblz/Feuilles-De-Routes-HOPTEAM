@@ -67,6 +67,17 @@ export function renderDetailJours(feuilles) {
     return feuilles.map(f => {
         const dateAff = new Date(f.date + 'T12:00')
             .toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+        if (f.conge) {
+            return `
+            <div class="pdf-mois-jour pdf-mois-jour-conge">
+                <div class="pdf-mois-jour-head">
+                    <span class="pdf-mois-jour-date">${dateAff}</span>
+                    <span class="pdf-mois-jour-h">Congé</span>
+                </div>
+            </div>`;
+        }
+
         return `
         <div class="pdf-mois-jour">
             ${enteteJour(f, dateAff)}

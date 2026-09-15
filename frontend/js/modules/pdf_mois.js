@@ -39,9 +39,10 @@ function bandeExtras(t) {
 
 function blocTotaux(feuilles) {
     const t = totauxSuppPeriode(feuilles);
+    const nbJoursTravailles = feuilles.filter(f => !f.conge).length;
     return `
         <div class="pdf-mois-totaux">
-            ${caseTotal('Jours travaillés', feuilles.length)}
+            ${caseTotal('Jours travaillés', nbJoursTravailles)}
             ${caseTotal('Heures travaillées', affH(t.travail))}
             ${caseTotal('Heures supp. (hebdo)', affH(t.supp), ' supp')}
             ${caseTotal('dont +25% / +50%', `${affH(t.supp25)} / ${affH(t.supp50)}`, ' large')}

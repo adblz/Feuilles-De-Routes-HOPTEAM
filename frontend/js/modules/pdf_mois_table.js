@@ -12,6 +12,16 @@ const nbInterventions = f => f.interventions.filter(i => i.kind === 'interventio
 function ligneJour(f) {
     const dateAff = new Date(f.date + 'T12:00')
         .toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
+
+    if (f.conge) {
+        return `
+        <tr class="pdf-mois-tr-conge">
+            <td>${dateAff}</td>
+            <td class="c" colspan="5">Congé</td>
+            <td class="c">—</td>
+        </tr>`;
+    }
+
     const supp = f.heures_supp || '0h00';
     const nb   = nbInterventions(f);
 
@@ -37,8 +47,11 @@ function ligneJour(f) {
 // Sous-total d'une semaine : c'est ici qu'apparaissent les vraies heures supp.
 function ligneSemaine(s) {
     const nb    = s.feuilles.reduce((t, f) => t + nbInterventions(f), 0);
-    const ferie = s.nbFeries > 0
-        ? ` <span class="pdf-mois-ferie">seuil ${affH(s.seuilMin)} — ${s.nbFeries} jour${s.nbFeries > 1 ? 's' : ''} férié${s.nbFeries > 1 ? 's' : ''}</span>`
+    const notes = [];
+    if (s.nbFeries > 0)  notes.push(`${s.nbFeries} jour${s.nbFeries > 1 ? 's' : ''} férié${s.nbFeries > 1 ? 's' : ''}`);
+    if (s.nbConges > 0)  notes.push(`${s.nbConges} jour${s.nbConges > 1 ? 's' : ''} de congé`);
+    const ferie = notes.length
+        ? ` <span class="pdf-mois-ferie">seuil ${affH(s.seuilMin)} — ${notes.join(', ')}</span>`
         : '';
     const supp = s.totalSuppMin > 0 ? `+${affH(s.totalSuppMin)}` : '—';
     return `
@@ -51,9 +64,10 @@ function ligneSemaine(s) {
 }
 
 export function tableauSynthese(feuilles) {
-    const semaines = calcHebdomadaire(feuilles);
-    const totaux   = totauxSuppPeriode(feuilles);
-    const totalInt = feuilles.reduce((s, f) => s + nbInterventions(f), 0);
+    const semaines  = calcHebdomadaire(feuilles);
+    const totaux    = totauxSuppPeriode(feuilles);
+    const totalInt  = feuilles.reduce((s, f) => s + nbInterventions(f), 0);
+    const nbTravail = feuilles.filter(f => !f.conge).length;
 
     const corps = semaines
         .map(s => s.feuilles.map(ligneJour).join('') + ligneSemaine(s))
@@ -70,7 +84,7 @@ export function tableauSynthese(feuilles) {
             <tbody>${corps}</tbody>
             <tfoot>
                 <tr>
-                    <td colspan="4">TOTAL — ${feuilles.length} jour${feuilles.length > 1 ? 's' : ''}</td>
+                    <td colspan="4">TOTAL — ${nbTravail} jour${nbTravail > 1 ? 's' : ''}</td>
                     <td class="c">${affH(totaux.travail)}</td>
                     <td class="c">${affH(totaux.supp)}</td>
                     <td class="c">${totalInt}</td>

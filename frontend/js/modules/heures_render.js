@@ -62,6 +62,7 @@ function carteSemaine(s) {
 
     const badges = [];
     if (s.nbFeries > 0)          badges.push(badge('badge-ferie', `Seuil ${affH(s.seuilMin)} — ${s.nbFeries} jour${s.nbFeries > 1 ? 's' : ''} férié${s.nbFeries > 1 ? 's' : ''}`));
+    if (s.nbConges > 0)          badges.push(badge('badge-conge', `${s.nbConges} jour${s.nbConges > 1 ? 's' : ''} de congé`));
     if (s.supp25 > 0)            badges.push(badge('badge-25', `25% · ${affH(s.supp25)}`));
     if (s.supp50 > 0)            badges.push(badge('badge-50', `50% · ${affH(s.supp50)}`));
     if (s.totalNuitMin > 0)      badges.push(badge('badge-nuit', `Nuit · ${affH(s.totalNuitMin)}`));

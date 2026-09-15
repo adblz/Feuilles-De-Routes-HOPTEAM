@@ -54,7 +54,7 @@ export async function chargerHistorique() {
     const user = getSession()?.user;
     if (!user) return [];
     // On ne récupère PAS pdf_data ici (trop lourd) : seulement les infos de la liste.
-    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&select=id,date,tech,mode,created_at&order=date.desc`);
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&select=id,date,tech,mode,conge,created_at&order=date.desc`);
 }
 
 export async function chargerDetailFeuille(id) {
@@ -100,7 +100,35 @@ export async function supprimerFeuille(id) {
 export async function chargerHeuresSupp(debut, fin) {
     const user = getSession()?.user;
     if (!user) return [];
-    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_travail,heures_supp,heure_debut,heure_fin,astreinte,interventions(kind,heure_arrivee,heure_depart,client,ville,pause_debut,pause_fin)&order=date.asc`);
+    return dbGet(`feuilles_de_route?user_id=eq.${user.id}&date=gte.${debut}&date=lte.${fin}&select=date,tech,heures_travail,heures_supp,heure_debut,heure_fin,astreinte,conge,interventions(kind,heure_arrivee,heure_depart,client,ville,pause_debut,pause_fin)&order=date.asc`);
+}
+
+// Marque une journée comme congé (case rouge du calendrier) : remplace toute
+// feuille existante à cette date par une ligne vide avec conge = true.
+export async function marquerConge(date) {
+    if (!isSessionValid()) await refreshSession();
+    const user = getSession()?.user;
+    if (!user) throw new Error('Non connecté');
+    const nomChamp = document.getElementById('technicien')?.value.trim();
+
+    await dbDelete('feuilles_de_route', `date=eq.${date}&user_id=eq.${user.id}`);
+    await dbPost('feuilles_de_route', {
+        date,
+        user_id:        user.id,
+        tech:           nomChamp || null,
+        heures_travail: '0h00',
+        heures_supp:    '0h00',
+        astreinte:      false,
+        mode:           'conge',
+        conge:          true,
+    });
+}
+
+// Annule un jour de congé : supprime la ligne vide posée par marquerConge().
+export async function annulerConge(date) {
+    const user = getSession()?.user;
+    if (!user) throw new Error('Non connecté');
+    await dbDelete('feuilles_de_route', `date=eq.${date}&user_id=eq.${user.id}&conge=eq.true`);
 }
 
 function toTime(val) { return val || null; }

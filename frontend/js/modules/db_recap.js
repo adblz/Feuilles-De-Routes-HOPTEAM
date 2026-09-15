@@ -7,7 +7,7 @@ import { buildHeaders } from './db.js';
 
 const COLS_FEUILLE = [
     'date', 'tech', 'company', 'contrat', 'heure_debut', 'heure_fin',
-    'repas_min', 'heures_travail', 'heures_supp', 'astreinte',
+    'repas_min', 'heures_travail', 'heures_supp', 'astreinte', 'conge',
 ].join(',');
 
 const COLS_INTERVENTION = [

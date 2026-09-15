@@ -1,4 +1,4 @@
-import { chargerHistorique } from './db.js';
+import { chargerHistorique, marquerConge, annulerConge } from './db.js';
 import { showToast, isoLocal } from '../utils/utils.js';
 import { getBrouillonsDates } from './fdr.js';
 import { afficherResumeFeuille } from './resume.js';
@@ -66,6 +66,7 @@ export async function rendreCalendrierMois() {
     const datesEnregistrees = new Set(histo.map(e => e.date));
     const dateToId = {};
     histo.forEach(e => { dateToId[e.date] = e.id; });
+    const congeDates = new Set(histo.filter(e => e.conge).map(e => e.date));
 
     const brouillonDates = getBrouillonsDates();
     const firstDay       = new Date(year, month, 1);
@@ -92,12 +93,14 @@ export async function rendreCalendrierMois() {
         const isFuture     = key > todayISO;
         const isToday      = key === todayISO;
         const isFilled     = datesEnregistrees.has(key);
+        const isConge      = congeDates.has(key);
         const hasBrouillon = !isFilled && brouillonDates.has(key);
 
         const cell = document.createElement('div');
         let cls = 'dash-day';
 
-        if (isFilled)          { cls += ' dash-day-filled'; if (isToday) cls += ' dash-day-today'; if (isFerie) cls += ' dash-day-ferie-badge'; }
+        if (isConge)            { cls += ' dash-day-conge'; if (isToday) cls += ' dash-day-today'; }
+        else if (isFilled)     { cls += ' dash-day-filled'; if (isToday) cls += ' dash-day-today'; if (isFerie) cls += ' dash-day-ferie-badge'; }
         else if (hasBrouillon) { cls += ' dash-day-pending'; manquants.push({ key, type: 'brouillon' }); }
         else if (isWeekend)    { cls += ' dash-day-off'; }
         else if (isFerie)      { cls += ' dash-day-ferie'; }
@@ -105,7 +108,8 @@ export async function rendreCalendrierMois() {
         else                   { cls += ' dash-day-missing'; manquants.push({ key, type: 'missing' }); }
 
         let dotClass = '';
-        if (isFilled)          dotClass = 'ldot ldot-filled';
+        if (isConge)            dotClass = 'ldot ldot-conge';
+        else if (isFilled)     dotClass = 'ldot ldot-filled';
         else if (hasBrouillon) dotClass = 'ldot ldot-pending';
         else if (isWeekend)    dotClass = 'ldot ldot-off';
         else if (isFerie)      dotClass = 'ldot ldot-ferie';
@@ -116,7 +120,7 @@ export async function rendreCalendrierMois() {
 
         if (!isFuture || isFerie) {
             cell.style.cursor = 'pointer';
-            cell.addEventListener('click', () => selectionnerJour(dateObj, key, isFilled, dateToId[key] || null, hasBrouillon, isFerie));
+            cell.addEventListener('click', () => selectionnerJour(dateObj, key, isFilled, dateToId[key] || null, hasBrouillon, isFerie, isConge));
         }
 
         grid.appendChild(cell);
@@ -131,35 +135,61 @@ export async function rendreCalendrierMois() {
     return manquants;
 }
 
-function selectionnerJour(dateObj, key, isFilled, feuilleId, hasBrouillon, isFerie = false) {
-    const panel   = document.getElementById('dash-cal-selected');
-    const labelEl = document.getElementById('dash-cal-selected-label');
-    const oldBtn  = document.getElementById('dash-cal-selected-btn');
-    if (!panel || !labelEl || !oldBtn) return;
+function creerBouton(texte, classe, onClick) {
+    const btn = document.createElement('button');
+    btn.type      = 'button';
+    btn.textContent = texte;
+    btn.className   = `dash-cal-selected-btn ${classe}`;
+    btn.addEventListener('click', onClick);
+    return btn;
+}
+
+async function onMarquerConge(key) {
+    if (!confirm('Marquer cette journée comme congé ?')) return;
+    try {
+        await marquerConge(key);
+        showToast('Journée marquée en congé', 'success');
+        document.getElementById('dash-cal-selected')?.classList.add('hidden');
+        document.dispatchEvent(new CustomEvent('dashboard:refresh'));
+    } catch {
+        showToast('Impossible d\'enregistrer le congé. Vérifiez votre connexion.', 'warn', 4000);
+    }
+}
+
+async function onAnnulerConge(key) {
+    if (!confirm('Annuler ce jour de congé ?')) return;
+    try {
+        await annulerConge(key);
+        showToast('Congé annulé', 'success');
+        document.getElementById('dash-cal-selected')?.classList.add('hidden');
+        document.dispatchEvent(new CustomEvent('dashboard:refresh'));
+    } catch {
+        showToast('Impossible d\'annuler le congé. Vérifiez votre connexion.', 'warn', 4000);
+    }
+}
+
+function selectionnerJour(dateObj, key, isFilled, feuilleId, hasBrouillon, isFerie = false, isConge = false) {
+    const panel      = document.getElementById('dash-cal-selected');
+    const labelEl    = document.getElementById('dash-cal-selected-label');
+    const actionsEl  = document.getElementById('dash-cal-selected-actions');
+    if (!panel || !labelEl || !actionsEl) return;
 
     const labelText = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
     labelEl.textContent = labelText.charAt(0).toUpperCase() + labelText.slice(1);
 
-    const btn = oldBtn.cloneNode(false);
-    oldBtn.replaceWith(btn);
-    btn.id = 'dash-cal-selected-btn';
+    actionsEl.innerHTML = '';
 
-    if (isFilled) {
-        btn.textContent = 'Afficher résumé';
-        btn.className   = 'dash-cal-selected-btn dash-cal-btn-pdf';
-        btn.addEventListener('click', () => afficherResumeFeuille(feuilleId));
+    if (isConge) {
+        actionsEl.appendChild(creerBouton('Annuler le congé', 'dash-cal-btn-conge-annuler', () => onAnnulerConge(key)));
+    } else if (isFilled) {
+        actionsEl.appendChild(creerBouton('Afficher résumé', 'dash-cal-btn-pdf', () => afficherResumeFeuille(feuilleId)));
     } else if (hasBrouillon) {
-        btn.textContent = 'Finaliser le brouillon';
-        btn.className   = 'dash-cal-selected-btn dash-cal-btn-remplir';
-        btn.addEventListener('click', () => _onFinaliser && _onFinaliser(key));
+        actionsEl.appendChild(creerBouton('Finaliser le brouillon', 'dash-cal-btn-remplir', () => _onFinaliser && _onFinaliser(key)));
     } else if (isFerie) {
-        btn.textContent = 'Travailler ce jour (exceptionnel)';
-        btn.className   = 'dash-cal-selected-btn dash-cal-btn-remplir';
-        btn.addEventListener('click', () => _onNouveau && _onNouveau(key));
+        actionsEl.appendChild(creerBouton('Travailler ce jour (exceptionnel)', 'dash-cal-btn-remplir', () => _onNouveau && _onNouveau(key)));
     } else {
-        btn.textContent = 'Remplir';
-        btn.className   = 'dash-cal-selected-btn dash-cal-btn-remplir';
-        btn.addEventListener('click', () => _onNouveau && _onNouveau(key));
+        actionsEl.appendChild(creerBouton('Remplir', 'dash-cal-btn-remplir', () => _onNouveau && _onNouveau(key)));
+        actionsEl.appendChild(creerBouton('Marquer congé', 'dash-cal-btn-conge', () => onMarquerConge(key)));
     }
 
     panel.classList.remove('hidden');

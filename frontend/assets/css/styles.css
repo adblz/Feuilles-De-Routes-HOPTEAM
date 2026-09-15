@@ -719,6 +719,8 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .dash-day-missing:active { transform: scale(0.92); }
 .dash-day-pending { background: var(--paper-dim); color: var(--ink-title); border: 1.5px dashed var(--steel); cursor: pointer; }
 .dash-day-pending:active { transform: scale(0.92); }
+.dash-day-conge    { background: var(--red-pale); color: var(--red); border-color: var(--red-border); cursor: pointer; }
+.dash-day-conge:active { transform: scale(0.92); }
 .dash-day-off      { background: transparent; color: #b9b29c; }
 .dash-day-ferie    { background: rgba(168,85,247,.14); color: #6b21a8; cursor: pointer; }
 .dash-day-ferie:active { transform: scale(0.92); }
@@ -742,6 +744,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .ldot-pending { background: var(--steel); }
 .ldot-off     { background: var(--stone-light); }
 .ldot-ferie   { background: #a855f7; }
+.ldot-conge   { background: var(--red); }
 
 /* Panneau jour sélectionné (calendrier) */
 .dash-cal-selected {
@@ -755,6 +758,9 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .dash-cal-selected-label {
     font-size: 14px; font-weight: 600; color: var(--ink-body);
 }
+.dash-cal-selected-actions {
+    display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px;
+}
 .dash-cal-selected-btn {
     white-space: nowrap; padding: 8px 16px;
     border-radius: 8px; border: none;
@@ -765,6 +771,10 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .dash-cal-btn-remplir:active { opacity: 0.85; }
 .dash-cal-btn-pdf { background: var(--teal); color: #fff; }
 .dash-cal-btn-pdf:active { opacity: 0.85; }
+.dash-cal-btn-conge { background: var(--red); color: #fff; }
+.dash-cal-btn-conge:active { opacity: 0.85; }
+.dash-cal-btn-conge-annuler { background: var(--red-pale); color: var(--red); border: 1px solid var(--red-border); }
+.dash-cal-btn-conge-annuler:active { opacity: 0.85; }
 
 /* Liste des jours manquants */
 .dash-manquantes { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -1097,6 +1107,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 .pdf-mois-table .s { color: #15803d; font-weight: 700; }
 .pdf-mois-table tbody tr:nth-child(even) td { background: #f8fafc; }
 .pdf-mois-tr-astreinte td { background: #f0fdf4 !important; }
+.pdf-mois-tr-conge td { background: var(--red-pale) !important; color: var(--red); font-weight: 700; }
 .pdf-mois-tr-semaine td {
     background: #eef2f7 !important; color: var(--navy); font-weight: 800;
     border-top: 1.5px solid var(--navy); border-bottom: 1.5px solid var(--navy);
@@ -1132,6 +1143,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     padding: 1px 6px; font-size: 9px; letter-spacing: 0.04em;
 }
 .pdf-mois-jour-body { padding: 6px 12px; }
+.pdf-mois-jour-conge .pdf-mois-jour-head { background: var(--red); }
 
 .pdf-mois-item { display: flex; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--surface-light); font-size: 12px; }
 .pdf-mois-item:last-child { border-bottom: none; }
