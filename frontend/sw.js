@@ -51,20 +51,20 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Scripts / CSS / images : on répond tout de suite avec la version en cache
-  // pour que l'app reste rapide, mais on vérifie systématiquement en
-  // arrière-plan si le fichier a changé sur le serveur, et on met à jour le
-  // cache pour la prochaine fois (stale-while-revalidate).
+  // Scripts / CSS / images : réseau d'abord, comme pour les pages. Servir le
+  // code depuis le cache alors que la page vient du réseau créait un mélange
+  // « ancienne version du code + nouvelle version de la page » à chaque
+  // déploiement (plantage jusqu'au rechargement automatique). On ne se rabat
+  // sur la copie en cache que si le réseau échoue (hors-ligne).
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      const network = fetch(event.request).then(response => {
+    fetch(event.request)
+      .then(response => {
         if (response && response.status === 200 && response.type !== 'opaque') {
           const clone = response.clone();
           caches.open(CACHE).then(cache => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => cached);
-      return cached || network;
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });
