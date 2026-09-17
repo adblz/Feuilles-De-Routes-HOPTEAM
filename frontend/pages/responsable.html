@@ -49,6 +49,10 @@
         </div>
 
         <div class="sidebar-footer">
+            <div class="sidebar-entreprise hidden" id="resp-entreprise">
+                <label for="resp-select-entreprise" class="sidebar-entreprise-label">Entreprise affichée</label>
+                <select id="resp-select-entreprise" class="sidebar-entreprise-select"></select>
+            </div>
             <button type="button" id="btn-refresh-app" class="sidebar-refresh">↻ Mettre à jour</button>
             <div class="sidebar-profil">
                 <div class="sidebar-avatar resp-user-avatar" id="resp-user-avatar" title="Changer mon mot de passe">??</div>
@@ -133,6 +137,41 @@
                         <span class="resp-import-info" id="clients-import-info"></span>
                         <input type="file" id="clients-import-file" accept=".xlsx,.xls" hidden>
                     </div>
+                </div>
+
+                <h2 class="resp-import-titre resp-import-section">Planning en cours</h2>
+                <div class="admin-filtres">
+                    <div class="admin-recherche-wrap">
+                        <svg class="admin-recherche-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="search" id="resp-planning-recherche" class="admin-recherche" placeholder="Rechercher un client, une ville, un code…">
+                    </div>
+                    <select id="resp-planning-statut" class="admin-filtre-select">
+                        <option value="afaire" selected>À faire</option>
+                        <option value="faits">Faits</option>
+                        <option value="tous">Tous</option>
+                    </select>
+                    <span id="resp-planning-resume" class="resp-import-info"></span>
+                </div>
+                <div id="resp-planning-list"></div>
+
+                <h2 class="resp-import-titre resp-import-section">Historique des imports</h2>
+                <div class="admin-card-table">
+                    <table class="admin-table plan-imports-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Fichier</th>
+                                <th>Importé par</th>
+                                <th class="plan-nb">Lues</th>
+                                <th class="plan-nb">Importées</th>
+                                <th class="plan-nb">Ignorées</th>
+                                <th class="col-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resp-imports-tbody">
+                            <tr><td colspan="7" class="admin-table-vide">Chargement…</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 

@@ -50,7 +50,7 @@ export function getSemaineISO(dateStr) {
     return `${jeudi.getFullYear()}-S${String(num).padStart(2, '0')}`;
 }
 
-export function labelSemaine(dateStr) {
+function bornesSemaine(dateStr) {
     const d = new Date(dateStr + 'T12:00');
     const day = d.getDay() || 7;
     const lundi = new Date(d);
@@ -58,9 +58,21 @@ export function labelSemaine(dateStr) {
     const dimanche = new Date(lundi);
     dimanche.setDate(lundi.getDate() + 6);
     const numSemaine = Number(getSemaineISO(dateStr).split('-S')[1]);
+    return { lundi, dimanche, numSemaine };
+}
+
+export function labelSemaine(dateStr) {
+    const { lundi, dimanche, numSemaine } = bornesSemaine(dateStr);
     const full = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     // Ex. « Semaine 35 - 24 août au 30 août »
     return `Semaine ${numSemaine} - ${full(lundi)} au ${full(dimanche)}`;
+}
+
+export function labelSemaineCourt(dateStr) {
+    const { lundi, dimanche, numSemaine } = bornesSemaine(dateStr);
+    const court = dt => dt.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    // Ex. « Semaine 35 - 24/08/2026 au 30/08/2026 »
+    return `Semaine ${numSemaine} - ${court(lundi)} au ${court(dimanche)}`;
 }
 
 // Seuil retiré pour les jours de congé de la semaine (lundi→vendredi, comme
@@ -84,13 +96,13 @@ export function calcHebdomadaire(feuilles) {
     for (const f of feuilles) {
         const cle = getSemaineISO(f.date);
         if (!groupes[cle]) {
-            groupes[cle] = { cle, label: labelSemaine(f.date), feuilles: [] };
+            groupes[cle] = { cle, label: labelSemaine(f.date), labelCourt: labelSemaineCourt(f.date), feuilles: [] };
         }
         groupes[cle].feuilles.push(f);
     }
 
     return Object.keys(groupes).sort().map(cle => {
-        const { label, feuilles: fs } = groupes[cle];
+        const { label, labelCourt, feuilles: fs } = groupes[cle];
 
         let totalTravailMin   = 0;
         let totalNuitMin      = 0;
@@ -117,7 +129,7 @@ export function calcHebdomadaire(feuilles) {
         const supp25 = Math.min(totalSuppMin, cfg.palier25Minutes);      // premières 8h supp à +25%
         const supp50 = Math.max(0, totalSuppMin - cfg.palier25Minutes);  // au-delà à +50%
 
-        return { cle, label, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin, nbFeries, nbConges, seuilMin, feuilles: fs };
+        return { cle, label, labelCourt, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin, nbFeries, nbConges, seuilMin, feuilles: fs };
     });
 }
 

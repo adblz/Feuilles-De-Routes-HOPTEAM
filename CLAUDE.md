@@ -87,6 +87,7 @@ frontend/js/
 │   ├── responsable.js   ← point d'entrée page responsable (session, profil, 4 onglets)
 │   ├── responsable_nav.js ← onglets de la barre latérale (feuilles / heures / techs / import)
 │   ├── responsable_password.js ← modale « mon mot de passe » du responsable
+│   ├── responsable_entreprise.js ← menu « Entreprise affichée » (comptes `voit_toutes_entreprises` uniquement) : filtre d'affichage des 4 onglets, choix mémorisé en localStorage
 │   ├── responsable_liste.js ← chargement des feuilles + rendu de la liste (onglet Feuilles)
 │   ├── responsable_render.js ← cartes techniciens (liste des feuilles)
 │   ├── responsable_feuilles.js ← lignes de feuilles par semaine + badge de validation
@@ -108,6 +109,12 @@ frontend/js/
 │   ├── clients_regles.js ← règles d'import : correspondance secteurs, clients déjà faits (une ligne Excel = un poste, jamais un doublon)
 │   ├── clients_import.js ← enchaînement des 3 étapes d'import (page responsable)
 │   ├── clients_import_ui.js ← HTML des 3 étapes d'import
+│   ├── db_clients_gestion.js ← requêtes responsable : planning en cours, historique des imports, retirer / réaffecter / annuler un import
+│   ├── responsable_planning.js ← onglet Import hors modale : info « Dernier import », planning en cours, historique (chargement paresseux)
+│   ├── responsable_planning_data.js ← calculs purs du planning : regroupement par client, filtres, tri, groupes par technicien
+│   ├── responsable_planning_render.js ← HTML du planning en cours (cartes par technicien, select réaffecter, bouton retirer)
+│   ├── responsable_imports_render.js ← HTML de l'historique des imports (badge « Dernier », bouton annuler)
+│   ├── responsable_planning_actions.js ← confirmations + appels + toasts (retirer, réaffecter, annuler le dernier import)
 │   ├── clients_data.js  ← listing tech : regroupement des postes par client, tri, retard, exclusion des brouillons, cache
 │   ├── clients_render.js ← HTML du listing clients (boutons d'appel, badges retard)
 │   ├── clients_liste.js ← vue « Mes clients » (chargement, filtres)

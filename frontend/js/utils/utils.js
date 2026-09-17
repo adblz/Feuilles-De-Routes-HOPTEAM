@@ -1,3 +1,5 @@
+import { sortieSuppIncoherente, MSG_SORTIE_SUPP } from '../modules/fdr_controles.js';
+
 let toastTimer = null;
 
 export function showToast(msg, type = '', duration = 3000) {
@@ -27,6 +29,13 @@ export function validerFormulaire() {
     if (champsMauvais.length) {
         showToast('Champs incomplets : ' + manquants.join(', '), 'warn', 4000);
         signalerChampsManquants(champsMauvais);
+        return false;
+    }
+
+    // Sortie supplémentaire qui chevauche la journée : temps compté deux fois.
+    if (sortieSuppIncoherente()) {
+        showToast(MSG_SORTIE_SUPP, 'warn', 4000);
+        signalerChampsManquants([document.getElementById('rappel-debut')]);
         return false;
     }
     return true;

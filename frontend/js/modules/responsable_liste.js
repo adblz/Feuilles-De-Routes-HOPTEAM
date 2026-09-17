@@ -10,6 +10,7 @@ import { appliquerIndetermines } from './responsable_feuilles.js';
 import { getVues, marquerVue } from './responsable_vues.js';
 import * as selection from './responsable_selection.js';
 import * as validations from './responsable_validations.js';
+import { filtrerParEntreprise } from './responsable_entreprise.js';
 
 let _feuilles = [];
 let _profilsTechs = [];
@@ -18,7 +19,12 @@ let _periodeChoisie = null;
 
 export function periodes() { return _periodes; }
 export function periodeChoisie() { return _periodeChoisie; }
-export function profilsTechs() { return _profilsTechs; }
+
+// Techniciens de l'entreprise affichée (tous si aucune entreprise choisie).
+export function profilsTechs() { return filtrerParEntreprise(_profilsTechs, p => p.company); }
+
+// Toutes les entreprises connues (pour le menu « Entreprise affichée »).
+export function entreprisesConnues() { return [...new Set(_profilsTechs.map(p => p.company).filter(Boolean))]; }
 
 export function choisirPeriode(id) {
     _periodeChoisie = _periodes.find(p => String(p.id) === String(id)) || null;
@@ -34,9 +40,12 @@ export function periodeEffective() {
     return { date_debut: isoLocal(premier), date_fin: isoLocal(dernier) };
 }
 
+// Feuilles de la période, limitées à l'entreprise affichée (via le profil du technicien).
 export function feuillesFiltrees() {
     const p = periodeEffective();
-    return _feuilles.filter(f => f.date >= p.date_debut && f.date <= p.date_fin);
+    const companyParUid = new Map(_profilsTechs.map(t => [t.id, t.company]));
+    const dansPeriode = _feuilles.filter(f => f.date >= p.date_debut && f.date <= p.date_fin);
+    return filtrerParEntreprise(dansPeriode, f => companyParUid.get(f.user_id));
 }
 
 export function feuillesSelectionnees() {

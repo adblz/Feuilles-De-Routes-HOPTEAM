@@ -10,7 +10,15 @@ function normaliser(s) {
     return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-function ligne(t) {
+// lectureSeule : entreprise affichée autre que la sienne → pas de boutons d'action.
+function actions(t, nom, lectureSeule) {
+    if (lectureSeule) return '<span class="cell-muted" title="Lecture seule : ce n\'est pas votre entreprise">Lecture seule</span>';
+    return `<button type="button" class="btn-admin-modifier" data-id="${t.id}" title="Modifier">${ICON_MODIFIER}</button>
+            <button type="button" class="btn-tech-password" data-id="${t.id}" title="Réinitialiser le mot de passe">${ICON_CLE}</button>
+            <button type="button" class="btn-admin-supprimer" data-id="${t.id}" data-nom="${nom}" title="Supprimer">${ICON_SUPPRIMER}</button>`;
+}
+
+function ligne(t, lectureSeule) {
     const nom = escHtml(t.nom || '—');
     return `<tr>
         <td>
@@ -18,23 +26,19 @@ function ligne(t) {
             <div class="cell-user-email">${escHtml(t.email || '')}</div>
         </td>
         <td>${t.contrat ? `${escHtml(t.contrat)}h` : '<span class="cell-muted">—</span>'}</td>
-        <td class="col-actions">
-            <button type="button" class="btn-admin-modifier" data-id="${t.id}" title="Modifier">${ICON_MODIFIER}</button>
-            <button type="button" class="btn-tech-password" data-id="${t.id}" title="Réinitialiser le mot de passe">${ICON_CLE}</button>
-            <button type="button" class="btn-admin-supprimer" data-id="${t.id}" data-nom="${nom}" title="Supprimer">${ICON_SUPPRIMER}</button>
-        </td>
+        <td class="col-actions">${actions(t, nom, lectureSeule)}</td>
     </tr>`;
 }
 
-export function renderTechsTable(techs, filtre = '') {
+export function renderTechsTable(techs, filtre = '', { lectureSeule = false } = {}) {
     const tbody = document.getElementById('resp-techs-tbody');
     const q = normaliser(filtre.trim());
     const visibles = q
         ? techs.filter(t => normaliser(t.nom).includes(q) || normaliser(t.email).includes(q))
         : techs;
     if (!visibles.length) {
-        tbody.innerHTML = `<tr><td colspan="3" class="admin-table-vide">${techs.length ? 'Aucun technicien ne correspond.' : 'Aucun technicien dans votre entreprise.'}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" class="admin-table-vide">${techs.length ? 'Aucun technicien ne correspond.' : 'Aucun technicien dans cette entreprise.'}</td></tr>`;
         return;
     }
-    tbody.innerHTML = visibles.map(ligne).join('');
+    tbody.innerHTML = visibles.map(t => ligne(t, lectureSeule)).join('');
 }

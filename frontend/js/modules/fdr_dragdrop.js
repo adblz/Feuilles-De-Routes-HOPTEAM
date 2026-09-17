@@ -1,39 +1,41 @@
-// Glisser-déposer des cartes (interventions / pauses) du formulaire technicien.
-// On attrape la poignée « ≡ » : la carte suit le doigt (ou la souris), les autres
-// cartes s'écartent en douceur pour laisser la place, puis la carte se pose.
-import { collapserToutesSauf } from './fdr_collapse.js';
-
-const GAP_CARTES   = 14;   // margin-bottom des cartes (voir styles.css)
+// Glisser-déposer vertical de cartes dans une liste (interventions / pauses du
+// formulaire, cartes de l'accueil). On attrape la poignée « ≡ » : la carte suit
+// le doigt (ou la souris), les autres cartes s'écartent en douceur pour laisser
+// la place, puis la carte se pose. La liste = le parent direct de la carte.
 const DUREE_POSE   = 220;  // ms — doit correspondre à la transition CSS de .card-dropping
 const ZONE_SCROLL  = 90;   // px — près du bord de l'écran, la page défile toute seule
 const HAUT_ENTETE  = 64;   // px — entête fixe de l'app
 
 let drag = null;
 
-export function activerDragCarte(card, poignee, onFin) {
-    poignee.addEventListener('pointerdown', (e) => demarrer(e, card, poignee, onFin));
+// onFin : appelé une fois la carte réellement déplacée.
+// avantDrag (facultatif) : appelé juste avant de commencer à glisser (ex. replier les cartes).
+export function activerDragCarte(card, poignee, onFin, avantDrag) {
+    poignee.addEventListener('pointerdown', (e) => demarrer(e, card, poignee, onFin, avantDrag));
 }
 
-function demarrer(e, card, poignee, onFin) {
+function demarrer(e, card, poignee, onFin, avantDrag) {
     if (drag || (e.pointerType === 'mouse' && e.button !== 0)) return;
     e.preventDefault();
-    const list = document.getElementById('interventions-list');
+    const liste = card.parentElement;
+    if (avantDrag) avantDrag();
 
-    // Les cartes dépliées sont trop hautes pour glisser confortablement : on replie tout
-    // (la carte déplacée ET les autres). Elles restent fermées après, on rouvre celle qu'on veut.
-    collapserToutesSauf(null);
+    // Espace entre deux cartes (margin-bottom, voir styles.css)
+    const gap = parseFloat(getComputedStyle(card).marginBottom) || 0;
 
-    // Positions de départ (en coordonnées de page, stables même si on défile)
-    const autres = Array.from(list.children).filter(c => c !== card).map(c => ({
+    // Positions de départ (en coordonnées de page, stables même si on défile).
+    // Les cartes masquées (display:none) sont ignorées : elles n'occupent pas de place.
+    const visibles = Array.from(liste.children).filter(c => c.offsetParent !== null);
+    const autres = visibles.filter(c => c !== card).map(c => ({
         el: c, top: c.getBoundingClientRect().top + window.scrollY, h: c.offsetHeight,
     }));
-    const origIndex = Array.from(list.children).indexOf(card);
+    const origIndex = visibles.indexOf(card);
 
     drag = {
-        card, poignee, onFin, autres, origIndex,
+        card, poignee, onFin, autres, origIndex, liste, gap,
         cible:       origIndex,
         origTop:     card.getBoundingClientRect().top + window.scrollY,
-        hauteur:     card.offsetHeight + GAP_CARTES,   // place que la carte occupe dans la liste
+        hauteur:     card.offsetHeight + gap,   // place que la carte occupe dans la liste
         startY:      e.clientY + window.scrollY,
         lastClientY: e.clientY,
         rafId:       0,
@@ -96,7 +98,7 @@ function lacher() {
     // La carte glisse en douceur jusqu'à son nouvel emplacement avant d'être réellement déplacée.
     let dyFinal = 0;
     if (d.cible > d.origIndex) {
-        for (let j = d.origIndex; j < d.cible; j++) dyFinal += d.autres[j].h + GAP_CARTES;
+        for (let j = d.origIndex; j < d.cible; j++) dyFinal += d.autres[j].h + d.gap;
     } else if (d.cible < d.origIndex) {
         dyFinal = d.autres[d.cible].top - d.origTop;
     }
@@ -114,7 +116,7 @@ function finaliser(d) {
 
     if (d.cible !== d.origIndex) {
         const ref = d.autres[d.cible]?.el || null;
-        document.getElementById('interventions-list').insertBefore(d.card, ref);
+        d.liste.insertBefore(d.card, ref);
         d.onFin();
     }
 }

@@ -1,22 +1,25 @@
 import { showToast, isoLocal } from '../utils/utils.js';
 import { chargerProfilsTechniciens } from './db_responsable.js';
 import { chargerMappingSecteurs, sauvegarderMappingSecteurs, chargerClientsFaitsRecents,
-         importerClientsPlanning, chargerDernierImport } from './db_clients.js';
+         importerClientsPlanning } from './db_clients.js';
 import { lireFichierExcel } from './clients_excel.js';
 import { proposerMapping, compterParSecteur, detecterDejaFaits,
          construireLignes, FENETRE_FAIT_RECENT_JOURS } from './clients_regles.js';
 import { renderEtapeMapping, renderEtapeAnomalies, renderEtapeRecap,
          lireMapping, lireCompany, lireChoixAnomalies, majFooter } from './clients_import_ui.js';
+import { entrepriseChoisie } from './responsable_entreprise.js';
+import { rafraichirOngletImport } from './responsable_planning.js';
 
 // ── Import du planning clients (page responsable) : enchaînement des étapes ──
 // Rien n'est écrit en base avant le clic « Importer maintenant » de l'étape 3.
 
-const etat = { company: '', companies: [], techs: [], fichier: '', rows: [], total: 0, ignorees: 0,
+const etat = { company: '', maCompany: '', companies: [], techs: [], fichier: '', rows: [], total: 0, ignorees: 0,
                mapping: {}, anomalies: null, choix: null, resultat: null, etape: 1 };
 
+// Entreprise proposée par défaut : celle choisie dans la barre latérale (compte multi-entreprises), sinon la sienne.
+const companyParDefaut = () => entrepriseChoisie() || etat.maCompany || etat.companies[0] || '';
 const body  = () => document.getElementById('clients-import-body');
 const modal = () => document.getElementById('modal-clients-import');
-
 const techsById = () => Object.fromEntries(etat.techs.map(t => [t.id, t.nom]));
 
 function fermer() {
@@ -78,7 +81,7 @@ async function ecrire() {
         });
         showToast(`Planning importé : ${etat.resultat.lignes.length} clients`, 'success', 4000);
         fermer();
-        rafraichirInfoImport();
+        rafraichirOngletImport();
     } catch (e) {
         showToast('L\'import a échoué : ' + (e?.message || e), 'error', 8000);
         majFooter(3);
@@ -114,7 +117,7 @@ async function demarrer(file) {
     showToast('Lecture du fichier…', '', 2000);
     try {
         const { rows, total, ignorees } = await lireFichierExcel(file);
-        Object.assign(etat, { rows, total, ignorees, fichier: file.name });
+        Object.assign(etat, { rows, total, ignorees, fichier: file.name, company: companyParDefaut() });
         modal().classList.add('open');
         await rendreEtape1();
     } catch (e) {
@@ -123,19 +126,12 @@ async function demarrer(file) {
     }
 }
 
-export async function rafraichirInfoImport() {
-    const info = document.getElementById('clients-import-info');
-    if (!info) return;
-    try {
-        const dernier = await chargerDernierImport(etat.company);
-        info.textContent = dernier ? `Dernier import : ${new Date(dernier.importe_le).toLocaleDateString('fr-FR')} · ${dernier.nb_importees} clients` : 'Aucun planning importé';
-    } catch { info.textContent = ''; }
-}
-
+// L'info « Dernier import » et le planning en cours vivent dans responsable_planning.js.
 export async function initImportClients(profil) {
     etat.techs     = await chargerProfilsTechniciens();
     etat.companies = [...new Set(etat.techs.map(t => t.company).filter(Boolean))];
-    etat.company   = profil.company || etat.companies[0] || '';
+    etat.maCompany = profil.company || '';
+    etat.company   = companyParDefaut();
 
     document.getElementById('btn-clients-import').addEventListener('click', () =>
         document.getElementById('clients-import-file').click());
@@ -143,5 +139,5 @@ export async function initImportClients(profil) {
     document.getElementById('btn-close-clients-import').addEventListener('click', fermer);
     document.getElementById('btn-clients-import-retour').addEventListener('click', etapePrecedente);
     document.getElementById('btn-clients-import-suivant').addEventListener('click', etapeSuivante);
-    rafraichirInfoImport();
+    rafraichirOngletImport();
 }

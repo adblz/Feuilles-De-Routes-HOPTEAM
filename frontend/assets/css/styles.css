@@ -643,6 +643,11 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 }
 
 /* Carte heures supplémentaires — vue semaine */
+/* Cartes réordonnables de l'accueil : poignée ≡ en haut à droite de chaque carte */
+#dash-cartes > .card { position: relative; }
+.dash-drag { position: absolute; top: 12px; right: 14px; }
+.card-dragging .dash-drag { cursor: grabbing; }
+
 .dash-supp-card {
     display: block; width: 100%; text-align: left;
     border: none; cursor: pointer; font-family: inherit;

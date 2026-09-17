@@ -20,6 +20,7 @@ import { showToast, attachPasswordToggle, attacherBoutonMiseAJour } from './util
 import { scrollVersCarte, sansBougerAEcran } from './utils/scroll.js';
 import { collapserToutesSauf } from './modules/fdr_collapse.js';
 import { initTimePicker } from './modules/timepicker.js';
+import { sortieSuppIncoherente, MSG_SORTIE_SUPP } from './modules/fdr_controles.js';
 
 // ── Initialisation de l'app après auth ────────────────────────
 
@@ -53,6 +54,9 @@ function initApp(user, nomProfil) {
         sauvegarderBrouillon();
     });
     document.getElementById('heure-fin').addEventListener('input', () => {
+        // Si une sortie supplémentaire est déjà saisie, prévenir tout de suite
+        // qu'elle ne peut plus démarrer avant cette nouvelle fin de journée.
+        if (sortieSuppIncoherente()) showToast(MSG_SORTIE_SUPP, 'warn', 4000);
         calcHeures();
         sauvegarderBrouillon();
     });
@@ -94,10 +98,8 @@ function initApp(user, nomProfil) {
         sauvegarderBrouillon();
     });
     document.getElementById('rappel-debut').addEventListener('input', () => {
-        const rDebut = document.getElementById('rappel-debut').value;
-        const hFin   = document.getElementById('heure-fin').value;
-        if (rDebut && hFin && rDebut <= hFin) {
-            showToast('Le départ de la sortie supplémentaire doit être après la fin de journée', 'warn', 4000);
+        if (sortieSuppIncoherente()) {
+            showToast(MSG_SORTIE_SUPP, 'warn', 4000);
             document.getElementById('rappel-debut').value = '';
             return;
         }

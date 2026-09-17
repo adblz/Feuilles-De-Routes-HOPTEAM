@@ -10,8 +10,10 @@ import { initNav, setPeriodesDisponibles, showTab } from './responsable_nav.js';
 import { initMonMotDePasse } from './responsable_password.js';
 import { initDetail, ouvrirDetail } from './responsable_detail.js';
 import { initHeures, rendreHeures } from './responsable_heures.js';
-import { initTechs } from './responsable_techs.js';
+import { initTechs, rechargerTechs } from './responsable_techs.js';
 import { initImportClients } from './clients_import.js';
+import { initPlanning, afficherPlanning, rafraichirOngletImport } from './responsable_planning.js';
+import { initEntreprise, setEntreprisesDisponibles } from './responsable_entreprise.js';
 
 // Après une validation ou un changement de période : les deux onglets qui
 // affichent les feuilles sont re-rendus.
@@ -20,11 +22,21 @@ function rendreOnglets() {
     rendreHeures();
 }
 
-// Après création / suppression d'un technicien : la liste des feuilles doit
-// connaître le nouveau compte (nom, entreprise).
+// Changement d'entreprise affichée (compte multi-entreprises) : les quatre
+// onglets suivent. Les erreurs des onglets secondaires ne bloquent pas les feuilles.
+function onEntrepriseChange() {
+    rendreOnglets();
+    rechargerTechs().catch(e => console.warn('Rechargement des techniciens impossible :', e));
+    rafraichirOngletImport();
+}
+
+// Après création / suppression d'un technicien : la liste des feuilles et le
+// planning clients doivent connaître le nouveau compte (nom, entreprise).
 async function onTechsChanges() {
+    rafraichirOngletImport();
     try {
         await liste.rechargerFeuilles();
+        setEntreprisesDisponibles(liste.entreprisesConnues());
         rendreOnglets();
     } catch (e) {
         console.warn('Rechargement des feuilles impossible :', e);
@@ -47,7 +59,11 @@ export async function initResponsable() {
     }
 
     initMonMotDePasse(profil);
-    initNav(onglet => { if (onglet === 'heures') rendreHeures(); });
+    initEntreprise(profil, { onChange: onEntrepriseChange });
+    initNav(onglet => {
+        if (onglet === 'heures') rendreHeures();
+        else if (onglet === 'import') afficherPlanning();
+    });
     initDetail({ onChange: rendreOnglets });
     initHeures({ onOuvrir: ouvrirDetail });
     cablerListe(document.getElementById('resp-list'), { onOuvrir: ouvrirDetail });
@@ -60,6 +76,7 @@ export async function initResponsable() {
 
     // Techniciens et import : indépendants des feuilles, ne doivent jamais bloquer l'affichage.
     initTechs(profil, { onChange: onTechsChanges }).catch(e => console.warn('Onglet techniciens indisponible :', e));
+    initPlanning(profil);
     initImportClients(profil).catch(e => console.warn('Import clients indisponible :', e));
 
     liste.afficherChargement();
@@ -71,6 +88,7 @@ export async function initResponsable() {
     }
 
     setPeriodesDisponibles(peuplerSelectPeriode());
+    setEntreprisesDisponibles(liste.entreprisesConnues());
     showTab('feuilles');
     rendreOnglets();
 }

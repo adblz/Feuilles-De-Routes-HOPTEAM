@@ -50,9 +50,13 @@
         <p class="dash-hero-sub" id="dash-hero-sub">…</p>
     </div>
 
+    <!-- Cartes réordonnables par glisser-déposer (poignée ≡), ordre mémorisé : voir dashboard_ordre.js -->
+    <div id="dash-cartes">
+
     <!-- Récap heures supplémentaires -->
-    <button class="card dash-supp-card" id="dash-supp-card" type="button"
+    <button class="card dash-supp-card" id="dash-supp-card" type="button" data-bloc="supp"
             aria-label="Voir le détail des heures de la semaine">
+        <span class="btn-drag dash-drag" role="button" title="Glisser pour déplacer" aria-label="Déplacer la carte">&#8801;</span>
         <div class="dash-supp-meta">
             <span class="dash-supp-semaine-lbl">Cette semaine</span>
             <span class="dash-supp-dates" id="dash-supp-dates"></span>
@@ -62,15 +66,17 @@
     </button>
 
     <!-- Clients à faire (planning importé par le responsable ; masquée si vide) -->
-    <button class="card dash-clients-card hidden" id="dash-clients-card" type="button"
+    <button class="card dash-clients-card hidden" id="dash-clients-card" type="button" data-bloc="clients"
             aria-label="Voir mes clients à faire">
+        <span class="btn-drag dash-drag" role="button" title="Glisser pour déplacer" aria-label="Déplacer la carte">&#8801;</span>
         <p class="dash-eyebrow">Clients à faire</p>
         <div class="dash-clients-hero" id="dash-clients-hero">…</div>
         <p class="dash-clients-sub" id="dash-clients-sub"></p>
     </button>
 
     <!-- Carnet du mois -->
-    <div class="card">
+    <div class="card" data-bloc="carnet">
+        <span class="btn-drag dash-drag" role="button" title="Glisser pour déplacer" aria-label="Déplacer la carte">&#8801;</span>
         <p class="dash-eyebrow">Carnet de route</p>
         <div class="dash-cal-nav">
             <button class="btn-cal-nav" id="btn-cal-prev" title="Mois précédent" aria-label="Mois précédent">&#8249;</button>
@@ -95,6 +101,7 @@
         </div>
     </div>
 
+    </div><!-- /dash-cartes -->
 
 </div>
 

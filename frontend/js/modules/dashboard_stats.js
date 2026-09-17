@@ -35,7 +35,7 @@ export async function rendreHeuresSupp() {
         return;
     }
 
-    const { label, totalTravailMin, nbJours } = semaines[0];
+    const { totalTravailMin, nbJours } = semaines[0];
 
     // Choix produit : sur cette carte les heures supp. se comptent JOUR PAR JOUR,
     // chaque journée étant comparée à son propre seuil (7h en contrat 35h, 8h —
@@ -45,7 +45,7 @@ export async function rendreHeuresSupp() {
     const totalSuppMin = totalSuppNet(histo);
     const baseMin      = baseSemaine(histo);
 
-    if (datesEl) datesEl.textContent = label;
+    if (datesEl) datesEl.textContent = '';
     heroEl.textContent = affHSigne(totalSuppMin);
     heroEl.classList.toggle('est-negatif', totalSuppMin < 0);
 

@@ -73,7 +73,7 @@ function carteSemaine(s) {
     <details name="heures-semaine" class="heures-carte heures-semaine-carte${partielle}">
         <summary class="heures-semaine-resume">
             <div class="heures-semaine-entete">
-                <span class="heures-semaine-label">${s.label}</span>
+                <span class="heures-semaine-label">${s.labelCourt}</span>
                 <span class="heures-semaine-jours">${s.nbJours} jour${s.nbJours > 1 ? 's' : ''}</span>
             </div>
             <div class="heures-barre">${barre}</div>

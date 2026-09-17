@@ -4,6 +4,7 @@ import { reinitialiserFeuille } from './ui.js';
 import { initCalendrier, rendreCalendrierMois, resetCalOffset, initCalNav } from './dashboard_calendar.js';
 import { rendreHeuresSupp } from './dashboard_stats.js';
 import { majClientsCard, initClientsCard } from './dashboard_clients.js';
+import { initOrdreDashboard } from './dashboard_ordre.js';
 
 const aujourdhui = () => isoLocal(new Date());
 
@@ -51,6 +52,7 @@ export function initDashboard(nomTech) {
     initCalendrier(ouvrirNouvelleFeuille, finaliserBrouillon);
     initCalNav();
     initClientsCard();
+    initOrdreDashboard();
 
     const greeting = document.getElementById('dash-greeting');
     if (greeting) greeting.textContent = nomTech || 'Mon espace';

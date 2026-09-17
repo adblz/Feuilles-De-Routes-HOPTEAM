@@ -440,7 +440,15 @@
     border-bottom: 1px solid var(--adm-border);
 }
 .heures-jour-table td { padding: 7px 8px; border-bottom: 1px solid var(--adm-border-soft); color: var(--adm-text-soft); vertical-align: middle; }
-.heures-jour-table td.num { font-family: 'IBM Plex Mono', monospace; text-align: right; white-space: nowrap; }
+/* Colonnes Déclaré / Validé / État : titre et valeur centrés, largeur fixe.
+   Jour et Commentaire restent à gauche (texte), Commentaire prend le reste. */
+.heures-jour-table th.num,
+.heures-jour-table td.num,
+.heures-jour-table th:nth-child(4),
+.heures-jour-table td:nth-child(4) { text-align: center; width: 110px; white-space: nowrap; }
+.heures-jour-table th:first-child,
+.heures-jour-table td:first-child { width: 120px; white-space: nowrap; }
+.heures-jour-table td.num { font-family: 'IBM Plex Mono', monospace; }
 .heures-jour-table td.num.valide { color: var(--adm-emerald); font-weight: 600; }
 .heures-jour-table td.commentaire { font-size: 12px; font-style: italic; }
 .heures-jour-table tfoot td { font-weight: 700; color: var(--adm-text); border-top: 2px solid var(--adm-border); }
@@ -480,6 +488,62 @@
 .resp-import-titre { margin: 0 0 8px; font-size: 16px; font-weight: 700; color: var(--adm-text); }
 .resp-import-zone { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .resp-import-info { font-size: 12px; color: var(--adm-text-soft); }
+
+/* Planning en cours + historique des imports (sous la carte d'import) */
+.resp-import-section { margin: 28px 0 12px; }
+#resp-planning-resume { margin-left: auto; white-space: nowrap; }
+
+.plan-table { font-size: 13px; }
+.plan-table td { padding-top: 8px; padding-bottom: 8px; }
+.plan-postes { color: var(--adm-muted); }
+.plan-actions { white-space: nowrap; }
+.plan-non-affecte .resp-avatar { background: var(--adm-amber-100); color: var(--adm-amber-800); }
+.heures-tech-total.plan-total-retard strong { color: var(--adm-red); }
+
+.plan-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-family: 'IBM Plex Mono', monospace;
+}
+.plan-prevu     { background: var(--adm-slate-100); color: var(--adm-text-soft); }
+.plan-sans-date { background: var(--adm-slate-100); color: var(--adm-muted); font-family: 'IBM Plex Sans', sans-serif; }
+.plan-retard    { background: var(--adm-red-50); color: var(--adm-red); }
+.plan-fait      { background: var(--adm-emerald-100); color: var(--adm-emerald-800); }
+.plan-dernier   { background: var(--adm-indigo-100); color: var(--adm-indigo); font-family: 'IBM Plex Sans', sans-serif; }
+
+.plan-select-tech {
+    max-width: 180px;
+    padding: 5px 8px;
+    border: 1px solid var(--adm-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--adm-card);
+    color: var(--adm-text);
+    cursor: pointer;
+    vertical-align: middle;
+}
+.plan-select-tech:focus { outline: none; border-color: var(--adm-indigo); box-shadow: 0 0 0 3px var(--adm-indigo-50); }
+
+.plan-nb { text-align: right; font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
+.plan-import-dernier td { background: var(--adm-indigo-50); }
+.btn-annuler-import {
+    margin-left: 8px;
+    padding: 5px 10px;
+    border: 1px solid var(--adm-red);
+    border-radius: 8px;
+    background: var(--adm-card);
+    color: var(--adm-red);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'IBM Plex Sans', sans-serif;
+    cursor: pointer;
+}
+.btn-annuler-import:hover { background: var(--adm-red-50); }
 
 .modal-import { max-width: 720px; max-height: 88vh; }
 
@@ -575,4 +639,38 @@
     .imp-table td { display: block; border: none; padding: 2px 0; }
     .imp-nb { text-align: left; font-size: 12px; }
     .imp-choix { flex-direction: column; gap: 8px; }
+    .plan-col-sec { display: none; }
+    #resp-planning-resume { margin-left: 0; }
 }
+
+/* ── Choix de l'entreprise affichée (barre latérale, comptes multi-entreprises) ── */
+.sidebar-entreprise {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--adm-sidebar-2);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.03);
+}
+.sidebar-entreprise-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--adm-sidebar-text);
+    opacity: 0.8;
+}
+.sidebar-entreprise-select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--adm-sidebar-2);
+    border-radius: 8px;
+    background: var(--adm-sidebar-2);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+}
+.sidebar-entreprise-select:focus { outline: none; border-color: var(--adm-indigo); }

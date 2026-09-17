@@ -128,7 +128,7 @@ export function ajouterIntervention(data = {}) {
     if (data.planningId) div.dataset.planningId = data.planningId;
 
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`int-card-${n}`));
-    activerDragCarte(div, div.querySelector('.btn-drag'), apresReordonnancement);
+    activerDragCarte(div, div.querySelector('.btn-drag'), apresReordonnancement, () => collapserToutesSauf(null));
     brancherPliage(div);
 
     div.querySelectorAll('.type-btn').forEach(btn => {
@@ -214,7 +214,7 @@ export function ajouterPause(data = {}) {
     if (data.fin)   document.getElementById(`p${n}-fin`).value   = data.fin;
 
     div.querySelector('.btn-remove').addEventListener('click', () => supprimerElement(`pause-card-${n}`));
-    activerDragCarte(div, div.querySelector('.btn-drag'), apresReordonnancement);
+    activerDragCarte(div, div.querySelector('.btn-drag'), apresReordonnancement, () => collapserToutesSauf(null));
     brancherPliage(div);
 
     div.querySelectorAll('input').forEach(el => {

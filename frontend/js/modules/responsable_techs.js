@@ -7,6 +7,7 @@ import { creerTechnicien, modifierTechnicien, reinitialiserMotDePasse, supprimer
 import { renderTechsTable } from './responsable_techs_table.js';
 import { initTechsUI, ouvrirModalCreer, ouvrirModalModifier, ouvrirModalPassword } from './responsable_techs_ui.js';
 import { showToast } from '../utils/utils.js';
+import { entrepriseChoisie, peutGererEntrepriseAffichee } from './responsable_entreprise.js';
 
 let _company = '';
 let _techs = [];
@@ -17,13 +18,27 @@ function techParId(id) {
     return _techs.find(t => t.id === id) || null;
 }
 
+function rendre() {
+    renderTechsTable(_techs, _filtre, { lectureSeule: !peutGererEntrepriseAffichee() });
+}
+
+// Bouton « Nouveau technicien » : uniquement pour sa propre entreprise.
+function majBoutonNouveau() {
+    const btn = document.getElementById('btn-nouveau-tech');
+    btn.disabled = !peutGererEntrepriseAffichee();
+    btn.title = btn.disabled ? 'Vous ne pouvez créer des techniciens que dans votre entreprise' : '';
+}
+
 export async function rechargerTechs() {
     try {
         const tous = await chargerProfilsTechniciens();
-        // Même si le responsable voit plusieurs entreprises en lecture, il ne
-        // gère que la sienne (règle identique côté backend).
-        _techs = tous.filter(t => (t.company || '') === (_company || ''));
-        renderTechsTable(_techs, _filtre);
+        // Un responsable classique ne gère que sa propre entreprise (règle
+        // identique côté backend). Un compte multi-entreprises peut afficher
+        // celle de son choix, en lecture seule si ce n'est pas la sienne.
+        const affichee = entrepriseChoisie() || _company || '';
+        _techs = tous.filter(t => (t.company || '') === affichee);
+        majBoutonNouveau();
+        rendre();
     } catch (e) {
         showToast('Erreur de chargement des techniciens : ' + e.message, 'warn');
     }
@@ -86,7 +101,7 @@ export async function initTechs(profil, { onChange } = {}) {
     document.getElementById('btn-nouveau-tech').addEventListener('click', ouvrirModalCreer);
     document.getElementById('resp-techs-recherche').addEventListener('input', e => {
         _filtre = e.target.value;
-        renderTechsTable(_techs, _filtre);
+        rendre();
     });
 
     document.getElementById('resp-techs-tbody').addEventListener('click', e => {
