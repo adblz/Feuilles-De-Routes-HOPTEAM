@@ -426,6 +426,7 @@
     color: var(--adm-text);
 }
 .heures-tech-total.valide strong { color: var(--adm-emerald); }
+.heures-tech-total small { font-size: 10px; color: var(--adm-muted); font-family: 'IBM Plex Mono', monospace; }
 
 .heures-tech-body { padding: 0 16px 12px; border-top: 1px solid var(--adm-border-soft); }
 
@@ -440,18 +441,44 @@
     border-bottom: 1px solid var(--adm-border);
 }
 .heures-jour-table td { padding: 7px 8px; border-bottom: 1px solid var(--adm-border-soft); color: var(--adm-text-soft); vertical-align: middle; }
-/* Colonnes Déclaré / Validé / État : titre et valeur centrés, largeur fixe.
+/* Colonnes Travaillé déclaré / validé / Écart / État : centrées, largeur fixe.
    Jour et Commentaire restent à gauche (texte), Commentaire prend le reste. */
 .heures-jour-table th.num,
 .heures-jour-table td.num,
-.heures-jour-table th:nth-child(4),
-.heures-jour-table td:nth-child(4) { text-align: center; width: 110px; white-space: nowrap; }
+.heures-jour-table th:nth-child(5),
+.heures-jour-table td:nth-child(5) { text-align: center; width: 110px; white-space: nowrap; }
 .heures-jour-table th:first-child,
 .heures-jour-table td:first-child { width: 120px; white-space: nowrap; }
 .heures-jour-table td.num { font-family: 'IBM Plex Mono', monospace; }
 .heures-jour-table td.num.valide { color: var(--adm-emerald); font-weight: 600; }
+.heures-jour-table td.num.ecart { color: var(--adm-muted); font-size: 12px; }
 .heures-jour-table td.commentaire { font-size: 12px; font-style: italic; }
 .heures-jour-table tfoot td { font-weight: 700; color: var(--adm-text); border-top: 2px solid var(--adm-border); }
+
+/* Jours ouvrés sans feuille (comptent 0h) et jours de congé : grisés. */
+.heures-jour-table tr.heures-jour-manquant td,
+.heures-jour-table tr.heures-jour-conge td { color: var(--adm-muted); font-style: italic; background: var(--adm-slate-50, #f8fafc); }
+
+/* Sous-total de semaine : c'est ici qu'apparaissent les vraies heures supp. */
+.heures-jour-table tr.heures-semaine-total td {
+    background: var(--adm-slate-100);
+    color: var(--adm-text);
+    font-weight: 600;
+    border-bottom: 2px solid var(--adm-border);
+}
+.heures-jour-table tr.heures-semaine-total td:first-child { white-space: normal; width: auto; }
+.heures-jour-table .heures-seuil { font-weight: 400; font-size: 11px; color: var(--adm-muted); }
+.heures-jour-table .heures-majo  { font-weight: 400; font-size: 11px; color: var(--adm-muted); font-family: 'IBM Plex Mono', monospace; }
+.heures-jour-table .heures-muet  { color: var(--adm-muted); font-weight: 400; }
+.resp-badge-astreinte {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--adm-slate-100);
+    color: var(--adm-text-soft);
+    vertical-align: middle;
+}
 .btn-heures-ouvrir {
     background: transparent;
     border: 1px solid var(--adm-border);

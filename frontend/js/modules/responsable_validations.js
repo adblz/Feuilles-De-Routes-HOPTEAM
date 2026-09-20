@@ -38,13 +38,3 @@ export function estObsolete(feuille, validation) {
     if (!feuille?.created_at || !validation?.validee_le) return false;
     return new Date(feuille.created_at).getTime() > new Date(validation.validee_le).getTime();
 }
-
-// Somme des minutes validées pour un technicien parmi une liste de feuilles.
-export function totalValideMin(feuilles) {
-    let total = 0;
-    for (const f of feuilles) {
-        const v = validationPour(f);
-        if (v) total += v.heures_validees_min || 0;
-    }
-    return total;
-}

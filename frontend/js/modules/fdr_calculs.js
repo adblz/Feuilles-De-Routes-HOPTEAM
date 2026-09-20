@@ -1,20 +1,34 @@
-import { affH, normaliserSupp, showToast } from '../utils/utils.js';
+import { affH, affHSigne, normaliserDuree, parseDuree, showToast } from '../utils/utils.js';
 import { cfg } from './fdr_config.js';
-import { calcHeuresNuit } from './heures_calculs.js';
-import { seuilJourPour } from './seuil_jour.js';
+import { calcHeuresNuit } from './heures_nuit.js';
+import { seuilJourEffectif } from './seuil_jour.js';
+import { estFerie } from './jours_feries.js';
 
-// ── État heures supplémentaires ────────────────────────────────
+// ── État « heures travaillées corrigées à la main » ────────────
+//
+// Le technicien peut corriger ses heures travaillées (ex. 30 min passées à
+// discuter avec un client, non comptées comme pause). C'est cette valeur qui
+// est enregistrée et qui sert à TOUS les calculs d'heures supp. Les heures
+// supp du jour ne sont qu'un affichage : travaillé − seuil du jour.
 
-let suppManuel = false;
-export function getSuppManuel() { return suppManuel; }
-export function setSuppManuel(v) { suppManuel = v; }
+let travailManuel = false;
+export function getTravailManuel() { return travailManuel; }
+export function setTravailManuel(v) { travailManuel = v; }
 
 // ── Calcul des heures ──────────────────────────────────────────
 
-// Seuil du jour affiché dans le formulaire : la date vient du champ « date »,
-// le calcul lui-même vit dans seuil_jour.js (partagé avec le tableau de bord).
+// Seuil du jour affiché dans le formulaire (0 le week-end et les fériés).
 export function seuilJour() {
-    return seuilJourPour(document.getElementById('date')?.value, cfg.contrat);
+    return seuilJourEffectif(document.getElementById('date')?.value, cfg.contrat);
+}
+
+function labelSeuil(dateStr, sMin) {
+    if (!dateStr) return `(seuil ${sMin / 60}h)`;
+    const jour = new Date(dateStr + 'T12:00').getDay();
+    if (jour === 0 || jour === 6) return '(week-end : tout compte)';
+    if (estFerie(dateStr))         return '(férié : tout compte)';
+    if (cfg.contrat === '39' && jour === 5) return '(seuil 7h — vendredi 39h)';
+    return `(seuil ${sMin / 60}h)`;
 }
 
 // Durée du rappel en minutes (lu directement dans le DOM pour éviter
@@ -30,6 +44,12 @@ function dureeRappel() {
     return min > 0 ? min : 0;
 }
 
+// Heures supp. du jour = heures travaillées (corrigées ou non) − seuil du jour.
+function majSuppJour() {
+    const travailMin = parseDuree(document.getElementById('heures-travail').value);
+    document.getElementById('heures-supp').value = affHSigne(travailMin - seuilJour());
+}
+
 export function calcHeures() {
     const debut = document.getElementById('heure-debut').value;
     const fin   = document.getElementById('heure-fin').value;
@@ -37,10 +57,7 @@ export function calcHeures() {
 
     const sMin   = seuilJour();
     const sLabel = document.getElementById('seuil-label');
-    if (sLabel) {
-        const jourEst39Ven = cfg.contrat === '39' && sMin === 7 * 60;
-        sLabel.textContent = jourEst39Ven ? '(seuil 7h — vendredi 39h)' : `(seuil ${sMin / 60}h)`;
-    }
+    if (sLabel) sLabel.textContent = labelSeuil(document.getElementById('date')?.value, sMin);
 
     if (!debut || !fin) return;
 
@@ -62,10 +79,8 @@ export function calcHeures() {
     // Le « trou » entre la journée et le rappel n'est jamais saisi, donc jamais compté.
     totalMin += dureeRappel();
 
-    document.getElementById('heures-travail').value = affH(totalMin);
-    if (!suppManuel) {
-        document.getElementById('heures-supp').value = affH(Math.max(0, totalMin - sMin));
-    }
+    if (!travailManuel) document.getElementById('heures-travail').value = affH(totalMin);
+    majSuppJour();
 
     // Nuit = journée principale + rappel éventuel (compté en entier).
     // Marge non comptée à chaque bout = moitié du trajet du jour (trajet 60 → 30
@@ -81,36 +96,50 @@ export function calcHeures() {
     }
 }
 
-export function onSuppInput() {
-    if (!suppManuel) {
-        suppManuel = true;
-        const input = document.getElementById('heures-supp');
-        input.classList.remove('auto-field');
-        input.classList.add('auto-field-manual');
-        document.getElementById('btn-supp-auto').style.display = 'block';
-    }
+// ── Correction manuelle des heures travaillées ─────────────────
+
+function afficherModeManuel(manuel) {
+    const input = document.getElementById('heures-travail');
+    input.classList.toggle('auto-field', !manuel);
+    input.classList.toggle('auto-field-manual', manuel);
+    document.getElementById('btn-travail-auto').style.display = manuel ? 'block' : 'none';
 }
 
-// Vérifie la saisie manuelle à la sortie du champ : corrige ce qui est
-// corrigeable, sinon revient au calcul automatique avec un message.
-export function validerSuppInput() {
-    if (!suppManuel) return;
-    const input = document.getElementById('heures-supp');
-    const res = normaliserSupp(input.value);
+export function onTravailInput() {
+    if (travailManuel) return;
+    travailManuel = true;
+    afficherModeManuel(true);
+}
+
+// Vérifie la saisie à la sortie du champ : corrige ce qui est corrigeable,
+// sinon revient au calcul automatique avec un message.
+export function validerTravailInput() {
+    if (!travailManuel) return;
+    const input = document.getElementById('heures-travail');
+    const res = normaliserDuree(input.value);
     if (res.ok) {
         input.value = res.value;
+        majSuppJour();
     } else {
-        showToast('Heures supp. non valides — retour au calcul automatique (format : 3h00)', 'warn', 4000);
-        resetSuppAuto();
+        showToast('Heures travaillées non valides — retour au calcul automatique (format : 7h30)', 'warn', 4000);
+        resetTravailAuto();
     }
 }
 
-export function resetSuppAuto() {
-    suppManuel = false;
-    const input = document.getElementById('heures-supp');
-    input.classList.add('auto-field');
-    input.classList.remove('auto-field-manual');
-    document.getElementById('btn-supp-auto').style.display = 'none';
+// Restaure une valeur corrigée (feuille rechargée, brouillon) sans repasser
+// par le calcul automatique.
+export function restaurerTravailManuel(valeur) {
+    travailManuel = true;
+    afficherModeManuel(true);
+    document.getElementById('heures-travail').value = valeur;
+    majSuppJour();
+}
+
+export function resetTravailAuto() {
+    travailManuel = false;
+    afficherModeManuel(false);
+    document.getElementById('heures-travail').value = '';
+    document.getElementById('heures-supp').value    = '';
     calcHeures();
     document.dispatchEvent(new CustomEvent('form:changed'));
 }

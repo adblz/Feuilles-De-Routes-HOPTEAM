@@ -43,8 +43,7 @@ export let cfg = {
     //    en localStorage pour fonctionner hors-ligne / au rechargement) ──
     logoB64:           localStorage.getItem('cfg_logo_b64') || '',      // logo entreprise (base64) ; vide = logo HopTeam
     trajetMinutes:     normInt(localStorage.getItem('cfg_trajet_minutes'), 60),   // trajet retiré/jour
-    seuilHebdoMinutes: normInt(localStorage.getItem('cfg_seuil_hebdo'), 2100),    // seuil heures supp/semaine (35 h)
-    palier25Minutes:   normInt(localStorage.getItem('cfg_palier_25'), 480),       // 8 premières h supp à +25 %
+    // (seuil hebdo et palier 25 % : plus de réglage entreprise, le contrat décide — voir seuil_jour.js)
     nuitDebut:         normInt(localStorage.getItem('cfg_nuit_debut'), 1260),     // début plage nuit (21 h en min)
     nuitFin:           normInt(localStorage.getItem('cfg_nuit_fin'), 360),        // fin plage nuit (6 h en min)
     pdfMentions:       localStorage.getItem('cfg_pdf_mentions') || '',            // mentions pied de PDF
@@ -63,15 +62,13 @@ export function setReglesEntreprise(regles) {
     if (!regles) return;
     setTrajetMinutes(regles.trajet_minutes);
     cfg.logoB64           = regles.logo_b64 || '';
-    cfg.seuilHebdoMinutes = normInt(regles.seuil_hebdo_minutes, 2100);
-    cfg.palier25Minutes   = normInt(regles.palier_25_minutes, 480);
     cfg.nuitDebut         = normInt(regles.nuit_debut, 1260);
     cfg.nuitFin           = normInt(regles.nuit_fin, 360);
     cfg.pdfMentions       = regles.pdf_mentions || '';
     cfg.moisCalendaire    = !!regles.mois_calendaire;
     localStorage.setItem('cfg_logo_b64',    cfg.logoB64);
-    localStorage.setItem('cfg_seuil_hebdo', String(cfg.seuilHebdoMinutes));
-    localStorage.setItem('cfg_palier_25',   String(cfg.palier25Minutes));
+    localStorage.removeItem('cfg_seuil_hebdo');   // anciens réglages, plus utilisés
+    localStorage.removeItem('cfg_palier_25');
     localStorage.setItem('cfg_nuit_debut',  String(cfg.nuitDebut));
     localStorage.setItem('cfg_nuit_fin',    String(cfg.nuitFin));
     localStorage.setItem('cfg_pdf_mentions', cfg.pdfMentions);

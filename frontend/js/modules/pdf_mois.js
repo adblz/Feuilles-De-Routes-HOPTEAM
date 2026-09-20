@@ -2,8 +2,9 @@
 // en-tête, totaux, tableau de synthèse jour par jour, puis le détail complet.
 
 import { cfg, getLogoBase64 } from './fdr_config.js';
-import { affH, escHtml } from '../utils/utils.js';
-import { totauxSuppPeriode } from './heures_calculs.js';
+import { affH, escHtml, isoLocal } from '../utils/utils.js';
+import { semainesPeriode, totauxSuppPeriode } from './heures_calculs.js';
+import { palier25Pour } from './seuil_jour.js';
 import { rangeLabel } from './periodes_paie.js';
 import { tableauSynthese } from './pdf_mois_table.js';
 import { renderDetailJours } from './pdf_mois_detail.js';
@@ -37,8 +38,7 @@ function bandeExtras(t) {
     return items.length ? `<div class="pdf-mois-bande">${items.join('')}</div>` : '';
 }
 
-function blocTotaux(feuilles) {
-    const t = totauxSuppPeriode(feuilles);
+function blocTotaux(t, feuilles) {
     const nbJoursTravailles = feuilles.filter(f => !f.conge).length;
     return `
         <div class="pdf-mois-totaux">
@@ -50,7 +50,7 @@ function blocTotaux(feuilles) {
         ${bandeExtras(t)}`;
 }
 
-function entete(titre, sousTitre, tech) {
+function entete(titre, sousTitre, tech, contrat) {
     const logo = getLogoBase64();
     return `
         <div class="pdf-top">
@@ -66,32 +66,39 @@ function entete(titre, sousTitre, tech) {
         </div>
         <div class="pdf-technicien-row" style="display:flex;justify-content:space-between;align-items:center;">
             <span>Technicien : ${escHtml(tech || '—')}</span>
-            <span style="font-size:11px;font-weight:400;color:#4a5568;">Contrat ${escHtml(cfg.contrat)}h</span>
+            <span style="font-size:11px;font-weight:400;color:#4a5568;">Contrat ${escHtml(contrat)}h · seuil ${escHtml(contrat)}h/semaine · 25 % jusqu'à ${affH(palier25Pour(contrat))}</span>
         </div>`;
 }
 
-// feuilles : lignes de chargerMoisDetail() (triées par date, non vide).
+// feuilles : lignes de chargerMoisDetail() sur des semaines ENTIÈRES
+// (bornesEtendues), triées par date. Seules les semaines dont le dimanche
+// tombe dans [debut, fin] sont retenues, en entier.
 // titrePlanning : intitulé de la période du planning (« Juillet 2026 ») quand
 // l'écran Heures en affiche une ; sinon on déduit le titre des deux dates.
 export function construireRecapMois(feuilles, debut, fin, titrePlanning = null) {
+    const opts      = { contrat: cfg.contrat, aujourdhui: isoLocal(new Date()) };
+    const semaines  = semainesPeriode(feuilles, opts, debut, fin);
+    const totaux    = totauxSuppPeriode(feuilles, opts, debut, fin);
+    const retenues  = semaines.flatMap(s => s.feuilles);
     const titre     = titrePlanning || titrePeriode(debut, fin);
     const sousTitre = rangeLabel(debut, fin);
-    const tech      = feuilles.find(f => f.tech)?.tech || '';
+    const tech      = retenues.find(f => f.tech)?.tech || feuilles.find(f => f.tech)?.tech || '';
     return `
-        ${entete(titre, sousTitre, tech)}
-        ${blocTotaux(feuilles)}
+        ${entete(titre, sousTitre, tech, totaux.contrat)}
+        ${blocTotaux(totaux, retenues)}
         <div class="pdf-section-title pdf-mois-titre">Synthèse par jour</div>
-        ${tableauSynthese(feuilles)}
+        ${tableauSynthese(semaines, totaux)}
         <div class="pdf-mois-note">
-            Les heures supplémentaires retenues sont calculées <strong>par semaine</strong>
-            (au-delà de ${cfg.seuilHebdoMinutes / 60}h), sur les seules journées comprises dans la période :
-            ce sont les sous-totaux de semaine et le TOTAL ci-dessus.
-            La colonne « Supp. jour » rappelle seulement ce qui figure sur la feuille de route de la journée ;
-            elle n'est pas totalisée, car une journée courte n'y génère aucune heure supplémentaire
-            alors qu'elle compte entièrement dans le total de la semaine.
+            Les heures supplémentaires sont calculées <strong>par semaine</strong> (lundi → dimanche) :
+            heures travaillées moins la durée du contrat (${escHtml(totaux.contrat)}h), elle-même réduite des jours
+            fériés et des congés. Un jour ouvré sans feuille compte 0h travaillée.
+            Majoration légale : ${affH(palier25Pour(totaux.contrat))} à +25 %, le reste à +50 %.
+            La colonne « Écart jour » rappelle l'écart de chaque journée à son seuil (7h ou 8h, 0h le week-end
+            et les fériés) ; elle n'est pas totalisée. Les heures travaillées sont celles déclarées par le
+            technicien, qui peut les corriger sur sa feuille.
         </div>
         <div class="pdf-section-title pdf-mois-break">Détail jour par jour</div>
-        ${renderDetailJours(feuilles)}`;
+        ${renderDetailJours(retenues, totaux.contrat)}`;
 }
 
 export function nomFichierRecap(debut, fin, tech) {

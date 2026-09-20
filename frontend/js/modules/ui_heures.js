@@ -1,11 +1,13 @@
-import { parseDuree, affH } from '../utils/utils.js';
+import { affH, affHSigne, escHtml, isoLocal } from '../utils/utils.js';
 import { chargerHeuresSupp } from './db.js';
-import { totauxSuppPeriode } from './heures_calculs.js';
+import { cfg } from './fdr_config.js';
+import { totauxSuppPeriode, semainesPeriode } from './heures_calculs.js';
+import { bornesEtendues } from './semaines.js';
 import { fermerTousLesModals } from './ui_settings.js';
 
 export function ouvrirSuppRecap() {
     fermerTousLesModals();
-    const today        = new Date().toISOString().split('T')[0];
+    const today        = isoLocal(new Date());
     const firstOfMonth = today.slice(0, 8) + '01';
     document.getElementById('supp-date-debut').value = firstOfMonth;
     document.getElementById('supp-date-fin').value   = today;
@@ -13,6 +15,8 @@ export function ouvrirSuppRecap() {
     document.getElementById('modal-supp').classList.add('open');
 }
 
+// Récap rapide : même calcul que l'onglet Heures (semaines entières,
+// heures travaillées − contrat), présenté semaine par semaine.
 export async function calculerSuppRecap() {
     const debut  = document.getElementById('supp-date-debut').value;
     const fin    = document.getElementById('supp-date-fin').value;
@@ -21,34 +25,38 @@ export async function calculerSuppRecap() {
 
     let histo;
     try {
-        histo = await chargerHeuresSupp(debut, fin);
+        const bornes = bornesEtendues(debut, fin);
+        histo = await chargerHeuresSupp(bornes.debut, bornes.fin);
     } catch {
         result.innerHTML = '<div class="supp-empty">Erreur de chargement. Vérifiez votre connexion.</div>';
         return;
     }
 
-    if (!histo.length) {
+    const opts     = { contrat: cfg.contrat, aujourdhui: isoLocal(new Date()) };
+    const semaines = semainesPeriode(histo, opts, debut, fin);
+    if (!semaines.length) {
         result.innerHTML = '<div class="supp-empty">Aucune feuille de route sur cette période.</div>';
         return;
     }
 
-    const totalMin = totauxSuppPeriode(histo).supp;
-
-    const avecSupp  = histo.filter(e => parseDuree(e.heures_supp) > 0);
-    const tableHtml = avecSupp.length ? `
+    const totaux    = totauxSuppPeriode(histo, opts, debut, fin);
+    const tableHtml = `
         <table class="supp-table">
-            <thead><tr><th>Date</th><th>Technicien</th><th>Supp.</th></tr></thead>
-            <tbody>${avecSupp.map(e => {
-                const dateAff = new Date(e.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-                return `<tr><td>${dateAff}</td><td>${e.tech || '—'}</td><td class="supp-td-val">${affH(parseDuree(e.heures_supp))}</td></tr>`;
-            }).join('')}</tbody>
-        </table>` : '<p class="supp-no-supp">Aucune heure supplémentaire sur cette période.</p>';
+            <thead><tr><th>Semaine</th><th>Travaillé</th><th>Supp.</th></tr></thead>
+            <tbody>${semaines.map(s => `
+                <tr>
+                    <td>${escHtml(s.labelCourt)}</td>
+                    <td>${affH(s.totalTravailMin)} <span class="supp-no-supp">/ ${affH(s.seuilMin)}</span></td>
+                    <td class="supp-td-val">${s.totalSuppMin > 0 ? '+' + affH(s.totalSuppMin) : affHSigne(s.netMin)}</td>
+                </tr>`).join('')}</tbody>
+        </table>`;
 
+    const nbFeuilles = semaines.reduce((t, s) => t + s.nbJours, 0);
     result.innerHTML = `
         <div class="supp-total-block">
             <div class="supp-total-label">Total heures supp.</div>
-            <div class="supp-total">${affH(totalMin)}</div>
-            <div class="supp-total-sub">${histo.length} feuille${histo.length > 1 ? 's' : ''} sur la période</div>
+            <div class="supp-total">${affH(totaux.supp)}</div>
+            <div class="supp-total-sub">${nbFeuilles} feuille${nbFeuilles > 1 ? 's' : ''} · 25 % : ${affH(totaux.supp25)} · 50 % : ${affH(totaux.supp50)}</div>
         </div>
         ${tableHtml}`;
 }

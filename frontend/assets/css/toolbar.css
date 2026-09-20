@@ -548,6 +548,7 @@ html, body {
 
 .heures-badge.badge-ferie      { background: rgba(251,191,36,.15); color: #d97706; }
 .heures-badge.badge-conge      { background: rgba(197,48,48,.12);  color: #c53030; }
+.heures-badge.badge-manquant   { background: rgba(113,128,150,.15); color: #4a5568; }
 .heures-badge.badge-25        { background: rgba(226,135,46,.15); color: var(--amber); }
 .heures-badge.badge-50        { background: rgba(248,113,113,.15); color: #f87171; }
 .heures-badge.badge-nuit      { background: rgba(167,139,250,.15); color: #a78bfa; }

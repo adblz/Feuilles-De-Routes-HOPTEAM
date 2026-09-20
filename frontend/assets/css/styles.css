@@ -323,6 +323,15 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 }
 .btn-supp-auto:hover { background: #feebc8; }
 
+/* Petite note grise à côté d'un libellé (seuil du jour, « corrigeable »). */
+.label-note {
+    font-weight: 400;
+    color: #718096;
+    font-size: 11px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
 /* Intervention */
 .intervention-card {
     background: var(--paper-dim);
@@ -1181,7 +1190,7 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
     .form-grid-2col .form-group select { padding: 8px 6px; height: 42px !important; box-sizing: border-box; }
     .form-grid-2col .supp-input-row { gap: 4px; }
     .form-grid-2col .btn-supp-auto { padding: 0 7px; font-size: 11px; width: auto; flex-shrink: 0; }
-    .form-grid-2col #seuil-label { display: none; }
+    .form-grid-2col .label-note { display: none; }
 
     /* Empêche le zoom iOS sur les inputs */
     .form-group input,

@@ -21,12 +21,15 @@ export function joursOuvres(dateDebut, dateFin) {
     return n;
 }
 
+// Map uid → { nom, company, contrat, feuilles }. Le contrat du profil sert de
+// repli pour les calculs d'heures quand une feuille n'en porte pas.
 export function grouperParTech(feuilles, profils = []) {
-    const companyParUid = new Map(profils.map(p => [p.id, p.company || '—']));
+    const profilParUid = new Map(profils.map(p => [p.id, p]));
     const map = new Map();
     feuilles.forEach(f => {
         if (!map.has(f.user_id)) {
-            map.set(f.user_id, { nom: f.tech || '—', company: companyParUid.get(f.user_id) || '—', feuilles: [] });
+            const p = profilParUid.get(f.user_id);
+            map.set(f.user_id, { nom: f.tech || '—', company: p?.company || '—', contrat: p?.contrat || null, feuilles: [] });
         }
         map.get(f.user_id).feuilles.push(f);
     });

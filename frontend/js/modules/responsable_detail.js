@@ -8,7 +8,8 @@ import { renderDetail, formatDateLong } from './responsable_detail_render.js';
 import { montrerInfoBloc } from './heures_tooltip.js';
 import { afficherPdfUrl } from './pdfviewer.js';
 import { marquerVue } from './responsable_vues.js';
-import { showToast, normaliserSupp, parseDuree, escHtml } from '../utils/utils.js';
+import { showToast, normaliserDuree, parseDuree, escHtml } from '../utils/utils.js';
+import { contratPour } from './responsable_liste.js';
 
 let _onChange = null;      // appelé après toute validation (re-rendu des onglets)
 let _feuille = null;
@@ -27,9 +28,11 @@ function rendre() {
     body().innerHTML = renderDetail(_feuille, _elements, v, validations.estObsolete(_feuille, v));
 }
 
+// Le responsable valide les HEURES TRAVAILLÉES du jour ; les heures supp de
+// la semaine se recalculent ensuite sur ces valeurs (onglet Heures supp).
 async function valider() {
-    const saisie = normaliserSupp(document.getElementById('detail-supp-validees').value);
-    if (!saisie.ok) { showToast('Format attendu : 1h30, 2h, 0h45…', 'warn'); return; }
+    const saisie = normaliserDuree(document.getElementById('detail-supp-validees').value);
+    if (!saisie.ok) { showToast('Format attendu : 8h30, 7h, 9h15…', 'warn'); return; }
     const commentaire = document.getElementById('detail-commentaire').value;
     try {
         const v = await enregistrerValidation({
@@ -40,7 +43,7 @@ async function valider() {
             commentaire,
         });
         validations.majValidation(v);
-        showToast(`${saisie.value} validées pour le ${formatDateLong(_feuille.date)}`, 'success');
+        showToast(`${saisie.value} travaillées validées pour le ${formatDateLong(_feuille.date)}`, 'success');
         rendre();
         _onChange?.();
     } catch (e) {
@@ -79,6 +82,7 @@ export async function ouvrirDetail(id) {
         const { feuille, elements } = await chargerDetailFeuilleResponsable(id);
         if (!feuille) { showToast('Feuille introuvable', 'warn'); fermer(); return; }
         _feuille = feuille;
+        _feuille.contratProfil = contratPour(feuille);   // repli si la feuille n'a pas de contrat
         _elements = elements;
         document.getElementById('detail-titre').innerHTML = `${escHtml(feuille.tech || '')} <span class="detail-tag">${escHtml(feuille.company || '')}</span>`;
         rendre();

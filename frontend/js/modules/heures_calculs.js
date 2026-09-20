@@ -1,146 +1,141 @@
-import { parseDuree } from '../utils/utils.js';
-import { feriesEnSemaine } from './jours_feries.js';
+// ── Calcul des heures supplémentaires ──────────────────────────
+//
+// UNE SEULE RÈGLE pour toute l'appli, basée sur les heures TRAVAILLÉES :
+//
+//   heures supp de la semaine = heures travaillées (lun → dim) − contrat
+//
+// Le contrat (35h / 37h / 39h, voir seuil_jour.js) est réduit du seuil de
+// chaque jour férié et de chaque jour de congé tombant lundi → vendredi. Un
+// jour de semaine sans feuille compte 0h travaillée : il « manque » donc
+// naturellement 7h ou 8h. Majoration légale : palier25Pour(contrat) à +25 %,
+// le reste à +50 %.
+//
+// Le contrat d'une semaine est celui inscrit sur ses feuilles (celui en
+// vigueur quand elles ont été faites), sinon celui passé en option, sinon
+// celui du technicien connecté.
+
+import { parseDuree, isoLocal } from '../utils/utils.js';
+import { estFerie } from './jours_feries.js';
 import { cfg } from './fdr_config.js';
-import { seuilJourPour } from './seuil_jour.js';
+import { seuilJourPour, seuilJourEffectif, contratMinutes, palier25Pour } from './seuil_jour.js';
+import { nuitFeuille } from './heures_nuit.js';
+import { getSemaineISO, labelSemaine, labelSemaineCourt, lundiDe, joursDeSemaine, semaineDansPeriode } from './semaines.js';
 
-// ── Barème heures supplémentaires ──────────────────────────────
-// Le seuil hebdo (défaut 35h) et le palier +25% (défaut 8h) sont réglés par
-// entreprise (cfg.seuilHebdoMinutes / cfg.palier25Minutes), défaut légal — à
-// vérifier convention 3044.
+const OUVRES = lundi => joursDeSemaine(lundi).slice(0, 5);   // lundi → vendredi
 
-// ── Heures de nuit (plage réglée par entreprise, défaut 21h–6h) ─
-// Gère le passage de minuit et retire le trajet (30 min matin + 30 min soir)
-// pour ne compter que le temps de travail effectif.
-
-// margeMin : minutes de trajet retirées à CHAQUE extrémité (matin et soir),
-// soit la moitié du trajet du jour (trajet 60 → marge 30 ; trajet 90 → marge 45).
-// margeMin = 0 → on compte toute la plage (ex. rappel / sortie de nuit).
-export function calcHeuresNuit(heureDebut, heureFin, margeMin = 0) {
-    if (!heureDebut || !heureFin) return 0;
-    const toMin = h => { const [hh, mm] = h.split(':').map(Number); return hh * 60 + mm; };
-    let debut = toMin(heureDebut);
-    let fin   = toMin(heureFin);
-    if (fin <= debut) fin += 1440;   // passage de minuit → fin le lendemain
-    debut += margeMin;               // trajet matin non compté
-    fin   -= margeMin;               // trajet soir non compté
-
-    // Nuit = plage réglée par l'entreprise (défaut 21h→6h). Deux fenêtres :
-    // minuit→fin (0 → nuitFin) et début→fin du lendemain (nuitDebut → nuitFin+1440).
-    const chevauche = (a, b, c, d) => Math.max(0, Math.min(b, d) - Math.max(a, c));
-    return Math.max(0, chevauche(debut, fin, 0, cfg.nuitFin) + chevauche(debut, fin, cfg.nuitDebut, cfg.nuitFin + 1440));
+function contratDe(fs, opts) {
+    return fs.find(f => f.contrat)?.contrat || opts.contrat || cfg.contrat;
 }
 
-// ── Calcul hebdomadaire ────────────────────────────────────────
-
-function getLundiSemaine(dateStr) {
-    const d = new Date(dateStr + 'T12:00');
-    const day = d.getDay() || 7;
-    const lundi = new Date(d);
-    lundi.setDate(d.getDate() - day + 1);
-    return lundi;
+// Seuil de la semaine : contrat moins le seuil de chaque jour ouvré férié ou
+// en congé (un congé posé sur un férié n'est retiré qu'une fois).
+function seuilSemaine(fs, lundi, contrat) {
+    const conges = new Set(fs.filter(f => f.conge).map(f => f.date));
+    let seuil = contratMinutes(contrat);
+    for (const d of OUVRES(lundi)) {
+        if (estFerie(d) || conges.has(d)) seuil -= seuilJourPour(d, contrat);
+    }
+    return Math.max(0, seuil);
 }
 
-export function getSemaineISO(dateStr) {
-    const d = new Date(dateStr + 'T12:00');
-    const day = d.getDay() || 7;
-    const jeudi = new Date(d);
-    jeudi.setDate(d.getDate() + (4 - day));
-    const debutAn = new Date(jeudi.getFullYear(), 0, 1);
-    const num = Math.ceil(((jeudi - debutAn) / 86400000 + 1) / 7);
-    return `${jeudi.getFullYear()}-S${String(num).padStart(2, '0')}`;
+// Jours ouvrés déjà passés (strictement avant aujourd'hui), non fériés, sans
+// aucune feuille (ni travail ni congé). Informatif : ils comptent déjà 0h.
+export function joursManquants(fs, lundi, contrat, aujourdhui = isoLocal(new Date())) {
+    const presents = new Set(fs.map(f => f.date));
+    return OUVRES(lundi)
+        .filter(d => d < aujourdhui && !estFerie(d) && !presents.has(d))
+        .map(d => ({ date: d, manquant: true, seuilMin: seuilJourPour(d, contrat) }));
 }
 
-function bornesSemaine(dateStr) {
-    const d = new Date(dateStr + 'T12:00');
-    const day = d.getDay() || 7;
-    const lundi = new Date(d);
-    lundi.setDate(d.getDate() - day + 1);
-    const dimanche = new Date(lundi);
-    dimanche.setDate(lundi.getDate() + 6);
-    const numSemaine = Number(getSemaineISO(dateStr).split('-S')[1]);
-    return { lundi, dimanche, numSemaine };
+// Écart au seuil d'une journée, signé : ce qu'affiche « Heures supp. du jour ».
+// Congé → 0. Samedi, dimanche, férié → toutes les heures travaillées.
+export function suppJour(f, contrat = null) {
+    if (f.conge) return 0;
+    return parseDuree(f.heures_travail) - seuilJourEffectif(f.date, f.contrat || contrat || cfg.contrat);
 }
 
-export function labelSemaine(dateStr) {
-    const { lundi, dimanche, numSemaine } = bornesSemaine(dateStr);
-    const full = dt => dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-    // Ex. « Semaine 35 - 24 août au 30 août »
-    return `Semaine ${numSemaine} - ${full(lundi)} au ${full(dimanche)}`;
-}
-
-export function labelSemaineCourt(dateStr) {
-    const { lundi, dimanche, numSemaine } = bornesSemaine(dateStr);
-    const court = dt => dt.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    // Ex. « Semaine 35 - 24/08/2026 au 30/08/2026 »
-    return `Semaine ${numSemaine} - ${court(lundi)} au ${court(dimanche)}`;
-}
-
-// Seuil retiré pour les jours de congé de la semaine (lundi→vendredi, comme
-// les jours fériés) : un jour de congé n'est pas du travail attendu, il ne
-// doit donc pas compter comme un manque dans le total hebdomadaire.
-function seuilCongesMin(fs) {
-    return fs.reduce((t, f) => {
-        if (!f.conge) return t;
-        const jour = new Date(f.date + 'T12:00').getDay();
-        if (jour === 0 || jour === 6) return t;
-        return t + seuilJourPour(f.date, cfg.contrat);
-    }, 0);
-}
-
-// feuilles : [{date, heures_travail, heure_debut, heure_fin}]
-// Heures supp calculées sur le TOTAL HEBDOMADAIRE (au-delà de 35h), conforme
-// au Code du travail — indépendant du contrat 35h/39h.
-// Retourne un tableau trié par semaine avec les colonnes calculées.
-export function calcHebdomadaire(feuilles) {
+// feuilles : lignes feuilles_de_route (date, heures_travail, conge, astreinte,
+// heure_debut, heure_fin, interventions…). Renvoie une ligne par semaine,
+// triée, avec tous les totaux.
+export function calcHebdomadaire(feuilles, opts = {}) {
     const groupes = {};
     for (const f of feuilles) {
         const cle = getSemaineISO(f.date);
-        if (!groupes[cle]) {
-            groupes[cle] = { cle, label: labelSemaine(f.date), labelCourt: labelSemaineCourt(f.date), feuilles: [] };
-        }
-        groupes[cle].feuilles.push(f);
+        (groupes[cle] ||= []).push(f);
     }
 
     return Object.keys(groupes).sort().map(cle => {
-        const { label, labelCourt, feuilles: fs } = groupes[cle];
+        const fs      = groupes[cle].sort((a, b) => a.date.localeCompare(b.date));
+        const lundi   = lundiDe(fs[0].date);
+        const contrat = contratDe(fs, opts);
 
-        let totalTravailMin   = 0;
-        let totalNuitMin      = 0;
-        let totalAstreinteMin = 0;   // heures travaillées des jours cochés « astreinte » (récupérables)
-        // Marge de nuit = moitié du trajet du jour (0 si l'entreprise ne retire
-        // aucun trajet, ex. DAV avec trajet_minutes = 0).
-        const margeNuit = cfg.trajetMinutes / 2;
+        let totalTravailMin = 0, totalNuitMin = 0, totalAstreinteMin = 0;
         for (const f of fs) {
             const travailMin = parseDuree(f.heures_travail);
             totalTravailMin += travailMin;
-            totalNuitMin    += calcHeuresNuit(f.heure_debut, f.heure_fin, margeNuit);
-            const rappel = f.interventions?.find(i => i.kind === 'rappel');
-            if (rappel) totalNuitMin += calcHeuresNuit(rappel.pause_debut, rappel.pause_fin, 0);
-            if (f.astreinte) totalAstreinteMin += travailMin;
+            totalNuitMin    += nuitFeuille(f);
+            if (f.astreinte) totalAstreinteMin += travailMin;   // récupérables
         }
 
-        // Seuil réduit de 7h par jour férié tombant lun→ven dans la semaine,
-        // et du seuil propre à chaque jour de congé (7h ou 8h selon le contrat).
-        const nbFeries  = feriesEnSemaine(getLundiSemaine(fs[0].date));
-        const nbConges  = fs.filter(f => f.conge).length;
-        const seuilMin  = Math.max(0, cfg.seuilHebdoMinutes - nbFeries * 7 * 60 - seuilCongesMin(fs));
+        const seuilMin     = seuilSemaine(fs, lundi, contrat);
+        const netMin       = totalTravailMin - seuilMin;         // signé (affichage)
+        const totalSuppMin = Math.max(0, netMin);
+        const supp25       = Math.min(totalSuppMin, palier25Pour(contrat));
+        const supp50       = totalSuppMin - supp25;
+        const manquants    = joursManquants(fs, lundi, contrat, opts.aujourdhui);
 
-        const totalSuppMin = Math.max(0, totalTravailMin - seuilMin);
-        const supp25 = Math.min(totalSuppMin, cfg.palier25Minutes);      // premières 8h supp à +25%
-        const supp50 = Math.max(0, totalSuppMin - cfg.palier25Minutes);  // au-delà à +50%
-
-        return { cle, label, labelCourt, nbJours: fs.length, totalTravailMin, totalSuppMin, totalNuitMin, supp25, supp50, totalAstreinteMin, nbFeries, nbConges, seuilMin, feuilles: fs };
+        return {
+            cle, contrat, lundi,
+            label: labelSemaine(fs[0].date), labelCourt: labelSemaineCourt(fs[0].date),
+            nbJours: fs.length, totalTravailMin, seuilMin, netMin, totalSuppMin, supp25, supp50,
+            totalNuitMin, totalAstreinteMin,
+            nbFeries: OUVRES(lundi).filter(estFerie).length,
+            nbConges: fs.filter(f => f.conge).length,
+            manquants, nbManquants: manquants.length,
+            feuilles: fs,
+        };
     });
 }
 
-// Totaux agrégés d'une période (dashboard, récap) — somme des semaines.
-export function totauxSuppPeriode(feuilles) {
-    return calcHebdomadaire(feuilles).reduce((a, s) => ({
+// Carte d'accueil : heures supp de la semaine EN COURS, jour par jour.
+// Σ travaillé − Σ seuil des jours attendus déjà passés (jours avec feuille,
+// + jours ouvrés sans feuille avant aujourd'hui). En fin de semaine, c'est
+// exactement le calcul hebdomadaire ci-dessus.
+export function suppPartielle(feuilles, opts = {}) {
+    if (!feuilles.length) return null;
+    const contrat = contratDe(feuilles, opts);
+    const lundi   = lundiDe(feuilles[0].date);
+    let travailMin = 0, baseMin = 0;
+    for (const f of feuilles) {
+        if (f.conge) continue;
+        travailMin += parseDuree(f.heures_travail);
+        baseMin    += seuilJourEffectif(f.date, f.contrat || contrat);
+    }
+    const manquants = joursManquants(feuilles, lundi, contrat, opts.aujourdhui);
+    for (const m of manquants) baseMin += m.seuilMin;
+    return { contrat, travailMin, baseMin, netMin: travailMin - baseMin, nbJours: feuilles.length, nbManquants: manquants.length };
+}
+
+// Totaux d'une période (mois de paie, mois calendaire, dates libres).
+// Si debut/fin sont donnés, seules les semaines dont le dimanche tombe dans
+// la période sont comptées (une semaine = un seul mois).
+export function totauxSuppPeriode(feuilles, opts = {}, debut = null, fin = null) {
+    const semaines = calcHebdomadaire(feuilles, opts)
+        .filter(s => !debut || !fin || semaineDansPeriode(s.feuilles[0].date, debut, fin));
+    return semaines.reduce((a, s) => ({
         travail:   a.travail   + s.totalTravailMin,
         supp:      a.supp      + s.totalSuppMin,
         supp25:    a.supp25    + s.supp25,
         supp50:    a.supp50    + s.supp50,
         nuit:      a.nuit      + s.totalNuitMin,
         astreinte: a.astreinte + s.totalAstreinteMin,
-    }), { travail: 0, supp: 0, supp25: 0, supp50: 0, nuit: 0, astreinte: 0 });
+        manquants: a.manquants + s.nbManquants,
+        contrat:   s.contrat,
+    }), { travail: 0, supp: 0, supp25: 0, supp50: 0, nuit: 0, astreinte: 0, manquants: 0, contrat: opts.contrat || cfg.contrat });
+}
+
+// Semaines d'une période, filtrées comme totauxSuppPeriode (pour l'affichage).
+export function semainesPeriode(feuilles, opts, debut, fin) {
+    return calcHebdomadaire(feuilles, opts)
+        .filter(s => !debut || !fin || semaineDansPeriode(s.feuilles[0].date, debut, fin));
 }

@@ -155,16 +155,16 @@
                     <option value="180">3h00</option>
                 </select>
             </div>
-            <div class="form-group" style="display:none;">
-                <label>Heures travaillées (−1h trajet)</label>
-                <input type="text" id="heures-travail" class="auto-field" readonly placeholder="Calculé auto">
+            <div class="form-group">
+                <label>Heures travaillées <span class="label-note">(corrigeable)</span></label>
+                <div class="supp-input-row">
+                    <input type="text" id="heures-travail" class="auto-field" placeholder="Calculé auto" inputmode="numeric" title="Trajet et repas déjà retirés. Corrigez si une partie de la journée n'est pas du travail.">
+                    <button type="button" id="btn-travail-auto" class="btn-supp-auto" title="Revenir au calcul automatique">↺ Auto</button>
+                </div>
             </div>
             <div class="form-group">
-                <label>Heures supp. du jour <span id="seuil-label" style="font-weight:400;color:#718096;font-size:11px;text-transform:none;letter-spacing:0;"></span></label>
-                <div class="supp-input-row">
-                    <input type="text" id="heures-supp" class="auto-field" placeholder="Calculé auto">
-                    <button type="button" id="btn-supp-auto" class="btn-supp-auto" title="Revenir au calcul automatique">↺ Auto</button>
-                </div>
+                <label>Heures supp. du jour <span id="seuil-label" class="label-note"></span></label>
+                <input type="text" id="heures-supp" class="auto-field" readonly placeholder="Calculé auto" title="Heures travaillées moins le seuil du jour. Le total réel se calcule à la semaine (onglet Heures).">
             </div>
             <div class="form-group" id="heures-nuit-group" style="display:none;">
                 <label>Heures de nuit (21h–6h)</label>

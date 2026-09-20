@@ -68,7 +68,11 @@ frontend/js/
 │   ├── db_responsable.js ← requêtes Supabase spécifiques vue responsable
 │   ├── fdr.js           ← barrel file : réexporte tout depuis fdr_config, fdr_calculs, fdr_form, fdr_brouillon
 │   ├── fdr_config.js    ← configuration locale (email responsable, company, logo, contrat)
-│   ├── fdr_calculs.js   ← calcul des heures travaillées et heures supp
+│   ├── fdr_calculs.js   ← formulaire : heures travaillées du jour (auto, corrigeables à la main) + écart au seuil affiché
+│   ├── seuil_jour.js    ← seuils selon le contrat : jour (7h/8h, 0 le week-end et fériés), durée hebdo, palier 25 %
+│   ├── semaines.js      ← repères de semaine (lundi/dimanche, clé ISO, libellés, bornes étendues, appartenance à une période)
+│   ├── heures_calculs.js ← LA règle des heures supp : par semaine, travaillé − contrat ; carte partielle ; totaux de période
+│   ├── heures_nuit.js   ← heures de nuit (plage entreprise)
 │   ├── fdr_form.js      ← ajout/suppression/déplacement d'interventions et pauses dans le DOM
 │   ├── fdr_brouillon.js ← sauvegarde/restauration brouillon dans localStorage
 │   ├── pdf.js           ← génération PDF (téléchargement local)
@@ -89,14 +93,16 @@ frontend/js/
 │   ├── responsable_password.js ← modale « mon mot de passe » du responsable
 │   ├── responsable_entreprise.js ← menu « Entreprise affichée » (comptes `voit_toutes_entreprises` uniquement) : filtre d'affichage des 4 onglets, choix mémorisé en localStorage
 │   ├── responsable_liste.js ← chargement des feuilles + rendu de la liste (onglet Feuilles)
+│   ├── responsable_liste_dom.js ← DOM de la liste : fiches dépliées, barre de sélection, squelette
 │   ├── responsable_render.js ← cartes techniciens (liste des feuilles)
 │   ├── responsable_feuilles.js ← lignes de feuilles par semaine + badge de validation
 │   ├── responsable_evenements.js ← événements de la liste (période, sélection, ouverture)
-│   ├── responsable_detail.js ← vue numérique d'une feuille (modale) + validation heures supp
+│   ├── responsable_detail.js ← vue numérique d'une feuille (modale) + validation des heures travaillées du jour
 │   ├── responsable_detail_render.js ← HTML de la vue numérique (en-tête, frise, interventions)
 │   ├── responsable_validations.js ← cache mémoire des validations de la période
 │   ├── responsable_heures.js ← onglet Heures supp (récap déclaré / validé)
-│   ├── responsable_heures_render.js ← HTML de l'onglet Heures supp
+│   ├── responsable_heures_render.js ← HTML de l'onglet Heures supp (cartes techniciens, totaux de période)
+│   ├── responsable_heures_semaine.js ← HTML d'une semaine de l'onglet Heures supp (jours, jours sans feuille, sous-total)
 │   ├── responsable_techs.js ← onglet Techniciens (créer / modifier / mot de passe / supprimer)
 │   ├── responsable_techs_ui.js ← modales de l'onglet Techniciens
 │   ├── responsable_techs_table.js ← tableau des techniciens
@@ -132,10 +138,19 @@ frontend/js/
 - Séparer : logique métier → `modules/`, appels Supabase → `db.js` ou `db_responsable.js`, appels backend → `api/admin_api.js`
 - Les fichiers "barrel" (`fdr.js`, `dashboard.js`, `ui.js`) ne contiennent que des réexports — ne pas y mettre de logique
 
-## Calcul des heures
+## Calcul des heures supp — UNE SEULE RÈGLE (`heures_calculs.js`)
 
-- Contrat 35h → 7h par jour
-- Contrat 39h → 8h les jours normaux, 7h le vendredi
+La donnée de base est **heures travaillées du jour** (`heures_travail`), calculée automatiquement sur la feuille et corrigeable par le technicien (ex. 30 min de discussion non comptées). Tout le reste se déduit ; **ne jamais additionner un autre champ**.
+
+- Seuil du jour (`seuil_jour.js`) : 35h/37h → 7h ; 39h → 8h, 7h le vendredi ; **0h** samedi, dimanche, férié ; congé → 0
+- « Heures supp du jour » = travaillé − seuil du jour, **signé** (affichage seulement ; `heures_supp` en base est obsolète)
+- **Semaine** (lun → dim) : supp = max(0, Σ travaillé − contrat), contrat réduit du seuil des fériés et congés lun→ven. Jour ouvré passé sans feuille = 0h (il « manque » 7h/8h).
+- Majoration légale : palier 25 % = 8h − (contrat − 35h) → 35h : 8h, 37h : 6h, 39h : 4h ; au-delà 50 %
+- Carte d'accueil : Σ travaillé − Σ seuils des jours attendus déjà passés (`suppPartielle`) ; peut être négative
+- Onglet Heures, PDF du mois, page responsable : toujours des **semaines entières** (`bornesEtendues`), une semaine comptée dans la période contenant son dimanche
+- Responsable : valide les **heures travaillées** de chaque jour ; les heures supp validées se recalculent sur ces valeurs
+- Le contrat d'une semaine = celui inscrit sur ses feuilles, sinon celui du profil (responsable) / `cfg.contrat` (technicien)
+- Plus aucun réglage « seuil hebdo » / « palier 25 % » par entreprise
 
 ## Pages et optimisation
 

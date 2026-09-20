@@ -3,19 +3,21 @@
 // le filtre en haut de page, et une semaine peut chevaucher deux mois (ex.
 // 29 juin – 5 juillet) — la grouper d'abord par mois la coupait en deux.
 
-import { escHtml, affH, parseDuree } from '../utils/utils.js';
-import { getSemaineISO, labelSemaine } from './heures_calculs.js';
+import { escHtml, affH, affHSigne } from '../utils/utils.js';
+import { getSemaineISO, labelSemaine } from './semaines.js';
+import { suppJour } from './heures_calculs.js';
 
-// Badge d'état de la validation des heures supp du jour. Un jour sans heures
-// supp déclarées et sans validation n'affiche rien (pas de bruit inutile).
+// Badge d'état de la validation des heures TRAVAILLÉES du jour. Un jour dans
+// son seuil et sans validation n'affiche rien (pas de bruit inutile) ; un jour
+// au-dessus du seuil est signalé « à valider ».
 export function badgeValidation(f, ctx) {
     if (f.conge) return '';
     const v = ctx.validationPour ? ctx.validationPour(f) : null;
-    if (!v) return parseDuree(f.heures_supp) > 0 ? '<span class="resp-badge-attente">à valider</span>' : '';
+    if (!v) return suppJour(f, ctx.contratPour?.(f)) > 0 ? '<span class="resp-badge-attente">à valider</span>' : '';
     if (ctx.estObsolete && ctx.estObsolete(f, v)) {
         return `<span class="resp-badge-obsolete" title="La feuille a été modifiée après votre validation">⚠ ${affH(v.heures_validees_min)}</span>`;
     }
-    return `<span class="resp-badge-valide" title="Heures supp validées">✓ ${affH(v.heures_validees_min)}</span>`;
+    return `<span class="resp-badge-valide" title="Heures travaillées validées">✓ ${affH(v.heures_validees_min)}</span>`;
 }
 
 function ligneFeuille(f, ctx) {
@@ -27,13 +29,15 @@ function ligneFeuille(f, ctx) {
     const checkHtml = ctx.selectionMode
         ? `<input type="checkbox" class="resp-check resp-check-feuille" data-id="${f.id}"${ctx.estSelectionnee(f.id) ? ' checked' : ''} aria-label="Sélectionner la feuille du ${escHtml(dateAff)}">`
         : '';
-    const supp = f.conge ? 'Congé' : (f.heures_supp || '0h00');
+    // Écart au seuil du jour (7h/8h, 0 le week-end) : informatif, le vrai
+    // total d'heures supp se calcule à la semaine (onglet Heures supp).
+    const supp = f.conge ? 'Congé' : affHSigne(suppJour(f, ctx.contratPour?.(f)));
     return `<div class="resp-feuille-row${vue ? '' : ' nonvue'}" data-pdf-id="${f.id}" role="button" tabindex="0">
         ${checkHtml}
         <span class="resp-pastille-ligne"></span>
         <span class="resp-feuille-date">${dateAff}</span>
         <span class="resp-feuille-heures">${f.conge ? '—' : (f.heures_travail || '—')}</span>
-        <span class="resp-feuille-supp" title="Heures supp déclarées">${escHtml(supp)} ${badgeValidation(f, ctx)}</span>
+        <span class="resp-feuille-supp" title="Écart au seuil du jour">${escHtml(supp)} ${badgeValidation(f, ctx)}</span>
         <span class="resp-feuille-ints">${nbInts} int.</span>
         <span class="resp-feuille-action">Ouvrir</span>
     </div>`;
@@ -63,7 +67,7 @@ function renderSemaine([, groupe], ctx) {
 }
 
 // ctx = { vues: Set, selectionMode: bool, estSelectionnee(id), statutSemaine(ids),
-//         validationPour(f), estObsolete(f, v) }
+//         validationPour(f), estObsolete(f, v), contratPour(f) }
 export function renderFeuilles(feuilles, ctx) {
     return grouperParSemaine(feuilles).map(entree => renderSemaine(entree, ctx)).join('');
 }

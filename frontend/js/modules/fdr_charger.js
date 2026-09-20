@@ -1,4 +1,4 @@
-import { calcHeures, setSuppManuel } from './fdr_calculs.js';
+import { calcHeures, restaurerTravailManuel } from './fdr_calculs.js';
 import {
     ajouterIntervention, ajouterPause, remplirRappel,
     viderInterventions, resetSuppState,
@@ -45,16 +45,12 @@ export function remplirFormulaireDepuisFeuille(feuille, elements) {
     // Calcul après remplissage pour inclure l'éventuel rappel.
     if (feuille.heure_debut && feuille.heure_fin) calcHeures();
 
-    // Restaure une éventuelle correction manuelle des heures supp
-    // (sinon le calcul auto ci-dessus écraserait la valeur enregistrée).
-    const inputSupp = document.getElementById('heures-supp');
-    const stocke = feuille.heures_supp || '';
-    if (stocke && stocke !== inputSupp.value) {
-        inputSupp.value = stocke;
-        setSuppManuel(true);
-        inputSupp.classList.remove('auto-field');
-        inputSupp.classList.add('auto-field-manual');
-        document.getElementById('btn-supp-auto').style.display = 'block';
+    // Restaure une éventuelle correction manuelle des heures travaillées :
+    // si la valeur enregistrée diffère du calcul automatique, c'est que le
+    // technicien l'avait corrigée (sinon le calcul ci-dessus l'écraserait).
+    const stocke = feuille.heures_travail || '';
+    if (stocke && stocke !== document.getElementById('heures-travail').value) {
+        restaurerTravailManuel(stocke);
     }
 
     sauvegarderBrouillon();

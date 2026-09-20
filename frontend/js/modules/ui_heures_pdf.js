@@ -8,6 +8,7 @@ import { chargerMoisDetail } from './db_recap.js';
 import { periodeAffichee } from './heures_history.js';
 import { construireRecapMois, nomFichierRecap, titrePeriode } from './pdf_mois.js';
 import { ajouterRappelPages } from './pdf_pages.js';
+import { bornesEtendues } from './semaines.js';
 
 const MARGIN_MM   = 8;
 const CONTENT_PX  = Math.floor((210 - 2 * MARGIN_MM) * 96 / 25.4);   // A4 portrait à 96 dpi
@@ -86,7 +87,9 @@ export async function telechargerRecapPdf() {
     setBusy(true, 'Préparation du récapitulatif…');
     let el = null;
     try {
-        const feuilles = await chargerMoisDetail(debut, fin);
+        // Semaines entières, comme l'écran Heures : mêmes chiffres garantis.
+        const bornes   = bornesEtendues(debut, fin);
+        const feuilles = await chargerMoisDetail(bornes.debut, bornes.fin);
         if (!feuilles.length) {
             setBusy(false);
             showToast('Aucune feuille de route sur cette période.', 'warn', 4000);

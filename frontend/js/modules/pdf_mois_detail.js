@@ -1,7 +1,8 @@
 // Rendu de la partie « détail jour par jour » du PDF récapitulatif mensuel :
 // pour chaque journée, la liste de ses interventions, pauses et sorties suppl.
 
-import { escHtml, hhmm, dureeCourte } from '../utils/utils.js';
+import { escHtml, hhmm, dureeCourte, affHSigne } from '../utils/utils.js';
+import { suppJour } from './heures_calculs.js';
 
 function ligneIntervention(item, num) {
     const client  = escHtml(item.client || '—');
@@ -51,9 +52,10 @@ function corpsJour(interventions) {
     return lignes || '<div class="pdf-mois-vide">Aucune intervention saisie ce jour-là.</div>';
 }
 
-function enteteJour(f, dateAff) {
+function enteteJour(f, dateAff, contrat) {
     const travail = f.heures_travail || '—';
-    const supp    = f.heures_supp && f.heures_supp !== '0h00' ? ` · supp. ${f.heures_supp}` : '';
+    const ecart   = f.heures_travail ? suppJour(f, contrat) : 0;
+    const supp    = ecart ? ` · écart ${affHSigne(ecart)}` : '';
     const plage   = `${hhmm(f.heure_debut) || '—'} → ${hhmm(f.heure_fin) || '—'}`;
     return `
         <div class="pdf-mois-jour-head">
@@ -63,7 +65,7 @@ function enteteJour(f, dateAff) {
 }
 
 // feuilles : lignes renvoyées par chargerMoisDetail(), triées par date.
-export function renderDetailJours(feuilles) {
+export function renderDetailJours(feuilles, contrat) {
     return feuilles.map(f => {
         const dateAff = new Date(f.date + 'T12:00')
             .toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -80,7 +82,7 @@ export function renderDetailJours(feuilles) {
 
         return `
         <div class="pdf-mois-jour">
-            ${enteteJour(f, dateAff)}
+            ${enteteJour(f, dateAff, contrat)}
             <div class="pdf-mois-jour-body">${corpsJour(f.interventions)}</div>
         </div>`;
     }).join('');

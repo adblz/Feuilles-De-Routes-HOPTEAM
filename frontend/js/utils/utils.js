@@ -88,9 +88,17 @@ export function affH(m) {
     return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
 }
 
-// Normalise une saisie d'heures supp au format « XhMM ».
-// Accepte « 3 », « 3h », « 3h5 », « 03h00 », « 3:00 ». Renvoie { ok, value }.
-export function normaliserSupp(str) {
+// Version signée pour les écarts au seuil : « +2h00 », « -1h30 », « 0h00 ».
+// affH() ne sait pas formater un négatif (−95 → « -2h-35 »).
+export function affHSigne(min) {
+    if (!min) return '0h00';
+    return `${min < 0 ? '-' : '+'}${affH(Math.abs(min))}`;
+}
+
+// Normalise une saisie de durée au format « XhMM » (heures travaillées,
+// heures validées). Accepte « 3 », « 3h », « 3h5 », « 03h00 », « 3:00 ».
+// Renvoie { ok, value }.
+export function normaliserDuree(str) {
     const s = (str || '').trim().toLowerCase();
     if (!s) return { ok: true, value: '0h00' };
     const m = s.match(/^(\d{1,2})(?:\s*[h:]\s*(\d{1,2}))?$/);

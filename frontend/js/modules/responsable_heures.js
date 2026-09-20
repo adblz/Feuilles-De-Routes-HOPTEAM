@@ -20,8 +20,12 @@ export function rendreHeures() {
     const ctx = {
         validationPour: validations.validationPour,
         estObsolete: validations.estObsolete,
+        contratPour: liste.contratPour,
     };
-    container.innerHTML = renderHeures(grouperParTech(liste.feuillesFiltrees(), liste.profilsTechs()), ctx);
+    // Semaines entières de la période : chaque semaine est calculée en entier
+    // et comptée dans la période où tombe son dimanche.
+    const techMap = grouperParTech(liste.feuillesSemainesPeriode(), liste.profilsTechs());
+    container.innerHTML = renderHeures(techMap, ctx, liste.periodeEffective());
     container.querySelectorAll('.heures-tech-card').forEach(c => {
         if (!ouverts.has(c.dataset.uid)) return;
         c.querySelector('.heures-tech-body').classList.remove('hidden');

@@ -58,14 +58,3 @@ function getFeries(annee) {
 export function estFerie(dateStr) {
     return getFeries(parseInt(dateStr.slice(0, 4), 10)).has(dateStr);
 }
-
-// Compte les jours fériés tombant lundi→vendredi dans la semaine
-// dont le lundi (Date) est passé en paramètre.
-export function feriesEnSemaine(lundi) {
-    let count = 0;
-    for (let i = 0; i < 5; i++) {
-        const dt = addJours(lundi, i);
-        if (getFeries(dt.getFullYear()).has(isoDate(dt))) count++;
-    }
-    return count;
-}

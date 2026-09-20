@@ -17,7 +17,7 @@ export async function chargerMonProfil() {
 
 export async function chargerToutesLesFeuilles() {
     return dbGet(
-        `feuilles_de_route?select=id,date,tech,user_id,heures_travail,heures_supp,contrat,mode,conge,created_at,interventions(id,kind)&order=date.desc`
+        `feuilles_de_route?select=id,date,tech,user_id,heures_travail,contrat,astreinte,mode,conge,created_at,interventions(id,kind)&order=date.desc`
     );
 }
 
@@ -36,7 +36,7 @@ export async function chargerPdfResponsable(id) {
 // (interventions, pauses, sorties supplémentaires) dans l'ordre de saisie.
 export async function chargerDetailFeuilleResponsable(id) {
     const [feuilles, elements] = await Promise.all([
-        dbGet(`feuilles_de_route?id=eq.${id}&select=id,date,tech,user_id,company,contrat,heure_debut,heure_fin,repas_min,heures_travail,heures_supp,astreinte,conge,mode,created_at`),
+        dbGet(`feuilles_de_route?id=eq.${id}&select=id,date,tech,user_id,company,contrat,heure_debut,heure_fin,repas_min,heures_travail,astreinte,conge,mode,created_at`),
         dbGet(`interventions?feuille_id=eq.${id}&order=order_index.asc`),
     ]);
     return { feuille: feuilles[0] || null, elements };

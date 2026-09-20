@@ -43,8 +43,9 @@ export function construirePDF() {
     const astreinteJour = document.getElementById('astreinte-jour')?.checked;
     const astreinte     = astreinteJour || !!(rappel && rappel.astreinte);
 
+    // Écart au seuil du jour (signé). Le total réel se calcule à la semaine.
     const suppBanner = (supp && supp !== '0h00')
-        ? `<div class="pdf-supp-banner">Heures supplémentaires : ${supp}</div>`
+        ? `<div class="pdf-supp-banner">Heures supp. du jour : ${supp} <span style="font-weight:400;">(écart au seuil du jour — total calculé à la semaine)</span></div>`
         : '';
 
     const logoB64  = getLogoBase64();

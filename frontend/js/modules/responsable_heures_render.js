@@ -1,78 +1,89 @@
 // HTML de l'onglet « Heures supp » : une carte par technicien avec les
-// totaux (déclaré / validé) et un tableau dépliable jour par jour.
+// totaux de la période (heures supp déclarées / validées) et un tableau
+// dépliable semaine par semaine.
+//
+// Heures supp = heures travaillées − contrat, par semaine entière (voir
+// heures_calculs.js). « Validé » = même calcul, en remplaçant les heures
+// travaillées de chaque jour validé par la valeur saisie par le responsable ;
+// un jour non validé garde les heures déclarées.
 
-import { escHtml, affH, parseDuree } from '../utils/utils.js';
+import { escHtml, affH, isoLocal } from '../utils/utils.js';
+import { semainesPeriode } from './heures_calculs.js';
 import { initiales } from './responsable_render.js';
-import { badgeValidation } from './responsable_feuilles.js';
+import { blocSemaine, ENTETE_TABLE } from './responsable_heures_semaine.js';
 
-function dateCourte(iso) {
-    return new Date(iso + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-}
-
-// Totaux d'un technicien sur ses feuilles de la période. nbJours = jours
-// « à traiter » : heures supp déclarées, ou déjà validés.
-export function totauxTech(feuilles, ctx) {
-    let declare = 0, valide = 0, nbValides = 0, nbJours = 0;
-    for (const f of feuilles) {
-        if (f.conge) continue;
-        const d = parseDuree(f.heures_supp);
+// Feuilles où les heures travaillées validées remplacent les déclarées.
+function avecHeuresValidees(feuilles, ctx) {
+    return feuilles.map(f => {
         const v = ctx.validationPour(f);
-        declare += d;
-        if (d > 0 || v) nbJours++;
-        if (v) { valide += v.heures_validees_min || 0; nbValides++; }
+        return v ? { ...f, heures_travail: affH(v.heures_validees_min) } : f;
+    });
+}
+
+// Semaines déclarées et validées d'un technicien, appariées par clé de semaine.
+export function semainesTech(tech, ctx, periode) {
+    const opts = { contrat: tech.contrat, aujourdhui: isoLocal(new Date()) };
+    const declarees = semainesPeriode(tech.feuilles, opts, periode.date_debut, periode.date_fin);
+    const validees  = semainesPeriode(avecHeuresValidees(tech.feuilles, ctx), opts, periode.date_debut, periode.date_fin);
+    const parCle    = new Map(validees.map(s => [s.cle, s]));
+    return declarees.map(s => ({ s, sv: parCle.get(s.cle) || s }));
+}
+
+// Totaux d'un technicien sur la période : supp déclarées / validées, jours.
+export function totauxTech(tech, ctx, periode) {
+    const t = { declare: 0, valide: 0, supp25: 0, supp50: 0, nbValides: 0, nbJours: 0, semaines: semainesTech(tech, ctx, periode) };
+    for (const { s, sv } of t.semaines) {
+        t.declare += s.totalSuppMin;
+        t.valide  += sv.totalSuppMin;
+        t.supp25  += sv.supp25;
+        t.supp50  += sv.supp50;
+        for (const f of s.feuilles) {
+            if (f.conge) continue;
+            t.nbJours++;
+            if (ctx.validationPour(f)) t.nbValides++;
+        }
     }
-    return { declare, valide, nbValides, nbJours };
+    return t;
 }
 
-function ligneJour(f, ctx) {
-    const v = ctx.validationPour(f);
-    return `<tr>
-        <td>${dateCourte(f.date)}</td>
-        <td class="num">${f.conge ? 'Congé' : escHtml(f.heures_supp || '0h00')}</td>
-        <td class="num${v ? ' valide' : ''}">${v ? affH(v.heures_validees_min) : '—'}</td>
-        <td>${badgeValidation(f, ctx)}</td>
-        <td class="commentaire">${escHtml(v?.commentaire || '')}</td>
-        <td class="col-actions"><button type="button" class="btn-heures-ouvrir" data-id="${f.id}">Ouvrir</button></td>
-    </tr>`;
-}
-
-function carteTech(uid, tech, ctx) {
-    const t = totauxTech(tech.feuilles, ctx);
-    const feuilles = [...tech.feuilles].sort((a, b) => a.date.localeCompare(b.date));
+function carteTech(uid, tech, ctx, periode) {
+    const t = totauxTech(tech, ctx, periode);
     const etat = t.nbJours === 0 ? 'Aucune journée'
         : t.nbValides === t.nbJours ? `${t.nbJours} jour${t.nbJours > 1 ? 's' : ''} validé${t.nbJours > 1 ? 's' : ''} ✓`
         : `${t.nbValides}/${t.nbJours} jours validés`;
+    const contrat = tech.contrat ? ` · contrat ${escHtml(tech.contrat)}h` : '';
     return `<div class="heures-tech-card" data-uid="${uid}">
         <div class="heures-tech-header">
             <span class="resp-avatar">${escHtml(initiales(tech.nom))}</span>
             <div class="resp-tech-info">
                 <span class="resp-tech-nom">${escHtml(tech.nom)}</span>
-                <span class="resp-tech-sous-titre">${escHtml(tech.company)} · ${etat}</span>
+                <span class="resp-tech-sous-titre">${escHtml(tech.company)}${contrat} · ${etat}</span>
             </div>
             <div class="heures-tech-totaux">
-                <div class="heures-tech-total"><span>Déclaré</span><strong>${affH(t.declare)}</strong></div>
-                <div class="heures-tech-total valide"><span>Validé</span><strong>${affH(t.valide)}</strong></div>
+                <div class="heures-tech-total"><span>Supp. déclarées</span><strong>${affH(t.declare)}</strong></div>
+                <div class="heures-tech-total valide"><span>Supp. validées</span><strong>${affH(t.valide)}</strong><small>25 % ${affH(t.supp25)} · 50 % ${affH(t.supp50)}</small></div>
             </div>
             <span class="resp-chevron">▼</span>
         </div>
         <div class="heures-tech-body hidden">
             <table class="heures-jour-table">
-                <thead><tr><th>Jour</th><th class="num">Déclaré</th><th class="num">Validé</th><th>État</th><th>Commentaire</th><th></th></tr></thead>
-                <tbody>${feuilles.map(f => ligneJour(f, ctx)).join('')}</tbody>
-                <tfoot><tr><td>Total</td><td class="num">${affH(t.declare)}</td><td class="num valide">${affH(t.valide)}</td><td colspan="3"></td></tr></tfoot>
+                ${ENTETE_TABLE}
+                <tbody>${t.semaines.map(({ s, sv }) => blocSemaine(s, sv, ctx)).join('')}</tbody>
+                <tfoot><tr><td>Total période</td><td colspan="3"></td><td colspan="3">Supp. déclarées <strong>${affH(t.declare)}</strong> — validées <strong>${affH(t.valide)}</strong> (25 % ${affH(t.supp25)} · 50 % ${affH(t.supp50)})</td></tr></tfoot>
             </table>
         </div>
     </div>`;
 }
 
-// techMap : Map uid → { nom, company, feuilles } (grouperParTech)
+// techMap : Map uid → { nom, company, contrat, feuilles } (grouperParTech, sur
+// les semaines entières de la période) ; periode = { date_debut, date_fin } ;
 // ctx = { validationPour(f), estObsolete(f, v) }
-export function renderHeures(techMap, ctx) {
+export function renderHeures(techMap, ctx, periode) {
     if (!techMap.size) return '<p class="resp-empty">Aucune feuille pour cette période.</p>';
     const techs = [...techMap.entries()].sort(([, a], [, b]) =>
         a.company.localeCompare(b.company) || a.nom.localeCompare(b.nom));
     const entreprises = new Set(techs.map(([, t]) => t.company));
-    if (entreprises.size < 2) return techs.map(([uid, t]) => carteTech(uid, t, ctx)).join('');
+    if (entreprises.size < 2) return techs.map(([uid, t]) => carteTech(uid, t, ctx, periode)).join('');
 
     let html = '', courante = null;
     for (const [uid, t] of techs) {
@@ -80,7 +91,7 @@ export function renderHeures(techMap, ctx) {
             courante = t.company;
             html += `<div class="resp-entreprise-header"><span>${escHtml(courante)}</span></div>`;
         }
-        html += carteTech(uid, t, ctx);
+        html += carteTech(uid, t, ctx, periode);
     }
     return html;
 }

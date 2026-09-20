@@ -1,5 +1,5 @@
 import {
-    cfg, setReglesEntreprise, getLogoBase64, calcHeures, onSuppInput, resetSuppAuto, validerSuppInput,
+    cfg, setReglesEntreprise, getLogoBase64, calcHeures, onTravailInput, resetTravailAuto, validerTravailInput,
     ajouterIntervention, ajouterPause, sauvegarderBrouillon,
     afficherBlocRappel, viderRappel,
 } from './modules/fdr.js';
@@ -68,15 +68,17 @@ function initApp(user, nomProfil) {
         calcHeures();
         sauvegarderBrouillon();
     });
-    document.getElementById('heures-supp').addEventListener('input', () => {
-        onSuppInput();
+    // Heures travaillées corrigées à la main : c'est cette valeur qui sert
+    // ensuite à tous les calculs d'heures supp (voir fdr_calculs.js).
+    document.getElementById('heures-travail').addEventListener('input', () => {
+        onTravailInput();
         sauvegarderBrouillon();
     });
-    document.getElementById('heures-supp').addEventListener('blur', () => {
-        validerSuppInput();
+    document.getElementById('heures-travail').addEventListener('blur', () => {
+        validerTravailInput();
         sauvegarderBrouillon();
     });
-    document.getElementById('btn-supp-auto').addEventListener('click', resetSuppAuto);
+    document.getElementById('btn-travail-auto').addEventListener('click', resetTravailAuto);
 
     // On défile d'abord doucement jusqu'à la nouvelle carte, et on replie les autres
     // seulement une fois arrivé (elles sont alors hors écran : aucun saut visible).

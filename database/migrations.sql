@@ -641,3 +641,35 @@ with check ( public.est_admin() );
 -- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
 --   drop table if exists public.validations_heures_supp;
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-09-17 — Heures supp : une seule règle, basée sur les heures travaillées
+--
+-- Le calcul des heures supp se fait désormais PARTOUT par semaine :
+--   heures travaillées (lun → dim) − contrat du technicien (35h / 37h / 39h),
+-- le contrat étant réduit des fériés et congés. Majoration légale 25 % / 50 %.
+--
+-- Conséquences en base :
+--   • feuilles_de_route.heures_supp : colonne OBSOLÈTE. Elle reste écrite (écart
+--     au seuil du jour, signé, ex. « -1h30 ») pour compatibilité mais n'est plus
+--     lue nulle part. Aucune action nécessaire.
+--   • validations_heures_supp.heures_validees_min : contient désormais les
+--     HEURES TRAVAILLÉES validées du jour (et non plus les heures supp).
+--     Les anciennes validations ne sont plus comparables : on les supprime.
+--   • entreprises.seuil_hebdo_minutes / palier_25_minutes : réglages retirés
+--     de l'appli (le contrat décide). Colonnes laissées en base, ignorées.
+--
+-- Étape manuelle (Supabase, SQL Editor), selon le projet :
+--   • PROD (table créée le 2026-09-16, contient d'anciennes validations en
+--     heures supp) : exécuter le delete ci-dessous UNE fois, au déploiement.
+--   • DEV (table jamais créée) : exécuter d'abord le bloc « create table »
+--     du 2026-09-16 plus haut ; la table est alors vide, rien à effacer.
+-- ─────────────────────────────────────────────────────────────────────────
+
+delete from public.validations_heures_supp;
+
+-- Plus tard, une fois tout le monde sur la nouvelle version (facultatif) :
+--   alter table public.entreprises
+--     drop column if exists seuil_hebdo_minutes,
+--     drop column if exists palier_25_minutes;
+-- ─────────────────────────────────────────────────────────────────────────

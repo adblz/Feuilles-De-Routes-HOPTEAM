@@ -2,7 +2,8 @@ import { chargerHeuresSupp } from './db.js';
 import { chargerPeriodesPaie } from './db_planning.js';
 import { trouverPeriodeCourante, nomMois, rangeLabel, periodesMoisCalendaire } from './periodes_paie.js';
 import { cfg } from './fdr_config.js';
-import { calcHebdomadaire, totauxSuppPeriode } from './heures_calculs.js';
+import { semainesPeriode, totauxSuppPeriode } from './heures_calculs.js';
+import { bornesEtendues } from './semaines.js';
 import { renderHeures } from './heures_render.js';
 import { isoLocal, escHtml } from '../utils/utils.js';
 import { montrerInfoBloc } from './heures_tooltip.js';
@@ -113,9 +114,14 @@ export async function chargerEtRendre() {
     zone.innerHTML = '<p class="heures-loading">Chargement…</p>';
 
     try {
-        const feuilles = await chargerHeuresSupp(debut, fin);
-        const semaines = calcHebdomadaire(feuilles);
-        const totaux   = totauxSuppPeriode(feuilles);
+        // On charge des semaines entières (lundi → dimanche) : une semaine à
+        // cheval sur deux périodes est calculée en entier et comptée dans la
+        // période où tombe son dimanche (voir semaines.js).
+        const bornes   = bornesEtendues(debut, fin);
+        const feuilles = await chargerHeuresSupp(bornes.debut, bornes.fin);
+        const opts     = { contrat: cfg.contrat, aujourdhui: isoLocal(new Date()) };
+        const semaines = semainesPeriode(feuilles, opts, debut, fin);
+        const totaux   = totauxSuppPeriode(feuilles, opts, debut, fin);
         zone.innerHTML = renderHeures(semaines, totaux, rangeLabel(debut, fin));
     } catch (e) {
         zone.innerHTML = `<p class="heures-error">Erreur : ${escHtml(e.message)}</p>`;

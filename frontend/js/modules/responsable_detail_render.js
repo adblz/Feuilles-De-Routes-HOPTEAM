@@ -2,8 +2,9 @@
 // responsable) : en-tête, frise de la journée, liste des interventions et
 // bloc de validation des heures supp.
 
-import { escHtml, hhmm, affH, parseDuree } from '../utils/utils.js';
+import { escHtml, hhmm, affH, affHSigne } from '../utils/utils.js';
 import { timelineJour, trierChronologique } from './resume_timeline.js';
+import { suppJour } from './heures_calculs.js';
 
 const plage = (a, b) => `${hhmm(a) || '—'} → ${hhmm(b) || '—'}`;
 
@@ -49,26 +50,27 @@ function enTete(feuille) {
         <div class="detail-meta"><span>Journée</span><strong>${plage(feuille.heure_debut, feuille.heure_fin)}</strong></div>
         <div class="detail-meta"><span>Repas</span><strong>${feuille.repas_min ? feuille.repas_min + ' min' : '—'}</strong></div>
         <div class="detail-meta"><span>Travaillé</span><strong>${escHtml(feuille.heures_travail || '—')}</strong></div>
-        <div class="detail-meta"><span>Supp déclarées</span><strong>${escHtml(feuille.heures_supp || '0h00')}</strong></div>
+        <div class="detail-meta" title="Heures travaillées moins le seuil du jour (7h/8h, 0 le week-end). Le total réel se calcule à la semaine."><span>Écart au seuil du jour</span><strong>${affHSigne(suppJour(feuille, feuille.contratProfil))}</strong></div>
         <div>${tags}</div>
     </div>`;
 }
 
 function blocValidation(feuille, validation, obsolete) {
-    const valeur = validation ? affH(validation.heures_validees_min) : affH(parseDuree(feuille.heures_supp));
+    const valeur = validation ? affH(validation.heures_validees_min) : (feuille.heures_travail || '0h00');
     const info = validation
-        ? `Validé le ${formatDateHeure(validation.validee_le)} : <strong>${affH(validation.heures_validees_min)}</strong>${validation.commentaire ? ` — ${escHtml(validation.commentaire)}` : ''}`
-        : 'Aucune validation pour cette journée. Le champ est pré-rempli avec les heures déclarées par le technicien.';
+        ? `Validé le ${formatDateHeure(validation.validee_le)} : <strong>${affH(validation.heures_validees_min)}</strong> travaillées${validation.commentaire ? ` — ${escHtml(validation.commentaire)}` : ''}`
+        : 'Aucune validation pour cette journée. Le champ est pré-rempli avec les heures travaillées déclarées par le technicien. '
+          + 'Ce que vous validez sert au calcul des heures supp de la semaine (onglet Heures supp).';
     const alerte = obsolete
         ? '<p class="detail-validation-alerte">⚠ Le technicien a ré-enregistré cette feuille après votre validation. Vérifiez et validez à nouveau.</p>'
         : '';
     return `<div class="detail-validation">
-        <h4 class="detail-section-titre">Validation des heures supp</h4>
+        <h4 class="detail-section-titre">Validation des heures travaillées</h4>
         ${alerte}
         <div class="detail-validation-ligne">
             <div class="form-group">
-                <label for="detail-supp-validees">Heures supp validées</label>
-                <input type="text" id="detail-supp-validees" value="${valeur}" placeholder="ex. 1h30" inputmode="numeric">
+                <label for="detail-supp-validees">Heures travaillées validées</label>
+                <input type="text" id="detail-supp-validees" value="${valeur}" placeholder="ex. 8h30" inputmode="numeric">
             </div>
             <div class="form-group">
                 <label for="detail-commentaire">Commentaire (facultatif)</label>

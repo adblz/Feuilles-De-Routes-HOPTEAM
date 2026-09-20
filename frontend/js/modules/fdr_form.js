@@ -1,5 +1,5 @@
 import { attachAutocomplete, VILLES_KEY, CLIENTS_KEY } from './autocomplete.js';
-import { setSuppManuel } from './fdr_calculs.js';
+import { setTravailManuel } from './fdr_calculs.js';
 import { expanderCarte, collapserCarte, collapserToutesSauf } from './fdr_collapse.js';
 import { activerDragCarte } from './fdr_dragdrop.js';
 import { ICON_SUPPRIMER } from '../utils/utils.js';
@@ -337,9 +337,9 @@ export function viderInterventions() {
 }
 
 export function resetSuppState() {
-    setSuppManuel(false);
-    const input = document.getElementById('heures-supp');
+    setTravailManuel(false);
+    const input = document.getElementById('heures-travail');
     input.classList.add('auto-field');
     input.classList.remove('auto-field-manual');
-    document.getElementById('btn-supp-auto').style.display = 'none';
+    document.getElementById('btn-travail-auto').style.display = 'none';
 }

@@ -1,5 +1,5 @@
 import { showToast, isoLocal } from '../utils/utils.js';
-import { getSuppManuel, setSuppManuel, calcHeures } from './fdr_calculs.js';
+import { getTravailManuel, restaurerTravailManuel, calcHeures } from './fdr_calculs.js';
 import { ajouterIntervention, ajouterPause, lireTousLesElements, remplirRappel } from './fdr_form.js';
 import { collapserApresRestauration } from './fdr_collapse.js';
 
@@ -53,8 +53,8 @@ export function sauvegarderBrouillon() {
             fin:        document.getElementById('heure-fin').value,
             repas:      document.getElementById('repas').value,
             astreinteJour: document.getElementById('astreinte-jour')?.checked || false,
-            suppManuel: getSuppManuel(),
-            suppVal:    getSuppManuel() ? document.getElementById('heures-supp').value : null,
+            travailManuel: getTravailManuel(),
+            travailVal:    getTravailManuel() ? document.getElementById('heures-travail').value : null,
             elements:   lireTousLesElements(),
             scrollY:    window.scrollY,
         };
@@ -76,14 +76,9 @@ export function restaurerBrouillon(dateISO) {
 
         if (d.debut && d.fin) calcHeures();
 
-        if (d.suppManuel && d.suppVal) {
-            setSuppManuel(true);
-            const input = document.getElementById('heures-supp');
-            input.value = d.suppVal;
-            input.classList.remove('auto-field');
-            input.classList.add('auto-field-manual');
-            document.getElementById('btn-supp-auto').style.display = 'block';
-        }
+        // Heures travaillées corrigées à la main (un ancien brouillon avec
+        // « suppManuel » est simplement recalculé automatiquement).
+        if (d.travailManuel && d.travailVal) restaurerTravailManuel(d.travailVal);
 
         let aRappel = false;
         (d.elements || []).forEach(item => {

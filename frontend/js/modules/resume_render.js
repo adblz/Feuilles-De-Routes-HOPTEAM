@@ -1,5 +1,6 @@
-import { escHtml, hhmm } from '../utils/utils.js';
+import { escHtml, hhmm, affHSigne } from '../utils/utils.js';
 import { timelineJour, trierChronologique } from './resume_timeline.js';
+import { suppJour } from './heures_calculs.js';
 
 // Le repère « glissez pour changer de jour » disparaît dès que l'utilisateur a
 // glissé une fois. C'est resume_nav.js qui pose ce drapeau (même clé).
@@ -47,9 +48,12 @@ function enTete(feuille, rappel) {
     const rappelRange = rappel ? plage(rappel.pause_debut, rappel.pause_fin) : '';
     const astreinte   = !!feuille.astreinte || !!(rappel && rappel.astreinte);
 
+    // Écart au seuil du jour, recalculé depuis les heures travaillées (règle
+    // unique, voir heures_calculs.js) ; affiché seulement s'il est non nul.
+    const ecart  = feuille.heures_travail ? suppJour(feuille) : 0;
     const totaux = [
         feuille.heures_travail ? `${feuille.heures_travail} travaillées` : '',
-        feuille.heures_supp    ? `+${feuille.heures_supp} supp.` : '',
+        ecart ? `${affHSigne(ecart)} vs seuil du jour` : '',
     ].filter(Boolean).join(' · ');
 
     return `
