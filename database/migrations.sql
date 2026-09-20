@@ -673,3 +673,30 @@ delete from public.validations_heures_supp;
 --     drop column if exists seuil_hebdo_minutes,
 --     drop column if exists palier_25_minutes;
 -- ─────────────────────────────────────────────────────────────────────────
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2026-09-21 — Métiers (Bière / Café / Arrière-bar) et prestations
+--
+-- Chaque carte d'intervention porte désormais ses prestations PAR MÉTIER :
+--   Bière       → Sanitation, Dépannage, Installation, Devis
+--   Café        → Joint-douchette, Dépannage, Installation, Devis
+--   Arrière-bar → Dépannage, Installation, Devis
+--
+-- Conséquences en base :
+--   • interventions.type_int : toujours une liste séparée par des virgules,
+--     mais chaque valeur devient « Métier · Prestation »
+--     (ex. « Bière · Sanitation,Café · Joint-douchette »). Les anciennes
+--     valeurs sans métier (« Sanitation,Dépannage ») restent lues telles
+--     quelles. Chaque valeur compte pour UNE prestation dans les compteurs.
+--   • interventions.groupes : nouvelle colonne, nombre de groupes de la
+--     machine à café (1 à 4), saisi pour « Café · Joint-douchette ».
+--
+-- Étape manuelle (Supabase, SQL Editor) : exécuter la ligne ci-dessous AVANT
+-- de tester l'enregistrement (sinon erreur « column groupes does not exist »).
+-- ─────────────────────────────────────────────────────────────────────────
+
+alter table public.interventions add column if not exists groupes smallint;
+
+-- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
+--   alter table public.interventions drop column if exists groupes;
+-- ─────────────────────────────────────────────────────────────────────────

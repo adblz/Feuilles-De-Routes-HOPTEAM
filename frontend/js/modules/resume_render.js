@@ -1,6 +1,7 @@
 import { escHtml, hhmm, affHSigne } from '../utils/utils.js';
 import { timelineJour, trierChronologique } from './resume_timeline.js';
 import { suppJour } from './heures_calculs.js';
+import { libellesPrestations, nbPrestationsFeuille } from './prestations.js';
 
 // Le repère « glissez pour changer de jour » disparaît dès que l'utilisateur a
 // glissé une fois. C'est resume_nav.js qui pose ce drapeau (même clé).
@@ -18,13 +19,15 @@ function formatDateLong(iso) {
 const plage = (a, b) => `${hhmm(a) || '—'} → ${hhmm(b) || '—'}`;
 
 function ligneIntervention(el) {
-    const details = [el.ville, el.type_int].filter(Boolean).join(' · ');
+    const details = [el.ville, ...libellesPrestations(el)].filter(Boolean).join(' · ');
+    const groupes = el.groupes ? `${el.groupes} groupe${el.groupes > 1 ? 's' : ''}` : '';
     return `
         <div class="resume-item">
             <div class="resume-item-left">
                 <span class="resume-item-client">${escHtml(el.client) || '—'}</span>
                 ${details ? `<span class="resume-item-details">${escHtml(details)}</span>` : ''}
                 ${el.mo   ? `<span class="resume-item-mo">MO : ${escHtml(el.mo)}</span>` : ''}
+                ${groupes ? `<span class="resume-item-mo">${groupes}</span>` : ''}
             </div>
             <span class="resume-item-heures">${plage(el.heure_arrivee, el.heure_depart)}</span>
         </div>`;
@@ -75,8 +78,8 @@ function enTete(feuille, rappel) {
 }
 
 export function buildResumeHTML(feuille, elements) {
-    const interventions = elements.filter(e => e.kind === 'intervention');
-    const rappel        = elements.find(e => e.kind === 'rappel');
+    const nbPresta = nbPrestationsFeuille(elements);
+    const rappel   = elements.find(e => e.kind === 'rappel');
 
     // Interventions et pauses mélangées puis remises dans l'ordre des horaires.
     const deroule = trierChronologique(
@@ -90,7 +93,7 @@ export function buildResumeHTML(feuille, elements) {
 
     return enTete(feuille, rappel) + `
         <div class="card">
-            <h3 class="resume-section-title">Interventions (${interventions.length})</h3>
+            <h3 class="resume-section-title">Prestations (${nbPresta})</h3>
             ${lignes}
         </div>`
         + timelineJour(feuille, elements);

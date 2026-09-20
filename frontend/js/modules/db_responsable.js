@@ -17,7 +17,7 @@ export async function chargerMonProfil() {
 
 export async function chargerToutesLesFeuilles() {
     return dbGet(
-        `feuilles_de_route?select=id,date,tech,user_id,heures_travail,contrat,astreinte,mode,conge,created_at,interventions(id,kind)&order=date.desc`
+        `feuilles_de_route?select=id,date,tech,user_id,heures_travail,contrat,astreinte,mode,conge,created_at,interventions(id,kind,type_int)&order=date.desc`
     );
 }
 

@@ -3,6 +3,7 @@
 
 import { escHtml, hhmm, dureeCourte, affHSigne } from '../utils/utils.js';
 import { suppJour } from './heures_calculs.js';
+import { libellesPrestations } from './prestations.js';
 
 function ligneIntervention(item, num) {
     const client  = escHtml(item.client || '—');
@@ -11,9 +12,10 @@ function ligneIntervention(item, num) {
     const duree   = dureeCourte(hhmm(item.heure_arrivee), hhmm(item.heure_depart));
 
     const extras = [
-        item.type_int ? escHtml(item.type_int) : '',
+        escHtml(libellesPrestations(item).join(' · ')),
         item.mo       ? `MO ${escHtml(item.mo)}` : '',
         item.becs     ? `${item.becs} bec${item.becs > 1 ? 's' : ''}` : '',
+        item.groupes  ? `${item.groupes} groupe${item.groupes > 1 ? 's' : ''}` : '',
     ].filter(Boolean).join(' · ');
 
     return `

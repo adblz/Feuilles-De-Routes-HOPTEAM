@@ -1,6 +1,8 @@
 import { showToast, isoLocal } from '../utils/utils.js';
 import { getTravailManuel, restaurerTravailManuel, calcHeures } from './fdr_calculs.js';
-import { ajouterIntervention, ajouterPause, lireTousLesElements, remplirRappel } from './fdr_form.js';
+import { ajouterIntervention, ajouterPause } from './fdr_form.js';
+import { lireTousLesElements } from './fdr_lecture.js';
+import { remplirRappel } from './fdr_rappel.js';
 import { collapserApresRestauration } from './fdr_collapse.js';
 
 // Auto-sauvegarde à chaque modification du formulaire

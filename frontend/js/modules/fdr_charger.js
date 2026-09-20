@@ -1,8 +1,6 @@
 import { calcHeures, restaurerTravailManuel } from './fdr_calculs.js';
-import {
-    ajouterIntervention, ajouterPause, remplirRappel,
-    viderInterventions, resetSuppState,
-} from './fdr_form.js';
+import { ajouterIntervention, ajouterPause, viderInterventions, resetSuppState } from './fdr_form.js';
+import { remplirRappel } from './fdr_rappel.js';
 import { sauvegarderBrouillon } from './fdr_brouillon.js';
 import { hhmm } from '../utils/utils.js';
 import { collapserApresRestauration } from './fdr_collapse.js';
@@ -29,6 +27,7 @@ export function remplirFormulaireDepuisFeuille(feuille, elements) {
                 typeInt: el.type_int      || '',
                 mo:      el.mo            || '',
                 becs:    el.becs != null ? String(el.becs) : '',
+                groupes: el.groupes != null ? String(el.groupes) : '',
                 details: el.details       || '',
             });
         } else if (el.kind === 'pause') {

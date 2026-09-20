@@ -229,6 +229,7 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         type_int:      el.kind === 'intervention' ? (el.typeInt || null) : null,
         mo:            el.kind === 'intervention' ? (el.mo      || null) : null,
         becs:          el.kind === 'intervention' ? toInt(el.becs)       : null,
+        groupes:       el.kind === 'intervention' ? toInt(el.groupes)    : null,
         details:       el.kind === 'intervention' ? (el.details || null) : null,
         // 'rappel' réutilise les colonnes pause_debut/pause_fin (pas de nouvelle colonne).
         pause_debut:   (el.kind === 'pause' || el.kind === 'rappel') ? toTime(el.debut) : null,

@@ -1,6 +1,7 @@
 import { cfg, seuilJour, lireTousLesElements, getLogoBase64 } from './fdr.js';
 import { renderItems } from './pdf_items.js';
 import { dureeCourte } from '../utils/utils.js';
+import { nbPrestationsFeuille, texteNbPrestations } from './prestations.js';
 
 // Libellé de la case « heures travaillées » selon le trajet retiré par
 // l'entreprise : « Heures trav. » si 0 min, sinon « Heures trav. (−1h30 trajet) ».
@@ -36,7 +37,7 @@ export function construirePDF() {
     const travail = document.getElementById('heures-travail').value || '—';
     const supp    = document.getElementById('heures-supp').value   || '0h00';
     const items   = lireTousLesElements();
-    const nbInts  = items.filter(i => i.kind === 'intervention').length;
+    const nbPresta = nbPrestationsFeuille(items);
 
     const rappel    = items.find(i => i.kind === 'rappel');
     const itemsHTML = renderItems(items);
@@ -87,7 +88,7 @@ ${rappel ? `
 
         ${suppBanner}
 
-        <div class="pdf-section-title">Interventions &amp; Pauses (${nbInts} intervention${nbInts > 1 ? 's' : ''})</div>
+        <div class="pdf-section-title">Interventions &amp; Pauses (${texteNbPrestations(nbPresta)})</div>
         ${itemsHTML}
         ${cfg.pdfMentions ? `<div class="pdf-mentions" style="margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:10px;color:#64748b;line-height:1.4;">${escPdf(cfg.pdfMentions)}</div>` : ''}`;
 }

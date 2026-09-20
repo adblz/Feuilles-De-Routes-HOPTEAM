@@ -7,8 +7,10 @@
 
 import { affH, affHSigne, hhmm } from '../utils/utils.js';
 import { suppJour } from './heures_calculs.js';
+import { nbPrestationsFeuille } from './prestations.js';
 
-const nbInterventions = f => (f.interventions || []).filter(i => i.kind === 'intervention').length;
+// Chaque prestation cochée sur une intervention compte pour une.
+const nbInterventions = f => nbPrestationsFeuille(f.interventions);
 
 const dateCourte = iso => new Date(iso + 'T12:00')
     .toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
@@ -97,7 +99,7 @@ export function tableauSynthese(semaines, totaux) {
             <thead>
                 <tr>
                     <th>Jour</th><th class="c">Début</th><th class="c">Fin</th><th class="c">Repas</th>
-                    <th class="c">Travail</th><th class="c">Écart jour</th><th class="c">Interv.</th>
+                    <th class="c">Travail</th><th class="c">Écart jour</th><th class="c">Presta.</th>
                 </tr>
             </thead>
             <tbody>${semaines.map(lignesSemaine).join('')}</tbody>

@@ -6,6 +6,7 @@
 import { escHtml, affH, affHSigne } from '../utils/utils.js';
 import { getSemaineISO, labelSemaine } from './semaines.js';
 import { suppJour } from './heures_calculs.js';
+import { nbPrestationsFeuille } from './prestations.js';
 
 // Badge d'état de la validation des heures TRAVAILLÉES du jour. Un jour dans
 // son seuil et sans validation n'affiche rien (pas de bruit inutile) ; un jour
@@ -24,7 +25,7 @@ function ligneFeuille(f, ctx) {
     const dateAff = f.date
         ? new Date(f.date + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
         : '—';
-    const nbInts = (f.interventions || []).filter(i => i.kind === 'intervention').length;
+    const nbPresta = nbPrestationsFeuille(f.interventions);
     const vue = ctx.vues.has(f.id);
     const checkHtml = ctx.selectionMode
         ? `<input type="checkbox" class="resp-check resp-check-feuille" data-id="${f.id}"${ctx.estSelectionnee(f.id) ? ' checked' : ''} aria-label="Sélectionner la feuille du ${escHtml(dateAff)}">`
@@ -38,7 +39,7 @@ function ligneFeuille(f, ctx) {
         <span class="resp-feuille-date">${dateAff}</span>
         <span class="resp-feuille-heures">${f.conge ? '—' : (f.heures_travail || '—')}</span>
         <span class="resp-feuille-supp" title="Écart au seuil du jour">${escHtml(supp)} ${badgeValidation(f, ctx)}</span>
-        <span class="resp-feuille-ints">${nbInts} int.</span>
+        <span class="resp-feuille-ints">${nbPresta} presta.</span>
         <span class="resp-feuille-action">Ouvrir</span>
     </div>`;
 }

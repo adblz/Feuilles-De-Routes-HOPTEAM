@@ -46,7 +46,7 @@ Application web sans framework, vanilla HTML / CSS / JS avec modules ES natifs. 
 **Tables Supabase :**
 - `profiles` : `id, nom, role, contrat` (35 ou 39)
 - `feuilles_de_route` : en-tête de la feuille du jour (date, tech, heures…)
-- `interventions` : lignes détail liées à une feuille (`feuille_id`)
+- `interventions` : lignes détail liées à une feuille (`feuille_id`). `type_int` = prestations séparées par des virgules, chacune au format `Métier · Prestation` (ex. `Bière · Sanitation,Café · Joint-douchette`, anciennes valeurs sans métier tolérées) ; chaque valeur compte pour **une prestation** dans tous les compteurs. `becs` (Bière · Sanitation), `groupes` 1-4 (Café · Joint-douchette), `mo` (Dépannage). Liste des métiers / prestations : `prestations.js`
 - `clients_planning` : clients à visiter (import Excel « sanitation » par le responsable), une ligne par PDV affecté à un technicien (`user_id`) ; `fait_le` null = à faire
 - `clients_secteurs` : correspondance « Secteur technicien » (texte Excel) → compte technicien, mémorisée par entreprise
 - `clients_imports` : journal des imports du planning
@@ -66,14 +66,21 @@ frontend/js/
 │   ├── auth.js          ← session localStorage, connexion/déconnexion Supabase Auth
 │   ├── db.js            ← toutes les requêtes Supabase REST (feuilles, interventions, profils)
 │   ├── db_responsable.js ← requêtes Supabase spécifiques vue responsable
-│   ├── fdr.js           ← barrel file : réexporte tout depuis fdr_config, fdr_calculs, fdr_form, fdr_brouillon
+│   ├── fdr.js           ← barrel file : réexporte tout depuis fdr_config, fdr_calculs, fdr_form, fdr_liste, fdr_lecture, fdr_rappel, fdr_brouillon
 │   ├── fdr_config.js    ← configuration locale (email responsable, company, logo, contrat)
 │   ├── fdr_calculs.js   ← formulaire : heures travaillées du jour (auto, corrigeables à la main) + écart au seuil affiché
 │   ├── seuil_jour.js    ← seuils selon le contrat : jour (7h/8h, 0 le week-end et fériés), durée hebdo, palier 25 %
 │   ├── semaines.js      ← repères de semaine (lundi/dimanche, clé ISO, libellés, bornes étendues, appartenance à une période)
 │   ├── heures_calculs.js ← LA règle des heures supp : par semaine, travaillé − contrat ; carte partielle ; totaux de période
 │   ├── heures_nuit.js   ← heures de nuit (plage entreprise)
-│   ├── fdr_form.js      ← ajout/suppression/déplacement d'interventions et pauses dans le DOM
+│   ├── prestations.js   ← SOURCE DE VÉRITÉ métiers / prestations : listes, découpage/assemblage de `type_int`, libellés, comptage, règles des champs extra
+│   ├── fdr_form.js      ← création des cartes intervention / pause (branche template, prestations, champs extra, drag, pliage) + réinitialisation
+│   ├── fdr_template.js  ← HTML des cartes (aucune logique, aucun style inline)
+│   ├── fdr_prestations.js ← onglets métier d'une carte : prestations cochées dans `data-coches` de chaque bouton métier, rendu du métier ouvert (`vu`)
+│   ├── fdr_champs_extra.js ← champs conditionnels : becs, groupes (boutons 1-4), main d'œuvre — masqués = vidés
+│   ├── fdr_liste.js     ← suppression, renumérotation, notification `form:changed`
+│   ├── fdr_lecture.js   ← `lireTousLesElements()` : DOM → éléments (intervention / pause / rappel), cartes vides ignorées
+│   ├── fdr_rappel.js    ← bloc « sortie supplémentaire »
 │   ├── fdr_brouillon.js ← sauvegarde/restauration brouillon dans localStorage
 │   ├── pdf.js           ← génération PDF (téléchargement local)
 │   ├── pdf_layout.js    ← mise en page du document PDF

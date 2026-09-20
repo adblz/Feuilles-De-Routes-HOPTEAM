@@ -4,9 +4,14 @@ import { chargerHistorique } from './db.js';
 import { getBrouillonsDates, ajouterIntervention } from './fdr.js';
 import { finaliserBrouillon, ouvrirNouvelleFeuille } from './dashboard.js';
 import { collapserToutesSauf, expanderCarte } from './fdr_collapse.js';
+import { lirePrestations, selectionnerPrestations } from './fdr_prestations.js';
+import { assemblerTypeInt } from './prestations.js';
+
+// Le planning importé ne concerne que la bière : prestation « Bière · Sanitation ».
+const PRESTATION_PLANNING = { metier: 'Bière', presta: 'Sanitation' };
 
 // ── « Valider ce client » : ajoute le client à la feuille de route du jour ──
-// Le client arrive pré-rempli (nom, ville, type Sanitation, nombre de becs =
+// Le client arrive pré-rempli (nom, ville, Bière · Sanitation, nombre de becs =
 // total de ses postes) ; le technicien n'a plus qu'à saisir les heures,
 // corriger les becs et commenter. Les ids de ses postes (planningId, séparés
 // par des virgules) suivent la carte jusqu'à l'enregistrement, où ils
@@ -24,7 +29,7 @@ function derniereCarteVide() {
     const n = numCarte(card);
     const vide = ['arrivee', 'depart', 'client', 'ville', 'details']
         .every(champ => !(document.getElementById(`i${n}-${champ}`)?.value));
-    const sansType = !card.querySelector('.type-btn.active');
+    const sansType = !lirePrestations(card);
     return (vide && sansType && !card.dataset.planningId) ? card : null;
 }
 
@@ -32,9 +37,8 @@ function remplirCarte(card, row) {
     const n = numCarte(card);
     document.getElementById(`i${n}-client`).value = (row.nom_pdv || '').toUpperCase();
     document.getElementById(`i${n}-ville`).value  = (row.ville || '').toUpperCase();
-    // Le clic active « Sanitation », affiche le champ becs et prévient le brouillon.
-    const btnSanitation = card.querySelector('.type-btn[data-value="Sanitation"]');
-    if (btnSanitation && !btnSanitation.classList.contains('active')) btnSanitation.click();
+    // Coche « Bière · Sanitation » (ce qui affiche le champ becs), puis pose les becs.
+    selectionnerPrestations(n, card, PRESTATION_PLANNING.metier, [PRESTATION_PLANNING.presta]);
     document.getElementById(`i${n}-becs`).value = row.tirage || '';
     card.dataset.planningId = row.planningId;
 }
@@ -43,7 +47,7 @@ function prefill(row) {
     return {
         client:     (row.nom_pdv || '').toUpperCase(),
         ville:      (row.ville || '').toUpperCase(),
-        typeInt:    'Sanitation',
+        typeInt:    assemblerTypeInt([PRESTATION_PLANNING]),
         becs:       row.tirage || '',
         planningId: row.planningId,
     };

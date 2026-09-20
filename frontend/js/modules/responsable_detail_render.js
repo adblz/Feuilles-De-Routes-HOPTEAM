@@ -4,6 +4,7 @@
 
 import { escHtml, hhmm, affH, affHSigne } from '../utils/utils.js';
 import { timelineJour, trierChronologique } from './resume_timeline.js';
+import { libellesPrestations, nbPrestationsFeuille } from './prestations.js';
 import { suppJour } from './heures_calculs.js';
 
 const plage = (a, b) => `${hhmm(a) || '—'} → ${hhmm(b) || '—'}`;
@@ -25,7 +26,10 @@ function ligneElement(el) {
     if (el.kind === 'rappel') {
         return `<div class="detail-interv rappel"><span>↩ Sortie supplémentaire${el.astreinte ? ' (astreinte)' : ''}</span><span class="detail-interv-heures">${plage(el.pause_debut, el.pause_fin)}</span></div>`;
     }
-    const meta = [el.ville, el.type_int, el.mo ? `MO : ${el.mo}` : '', el.becs ? `${el.becs} bec(s)` : ''].filter(Boolean).join(' · ');
+    const meta = [
+        el.ville, ...libellesPrestations(el),
+        el.mo ? `MO : ${el.mo}` : '', el.becs ? `${el.becs} bec(s)` : '', el.groupes ? `${el.groupes} groupe(s)` : '',
+    ].filter(Boolean).join(' · ');
     return `<div class="detail-interv">
         <div>
             <div class="detail-interv-client">${escHtml(el.client) || '—'}</div>
@@ -95,12 +99,12 @@ export function renderDetail(feuille, elements, validation, obsolete) {
         return `${enTete(feuille)}<p class="resp-empty">Jour de congé : aucune intervention.</p>`;
     }
     const tries = trierChronologique(elements, feuille.heure_debut);
-    const nbInts = tries.filter(e => e.kind === 'intervention').length;
+    const nbPresta = nbPrestationsFeuille(tries);
     const frise = timelineJour(feuille, tries);
     return `${enTete(feuille)}
         ${frise ? `<div class="detail-frise"><h4 class="detail-section-titre">Frise de la journée</h4>${frise}</div>` : ''}
         <div>
-            <h4 class="detail-section-titre">Interventions (${nbInts})</h4>
+            <h4 class="detail-section-titre">Prestations (${nbPresta})</h4>
             ${tries.length ? tries.map(ligneElement).join('') : '<p class="resp-empty">Aucune intervention saisie.</p>'}
         </div>
         ${blocValidation(feuille, validation, obsolete)}`;

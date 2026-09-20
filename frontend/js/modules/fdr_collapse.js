@@ -1,3 +1,6 @@
+import { lirePrestations } from './fdr_prestations.js';
+import { libellesPrestations } from './prestations.js';
+
 function buildSummaryText(card) {
     const type = card.dataset.type;
     if (type === 'intervention') {
@@ -6,8 +9,7 @@ function buildSummaryText(card) {
         const depart  = document.getElementById(`i${rawId}-depart`)?.value  || '';
         const client  = document.getElementById(`i${rawId}-client`)?.value  || '';
         const ville   = document.getElementById(`i${rawId}-ville`)?.value   || '';
-        const types   = Array.from(card.querySelectorAll('.type-btn.active'))
-                             .map(b => b.dataset.value).join(', ');
+        const types   = libellesPrestations({ typeInt: lirePrestations(card) }).join(', ');
         const parts = [];
         if (arrivee && depart) parts.push(`${arrivee} – ${depart}`);
         else if (arrivee)      parts.push(arrivee);
