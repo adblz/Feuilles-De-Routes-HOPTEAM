@@ -63,8 +63,10 @@ export function ajouterIntervention(data = {}) {
     // (un champ masqué est vidé, d'où la restauration de mo / becs / groupes après).
     initPrestations(n, div, data.typeInt || '');
     brancherGroupes(div);
-    if (data.mo)      document.getElementById(`i${n}-mo`).value   = data.mo;
-    if (data.becs)    document.getElementById(`i${n}-becs`).value = data.becs;
+    if (data.mo)      document.getElementById(`i${n}-mo`).value      = data.mo;
+    if (data.mo_cafe) document.getElementById(`i${n}-mo_cafe`).value = data.mo_cafe;
+    if (data.mo_bar)  document.getElementById(`i${n}-mo_bar`).value  = data.mo_bar;
+    if (data.becs)    document.getElementById(`i${n}-becs`).value    = data.becs;
     if (data.groupes) poserGroupes(div, data.groupes);
     // Client venu du planning importé : son id suit la carte jusqu'à l'enregistrement.
     if (data.planningId) div.dataset.planningId = data.planningId;

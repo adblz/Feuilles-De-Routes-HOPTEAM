@@ -690,13 +690,22 @@ delete from public.validations_heures_supp;
 --     quelles. Chaque valeur compte pour UNE prestation dans les compteurs.
 --   • interventions.groupes : nouvelle colonne, nombre de groupes de la
 --     machine à café (1 à 4), saisi pour « Café · Joint-douchette ».
+--   • interventions.mo_cafe, mo_bar : main d'œuvre café et arrière-bar
+--     (texte « 1h30 », comme `mo`). `mo` reste la main d'œuvre BIÈRE : une
+--     main d'œuvre par métier, saisie quand ce métier a un Dépannage.
 --
--- Étape manuelle (Supabase, SQL Editor) : exécuter la ligne ci-dessous AVANT
--- de tester l'enregistrement (sinon erreur « column groupes does not exist »).
+-- Étape manuelle (Supabase, SQL Editor) : exécuter les lignes ci-dessous AVANT
+-- de tester l'enregistrement (sinon erreur « column … does not exist »).
 -- ─────────────────────────────────────────────────────────────────────────
 
-alter table public.interventions add column if not exists groupes smallint;
+alter table public.interventions
+    add column if not exists groupes smallint,
+    add column if not exists mo_cafe text,
+    add column if not exists mo_bar  text;
 
 -- Pour annuler ce changement plus tard si besoin (à coller dans Supabase) :
---   alter table public.interventions drop column if exists groupes;
+--   alter table public.interventions
+--       drop column if exists groupes,
+--       drop column if exists mo_cafe,
+--       drop column if exists mo_bar;
 -- ─────────────────────────────────────────────────────────────────────────

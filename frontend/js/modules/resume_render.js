@@ -1,7 +1,7 @@
 import { escHtml, hhmm, affHSigne } from '../utils/utils.js';
 import { timelineJour, trierChronologique } from './resume_timeline.js';
 import { suppJour } from './heures_calculs.js';
-import { libellesPrestations, nbPrestationsFeuille } from './prestations.js';
+import { libellesPrestations, libellesMo, nbPrestationsFeuille } from './prestations.js';
 
 // Le repère « glissez pour changer de jour » disparaît dès que l'utilisateur a
 // glissé une fois. C'est resume_nav.js qui pose ce drapeau (même clé).
@@ -26,7 +26,7 @@ function ligneIntervention(el) {
             <div class="resume-item-left">
                 <span class="resume-item-client">${escHtml(el.client) || '—'}</span>
                 ${details ? `<span class="resume-item-details">${escHtml(details)}</span>` : ''}
-                ${el.mo   ? `<span class="resume-item-mo">MO : ${escHtml(el.mo)}</span>` : ''}
+                ${libellesMo(el).map(l => `<span class="resume-item-mo">${escHtml(l)}</span>`).join('')}
                 ${groupes ? `<span class="resume-item-mo">${groupes}</span>` : ''}
             </div>
             <span class="resume-item-heures">${plage(el.heure_arrivee, el.heure_depart)}</span>

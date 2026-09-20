@@ -4,7 +4,7 @@
 
 import { escHtml, hhmm, affH, affHSigne } from '../utils/utils.js';
 import { timelineJour, trierChronologique } from './resume_timeline.js';
-import { libellesPrestations, nbPrestationsFeuille } from './prestations.js';
+import { libellesPrestations, libellesMo, nbPrestationsFeuille } from './prestations.js';
 import { suppJour } from './heures_calculs.js';
 
 const plage = (a, b) => `${hhmm(a) || '—'} → ${hhmm(b) || '—'}`;
@@ -27,8 +27,8 @@ function ligneElement(el) {
         return `<div class="detail-interv rappel"><span>↩ Sortie supplémentaire${el.astreinte ? ' (astreinte)' : ''}</span><span class="detail-interv-heures">${plage(el.pause_debut, el.pause_fin)}</span></div>`;
     }
     const meta = [
-        el.ville, ...libellesPrestations(el),
-        el.mo ? `MO : ${el.mo}` : '', el.becs ? `${el.becs} bec(s)` : '', el.groupes ? `${el.groupes} groupe(s)` : '',
+        el.ville, ...libellesPrestations(el), ...libellesMo(el),
+        el.becs ? `${el.becs} bec(s)` : '', el.groupes ? `${el.groupes} groupe(s)` : '',
     ].filter(Boolean).join(' · ');
     return `<div class="detail-interv">
         <div>

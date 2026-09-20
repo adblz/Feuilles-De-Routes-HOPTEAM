@@ -26,6 +26,8 @@ export function remplirFormulaireDepuisFeuille(feuille, elements) {
                 ville:   el.ville         || '',
                 typeInt: el.type_int      || '',
                 mo:      el.mo            || '',
+                mo_cafe: el.mo_cafe       || '',
+                mo_bar:  el.mo_bar        || '',
                 becs:    el.becs != null ? String(el.becs) : '',
                 groupes: el.groupes != null ? String(el.groupes) : '',
                 details: el.details       || '',

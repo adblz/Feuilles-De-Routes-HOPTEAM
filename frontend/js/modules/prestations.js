@@ -56,9 +56,24 @@ export function texteNbPrestations(n) {
 }
 
 // Champs conditionnels de la carte, à partir de la liste [{ metier, presta }].
-const contient = (liste, metier, presta) =>
-    liste.some(p => p.presta === presta && (metier === null || p.metier === metier));
+const contient = (liste, metier, presta) => liste.some(p => p.presta === presta && p.metier === metier);
 
 export const afficheBecs    = liste => contient(liste, 'Bière', 'Sanitation');
 export const afficheGroupes = liste => contient(liste, 'Café', 'Joint-douchette');
-export const afficheMo      = liste => contient(liste, null, 'Dépannage');
+// Une main d'œuvre par métier, affichée quand ce métier a un Dépannage.
+export const afficheMo      = (liste, metier) => contient(liste, metier, 'Dépannage');
+
+// Colonne (base) et clé (formulaire) de la main d'œuvre de chaque métier.
+// `mo` reste celle de la bière : c'est l'ancienne colonne unique.
+const COLONNE_MO = { 'Bière': 'mo', 'Café': 'mo_cafe', 'Arrière-bar': 'mo_bar' };
+export const colonneMo = metier => COLONNE_MO[metier];
+
+// Libellés des mains d'œuvre saisies : ['MO Bière : 1h00', 'MO Café : 0h30'].
+// Ancienne ligne sans métier (« Sanitation,Dépannage ») : « MO : 1h00 » comme avant.
+export function libellesMo(el) {
+    if (!el) return [];
+    const ancien = decouperTypeInt(typeIntDe(el)).every(p => !p.metier);
+    return METIERS
+        .filter(m => el[colonneMo(m)])
+        .map(m => ancien ? `MO : ${el[colonneMo(m)]}` : `MO ${m} : ${el[colonneMo(m)]}`);
+}

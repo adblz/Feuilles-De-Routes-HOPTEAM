@@ -227,7 +227,9 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         client:        el.kind === 'intervention' ? (el.client  || null) : null,
         ville:         el.kind === 'intervention' ? (el.ville   || null) : null,
         type_int:      el.kind === 'intervention' ? (el.typeInt || null) : null,
-        mo:            el.kind === 'intervention' ? (el.mo      || null) : null,
+        mo:            el.kind === 'intervention' ? (el.mo      || null) : null,   // main d'œuvre bière
+        mo_cafe:       el.kind === 'intervention' ? (el.mo_cafe || null) : null,
+        mo_bar:        el.kind === 'intervention' ? (el.mo_bar  || null) : null,
         becs:          el.kind === 'intervention' ? toInt(el.becs)       : null,
         groupes:       el.kind === 'intervention' ? toInt(el.groupes)    : null,
         details:       el.kind === 'intervention' ? (el.details || null) : null,

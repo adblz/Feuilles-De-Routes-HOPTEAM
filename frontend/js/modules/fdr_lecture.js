@@ -17,7 +17,9 @@ export function lireTousLesElements() {
                 client:  document.getElementById(`i${rawId}-client`)?.value   || '',
                 ville:   document.getElementById(`i${rawId}-ville`)?.value    || '',
                 typeInt: lirePrestations(card),
-                mo:      document.getElementById(`i${rawId}-mo`)?.value       || '',
+                mo:      document.getElementById(`i${rawId}-mo`)?.value       || '',   // main d'œuvre bière
+                mo_cafe: document.getElementById(`i${rawId}-mo_cafe`)?.value  || '',
+                mo_bar:  document.getElementById(`i${rawId}-mo_bar`)?.value   || '',
                 becs:    document.getElementById(`i${rawId}-becs`)?.value     || '',
                 groupes: lireGroupes(card),
                 details: document.getElementById(`i${rawId}-details`)?.value  || '',
@@ -27,7 +29,8 @@ export function lireTousLesElements() {
             // l'enregistrement final, ni dans le PDF). Un métier simplement
             // ouvert, sans prestation cochée, ne compte pas comme rempli.
             const estVide = !item.arrivee && !item.depart && !item.client && !item.ville
-                && !item.typeInt && !item.mo && !item.becs && !item.groupes && !item.details;
+                && !item.typeInt && !item.mo && !item.mo_cafe && !item.mo_bar
+                && !item.becs && !item.groupes && !item.details;
             if (estVide) return;
             intNum++;
             item.num = intNum;

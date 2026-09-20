@@ -1,5 +1,5 @@
 // Rendu HTML des interventions, rappels et pauses pour le PDF.
-import { libellesPrestations } from './prestations.js';
+import { libellesPrestations, libellesMo } from './prestations.js';
 
 // Le rappel / sortie supplémentaire n'est PAS rendu ici : il est affiché en haut
 // du PDF avec les heures (voir pdf_layout.js). On le filtre donc de la liste.
@@ -9,6 +9,11 @@ export function renderItems(items) {
             // Un badge par prestation (« Bière · Sanitation », « Café · Joint-douchette »).
             const prestas = libellesPrestations(item);
             const badges  = prestas.map(p => `<span class="pdf-int-badge">${p}</span>`).join('');
+            // Une main d'œuvre par métier : « MO Bière : 1h00 » → champ « Main d'oeuvre bière ».
+            const champsMo = libellesMo(item).map(l => {
+                const [lbl, val] = l.split(' : ');
+                return `<div class="pdf-field"><div class="lbl">${lbl.replace('MO', "Main d'oeuvre")}</div><div class="val">${val}</div></div>`;
+            }).join('');
             return `
             <div class="pdf-int">
                 <div class="pdf-int-head">
@@ -19,7 +24,7 @@ export function renderItems(items) {
                     <div class="pdf-field"><div class="lbl">Arrivée</div><div class="val">${item.arrivee || '—'}</div></div>
                     <div class="pdf-field"><div class="lbl">Départ</div><div class="val">${item.depart || '—'}</div></div>
                     <div class="pdf-field"><div class="lbl">Prestations</div><div class="val">${prestas.join(', ') || '—'}</div></div>
-                    ${item.mo ? `<div class="pdf-field"><div class="lbl">Main d'oeuvre</div><div class="val">${item.mo}</div></div>` : ''}
+                    ${champsMo}
                     ${item.becs ? `<div class="pdf-field"><div class="lbl">Nb. becs</div><div class="val">${item.becs}</div></div>` : ''}
                     ${item.groupes ? `<div class="pdf-field"><div class="lbl">Nb. groupes</div><div class="val">${item.groupes}</div></div>` : ''}
                     ${item.details ? `<div class="pdf-details-row"><div class="lbl">Détails</div>${item.details}</div>` : ''}

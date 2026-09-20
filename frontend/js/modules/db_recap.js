@@ -12,7 +12,7 @@ const COLS_FEUILLE = [
 
 const COLS_INTERVENTION = [
     'order_index', 'kind', 'heure_arrivee', 'heure_depart', 'client', 'ville',
-    'type_int', 'mo', 'becs', 'groupes', 'details', 'pause_debut', 'pause_fin', 'astreinte',
+    'type_int', 'mo', 'mo_cafe', 'mo_bar', 'becs', 'groupes', 'details', 'pause_debut', 'pause_fin', 'astreinte',
 ].join(',');
 
 // Toutes les feuilles du technicien connecté entre deux dates (incluses),

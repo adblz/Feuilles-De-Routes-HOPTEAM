@@ -1,7 +1,7 @@
 // HTML des cartes du formulaire (intervention, pause). Aucune logique ici :
 // le comportement est branché par fdr_form.js, fdr_prestations.js et fdr_champs_extra.js.
 import { ICON_SUPPRIMER } from '../utils/utils.js';
-import { METIERS } from './prestations.js';
+import { METIERS, colonneMo } from './prestations.js';
 
 // Poignée « ≡ » (glisser pour déplacer) + corbeille, communes aux interventions et aux pauses.
 const ACTIONS_HTML = `
@@ -22,6 +22,17 @@ const BOUTONS_METIER = METIERS.map(m =>
 const BOUTONS_GROUPES = [1, 2, 3, 4].map(g =>
     `<button type="button" class="type-btn groupe-btn" data-value="${g}">${g}</button>`
 ).join('');
+
+// Une main d'œuvre par métier (visible seulement si ce métier a un Dépannage).
+// Ids : i{n}-mo (bière), i{n}-mo_cafe, i{n}-mo_bar — mêmes noms que les colonnes.
+const champsMo = n => METIERS.map(m => `
+                <div class="form-group hidden" id="i${n}-${colonneMo(m)}-group">
+                    <label>Main d'oeuvre ${m.toLowerCase()}</label>
+                    <select id="i${n}-${colonneMo(m)}">
+                        <option value="">-- Durée --</option>
+                        ${OPTIONS_MO}
+                    </select>
+                </div>`).join('');
 
 export function templateIntervention(n) {
     return `
@@ -64,13 +75,7 @@ export function templateIntervention(n) {
                     <label>Nombre de groupes</label>
                     <div class="type-btn-group groupes-btn-group" id="i${n}-groupes">${BOUTONS_GROUPES}</div>
                 </div>
-                <div class="form-group hidden" id="i${n}-mo-group">
-                    <label>Main d'oeuvre</label>
-                    <select id="i${n}-mo">
-                        <option value="">-- Durée --</option>
-                        ${OPTIONS_MO}
-                    </select>
-                </div>
+                ${champsMo(n)}
             </div>
             <div class="form-group form-group-full">
                 <label>Détails de l'intervention</label>

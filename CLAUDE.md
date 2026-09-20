@@ -46,7 +46,7 @@ Application web sans framework, vanilla HTML / CSS / JS avec modules ES natifs. 
 **Tables Supabase :**
 - `profiles` : `id, nom, role, contrat` (35 ou 39)
 - `feuilles_de_route` : en-tête de la feuille du jour (date, tech, heures…)
-- `interventions` : lignes détail liées à une feuille (`feuille_id`). `type_int` = prestations séparées par des virgules, chacune au format `Métier · Prestation` (ex. `Bière · Sanitation,Café · Joint-douchette`, anciennes valeurs sans métier tolérées) ; chaque valeur compte pour **une prestation** dans tous les compteurs. `becs` (Bière · Sanitation), `groupes` 1-4 (Café · Joint-douchette), `mo` (Dépannage). Liste des métiers / prestations : `prestations.js`
+- `interventions` : lignes détail liées à une feuille (`feuille_id`). `type_int` = prestations séparées par des virgules, chacune au format `Métier · Prestation` (ex. `Bière · Sanitation,Café · Joint-douchette`, anciennes valeurs sans métier tolérées) ; chaque valeur compte pour **une prestation** dans tous les compteurs. `becs` (Bière · Sanitation), `groupes` 1-4 (Café · Joint-douchette), main d'œuvre **par métier** quand il a un Dépannage : `mo` (bière — ancienne colonne unique), `mo_cafe`, `mo_bar`. Liste des métiers / prestations : `prestations.js`
 - `clients_planning` : clients à visiter (import Excel « sanitation » par le responsable), une ligne par PDV affecté à un technicien (`user_id`) ; `fait_le` null = à faire
 - `clients_secteurs` : correspondance « Secteur technicien » (texte Excel) → compte technicien, mémorisée par entreprise
 - `clients_imports` : journal des imports du planning
