@@ -1252,8 +1252,20 @@ header h1 { font-family: 'Big Shoulders', 'IBM Plex Sans', sans-serif; font-size
 
     /* Form */
     .form-grid { grid-template-columns: 1fr; }
-    /* Cartes intervention / pause : les heures restent côte à côte */
+    /* Cartes intervention / pause : les heures restent côte à côte. Sur Android,
+       un champ heure a une largeur minimale imposée par le navigateur qui déborde
+       de sa moitié de carte : on retire l'habillage natif et on force la largeur. */
     .form-grid-carte { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .form-grid-carte .form-group input[type="time"] {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        padding: 8px 6px;
+        height: 42px;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        appearance: none;
+    }
 
     /* Infos générales : 2 colonnes compactes sur mobile */
     .form-grid-2col { grid-template-columns: repeat(2, 1fr); gap: 8px; grid-auto-rows: 72px; }
