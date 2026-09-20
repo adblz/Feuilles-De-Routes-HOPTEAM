@@ -94,6 +94,8 @@ frontend/js/
 │   ├── ui_settings.js   ← modal paramètres
 │   ├── ui_heures.js     ← modal récap heures supp
 │   ├── autocomplete.js  ← mémorisation et suggestion des champs client/ville
+│   ├── timepicker.js    ← panneau de choix d'heure (Android / ordinateur ; iPhone garde la molette native) : ouvre sur l'heure actuelle si champ vide, pas de 5 min
+│   ├── timepicker_roue.js ← une colonne de la molette : cylindre 3D bouclé style iPhone, glisser + élan + calage, molette souris, flèches
 │   ├── toolbar.js       ← barre d'outils bas de page
 │   ├── responsable.js   ← point d'entrée page responsable (session, profil, 4 onglets)
 │   ├── responsable_nav.js ← onglets de la barre latérale (feuilles / heures / techs / import)

@@ -1,86 +1,52 @@
-// timepicker.js — molette de sélection d'heure (style iPhone) pour Android et ordinateur.
+// timepicker.js — panneau de sélection d'heure (molette style iPhone) pour Android et ordinateur.
 // Sur iPhone/iPad, on ne fait rien : la molette native d'iOS suffit.
 // Se branche sur tous les champs <input type="time" class="heure-molette">.
+// La roue elle-même (cylindre 3D, élan, calage) est dans timepicker_roue.js.
+
+import { Roue } from './timepicker_roue.js';
 
 const PAS_MINUTES = 5;   // pas des minutes (mettre 1 pour proposer chaque minute)
-const ITEM_H = 44;       // hauteur d'un chiffre (doit correspondre au CSS)
 
 const estIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 const pad2 = n => String(n).padStart(2, '0');
 const HEURES  = Array.from({ length: 24 }, (_, i) => pad2(i));
-const MINUTES = Array.from({ length: Math.ceil(60 / PAS_MINUTES) }, (_, i) => pad2(i * PAS_MINUTES));
+const MINUTES = Array.from({ length: 60 / PAS_MINUTES }, (_, i) => pad2(i * PAS_MINUTES));
 
-let overlay, colH, colM, titreEl, cibleInput, minuteau;
-
-function remplir(el, valeurs) {
-    const pad = `<div style="height:88px"></div>`;
-    el.innerHTML = pad + valeurs.map(v => `<div class="tp-item" data-val="${v}">${v}</div>`).join('') + pad;
-}
-
-function indexActif(el) { return Math.round(el.scrollTop / ITEM_H); }
-
-function vibrer() { if (navigator.vibrate) navigator.vibrate(8); }
-
-function majActif(el) {
-    const idx = indexActif(el);
-    if (el.dataset.dernierIdx !== undefined && el.dataset.dernierIdx !== String(idx)) vibrer();
-    el.dataset.dernierIdx = idx;
-    el.querySelectorAll('.tp-item').forEach((it, i) => it.classList.toggle('actif', i === idx));
-}
-
-function surScroll(el) {
-    majActif(el);
-    clearTimeout(minuteau);
-    minuteau = setTimeout(() => el.scrollTo({ top: indexActif(el) * ITEM_H, behavior: 'smooth' }), 90);
-}
-
-function scrollVers(el, valeurs, valeur) {
-    const i = valeurs.indexOf(valeur);
-    el.scrollTop = (i < 0 ? 0 : i) * ITEM_H;
-    majActif(el);
-}
-
-function valeurColonne(el, valeurs) {
-    return valeurs[Math.min(valeurs.length - 1, Math.max(0, indexActif(el)))];
-}
+let overlay, roueH, roueM, titreEl, cibleInput;
 
 function construire() {
     overlay = document.createElement('div');
     overlay.className = 'tp-overlay';
     overlay.innerHTML = `
-        <div class="tp-panneau">
+        <div class="tp-panneau" role="dialog" aria-modal="true">
+            <div class="tp-poignee"></div>
             <div class="tp-barre">
                 <button type="button" class="tp-annuler">Annuler</button>
                 <span class="tp-titre"></span>
                 <button type="button" class="tp-ok">OK</button>
             </div>
             <div class="tp-roues">
-                <div class="tp-selection"></div>
-                <div class="tp-colonne" data-col="h"></div>
-                <div class="tp-sep">:</div>
-                <div class="tp-colonne" data-col="m"></div>
+                <div class="tp-bande"></div>
+                <div class="tp-colonne" data-col="h" data-align="right" tabindex="0" role="spinbutton" aria-label="Heures"></div>
+                <div class="tp-colonne" data-col="m" data-align="left"  tabindex="0" role="spinbutton" aria-label="Minutes"></div>
             </div>
         </div>`;
     document.body.appendChild(overlay);
 
-    colH = overlay.querySelector('[data-col="h"]');
-    colM = overlay.querySelector('[data-col="m"]');
     titreEl = overlay.querySelector('.tp-titre');
-    remplir(colH, HEURES);
-    remplir(colM, MINUTES);
-
-    colH.addEventListener('scroll', () => surScroll(colH));
-    colM.addEventListener('scroll', () => surScroll(colM));
-    [colH, colM].forEach(col => col.addEventListener('click', e => {
-        const it = e.target.closest('.tp-item');
-        if (it) col.scrollTo({ top: [...col.querySelectorAll('.tp-item')].indexOf(it) * ITEM_H, behavior: 'smooth' });
-    }));
+    roueH = new Roue(overlay.querySelector('[data-col="h"]'), HEURES);
+    roueM = new Roue(overlay.querySelector('[data-col="m"]'), MINUTES);
 
     overlay.querySelector('.tp-annuler').addEventListener('click', fermer);
     overlay.querySelector('.tp-ok').addEventListener('click', valider);
     overlay.addEventListener('click', e => { if (e.target === overlay) fermer(); });
+    document.addEventListener('keydown', e => {
+        if (!overlay.classList.contains('ouvert')) return;
+        if (e.key === 'Escape') fermer();
+        if (e.key === 'Enter') valider();
+    });
 }
 
 function libelle(input) {
@@ -88,23 +54,27 @@ function libelle(input) {
     return lab ? lab.textContent.trim() : 'Choisir une heure';
 }
 
+// Champ vide → heure actuelle (comme sur iPhone), sinon la valeur déjà saisie.
+function valeurDepart(input) {
+    if (input.value) return input.value.split(':');
+    const now = new Date();
+    return [pad2(now.getHours()), pad2(now.getMinutes())];
+}
+
 function ouvrir(input) {
     cibleInput = input;
     titreEl.textContent = libelle(input);
-    let [h, m] = (input.value || '08:00').split(':');
+    const [h, m] = valeurDepart(input);
+    const mm = pad2(Math.round(parseInt(m, 10) / PAS_MINUTES) * PAS_MINUTES % 60);
     overlay.classList.add('ouvert');
-    requestAnimationFrame(() => {
-        scrollVers(colH, HEURES, HEURES.includes(h) ? h : '08');
-        const mm = pad2(Math.round(parseInt(m || '0', 10) / PAS_MINUTES) * PAS_MINUTES % 60);
-        scrollVers(colM, MINUTES, MINUTES.includes(mm) ? mm : MINUTES[0]);
-    });
+    roueH.aller(HEURES.includes(h) ? h : '08');
+    roueM.aller(MINUTES.includes(mm) ? mm : MINUTES[0]);
 }
 
 function fermer() { overlay.classList.remove('ouvert'); }
 
 function valider() {
-    const val = valeurColonne(colH, HEURES) + ':' + valeurColonne(colM, MINUTES);
-    cibleInput.value = val;
+    cibleInput.value = roueH.valeur + ':' + roueM.valeur;
     cibleInput.dispatchEvent(new Event('input', { bubbles: true }));
     cibleInput.dispatchEvent(new Event('change', { bubbles: true }));
     fermer();

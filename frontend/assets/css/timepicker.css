@@ -1,49 +1,63 @@
-/* timepicker.css — molette de sélection d'heure (style iPhone) */
+/* timepicker.css — molette de sélection d'heure (cylindre 3D style iPhone) */
 /* Utilisée sur Android et ordinateur ; sur iPhone/iPad la molette native reste active. */
 
+:root{ --tp-item-h:34px; }   /* hauteur d'un cran, doit correspondre à ITEM_H dans timepicker_roue.js */
+
 .tp-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;
+    position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;
     display:flex;align-items:flex-end;justify-content:center;
-    opacity:0;pointer-events:none;transition:opacity .2s;
+    opacity:0;pointer-events:none;transition:opacity .22s;
 }
 .tp-overlay.ouvert{opacity:1;pointer-events:auto;}
 
 .tp-panneau{
-    background:var(--panel);width:100%;max-width:420px;border-radius:20px 20px 0 0;
-    padding:14px 16px 22px;transform:translateY(100%);transition:transform .25s ease;
+    background:var(--panel);width:100%;max-width:420px;border-radius:22px 22px 0 0;
+    padding:10px 16px 26px;transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);
     box-shadow:0 -8px 30px rgba(0,0,0,.4);
 }
 .tp-overlay.ouvert .tp-panneau{transform:translateY(0);}
+.tp-poignee{width:36px;height:5px;border-radius:3px;background:rgba(244,239,227,.10);margin:0 auto 8px;}
 
-.tp-barre{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.tp-barre{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .tp-barre button{
-    background:none;border:none;font-size:16px;font-weight:600;padding:8px 6px;cursor:pointer;
+    background:none;border:none;font-size:17px;padding:8px 4px;cursor:pointer;border-radius:6px;
     font-family:inherit;
 }
+.tp-barre button:focus-visible{outline:2px solid var(--amber);}
 .tp-annuler{color:var(--muted);}
-.tp-ok{color:var(--amber);}
+.tp-ok{color:var(--amber);font-weight:600;}
 .tp-titre{font-size:15px;font-weight:600;color:var(--paper);}
 
-.tp-roues{position:relative;display:flex;justify-content:center;align-items:stretch;gap:6px;
-    height:220px;overflow:hidden;}
-.tp-roues::before,.tp-roues::after{content:"";position:absolute;left:0;right:0;height:88px;z-index:3;pointer-events:none;}
+/* --- La roue 3D -------------------------------------------------------- */
+.tp-roues{
+    position:relative;height:216px;display:flex;justify-content:center;gap:18px;
+    perspective:1000px;perspective-origin:50% 50%;overflow:hidden;
+    touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.tp-bande{
+    position:absolute;left:0;right:0;top:50%;height:var(--tp-item-h);transform:translateY(-50%);
+    background:rgba(244,239,227,.09);border-radius:9px;pointer-events:none;
+}
+.tp-colonne{
+    position:relative;width:88px;height:100%;transform-style:preserve-3d;cursor:grab;outline:none;
+}
+.tp-colonne:active{cursor:grabbing;}
+.tp-item{
+    position:absolute;left:0;right:0;top:50%;height:var(--tp-item-h);margin-top:calc(var(--tp-item-h) / -2);
+    display:flex;align-items:center;font-size:23px;font-weight:400;letter-spacing:.01em;
+    font-variant-numeric:tabular-nums;backface-visibility:hidden;will-change:transform,opacity;
+    color:var(--paper);
+}
+.tp-colonne[data-align="right"] .tp-item{justify-content:flex-end;padding-right:10px;}
+.tp-colonne[data-align="left"]  .tp-item{justify-content:flex-start;padding-left:10px;}
+
+/* Fondu haut et bas, pour que le cylindre s'estompe dans le panneau */
+.tp-roues::before,.tp-roues::after{
+    content:"";position:absolute;left:0;right:0;height:56px;z-index:2;pointer-events:none;
+}
 .tp-roues::before{top:0;background:linear-gradient(var(--panel),rgba(31,38,54,0));}
 .tp-roues::after{bottom:0;background:linear-gradient(rgba(31,38,54,0),var(--panel));}
 
-.tp-selection{
-    position:absolute;top:50%;left:8px;right:8px;height:44px;transform:translateY(-50%);
-    background:rgba(226,135,46,.14);border-top:1px solid var(--amber);border-bottom:1px solid var(--amber);
-    border-radius:8px;z-index:1;pointer-events:none;
+@media (prefers-reduced-motion:reduce){
+    .tp-overlay,.tp-panneau{transition:none;}
 }
-.tp-colonne{
-    flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;
-    -webkit-overflow-scrolling:touch;position:relative;z-index:2;
-}
-.tp-colonne::-webkit-scrollbar{display:none;}
-.tp-item{
-    height:44px;display:flex;align-items:center;justify-content:center;
-    scroll-snap-align:center;font-size:24px;font-weight:600;color:var(--paper);
-    opacity:.35;transition:opacity .15s,transform .15s;
-}
-.tp-item.actif{opacity:1;transform:scale(1.08);color:var(--amber);}
-.tp-sep{display:flex;align-items:center;font-size:26px;font-weight:700;color:var(--paper);padding:0 2px;z-index:2;}
