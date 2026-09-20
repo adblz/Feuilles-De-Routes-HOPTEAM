@@ -1,11 +1,13 @@
-const CACHE    = 'fdr-v32';
+const CACHE    = 'fdr-v33';
 const PRECACHE = [
   '/',
   '/index.html',
   '/pages/login.html',
   '/pages/responsable.html',
   '/pages/admin.html',
-  '/assets/images/logo.png',
+  '/assets/images/logo-192.png',
+  '/assets/images/logo-512.png',
+  '/assets/images/logo-maskable-512.png',
   '/assets/images/logo-reduit.png',
   '/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
