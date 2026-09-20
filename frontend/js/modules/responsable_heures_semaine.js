@@ -42,7 +42,8 @@ function ligneManquant(m) {
     </tr>`;
 }
 
-// s : semaine déclarée ; sv : la même semaine calculée sur les heures validées.
+// s : semaine déclarée ; sv : la même semaine calculée sur les heures validées
+// (null tant qu'aucun jour de la semaine n'a été validé).
 function ligneSemaine(s, sv) {
     const notes = [];
     if (s.nbFeries > 0)    notes.push(`${s.nbFeries} férié${s.nbFeries > 1 ? 's' : ''}`);
@@ -52,12 +53,15 @@ function ligneSemaine(s, sv) {
     const supp  = x => x.totalSuppMin > 0
         ? `+${affH(x.totalSuppMin)} <span class="heures-majo">25 % ${affH(x.supp25)} · 50 % ${affH(x.supp50)}</span>`
         : `<span class="heures-muet">${x.netMin < 0 ? affHSigne(x.netMin) : '0h00'}</span>`;
+    const validees = sv
+        ? `<strong>validées ${supp(sv)}</strong>`
+        : '<span class="heures-muet">non validée</span>';
     return `<tr class="heures-semaine-total">
         <td>${escHtml(s.labelCourt)} <span class="heures-seuil">${seuil}</span></td>
         <td class="num">${affH(s.totalTravailMin)}</td>
-        <td class="num valide">${affH(sv.totalTravailMin)}</td>
+        <td class="num valide">${sv ? affH(sv.totalTravailMin) : '—'}</td>
         <td class="num"></td>
-        <td colspan="3">Supp. déclarées ${supp(s)} — <strong>validées ${supp(sv)}</strong></td>
+        <td colspan="3">Supp. déclarées ${supp(s)} — ${validees}</td>
     </tr>`;
 }
 
