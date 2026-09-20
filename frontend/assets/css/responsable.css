@@ -426,7 +426,7 @@
     color: var(--adm-text);
 }
 .heures-tech-total.valide strong { color: var(--adm-emerald); }
-.heures-tech-total small { font-size: 10px; color: var(--adm-muted); font-family: 'IBM Plex Mono', monospace; }
+.heures-tech-total small { font-size: 11px; color: var(--adm-text-soft); font-family: 'IBM Plex Mono', monospace; }
 
 .heures-tech-body { padding: 0 16px 12px; border-top: 1px solid var(--adm-border-soft); }
 
@@ -451,7 +451,7 @@
 .heures-jour-table td:first-child { width: 120px; white-space: nowrap; }
 .heures-jour-table td.num { font-family: 'IBM Plex Mono', monospace; }
 .heures-jour-table td.num.valide { color: var(--adm-emerald); font-weight: 600; }
-.heures-jour-table td.num.ecart { color: var(--adm-muted); font-size: 12px; }
+.heures-jour-table td.num.ecart { color: var(--adm-text-soft); font-size: 12px; }
 .heures-jour-table td.commentaire { font-size: 12px; font-style: italic; }
 .heures-jour-table tfoot td { font-weight: 700; color: var(--adm-text); border-top: 2px solid var(--adm-border); }
 
@@ -467,9 +467,11 @@
     border-bottom: 2px solid var(--adm-border);
 }
 .heures-jour-table tr.heures-semaine-total td:first-child { white-space: normal; width: auto; }
-.heures-jour-table .heures-seuil { font-weight: 400; font-size: 11px; color: var(--adm-muted); }
-.heures-jour-table .heures-majo  { font-weight: 400; font-size: 11px; color: var(--adm-muted); font-family: 'IBM Plex Mono', monospace; }
-.heures-jour-table .heures-muet  { color: var(--adm-muted); font-weight: 400; }
+/* Textes secondaires du sous-total : en fin (pas en gras) pour rester derrière
+   la semaine et la date, mais dans un gris assez foncé pour être lisibles. */
+.heures-jour-table .heures-seuil { font-weight: 400; font-size: 12px; color: var(--adm-text-soft); }
+.heures-jour-table .heures-majo  { font-weight: 400; font-size: 12px; color: var(--adm-text-soft); font-family: 'IBM Plex Mono', monospace; }
+.heures-jour-table .heures-muet  { color: var(--adm-text-soft); font-weight: 400; }
 .resp-badge-astreinte {
     display: inline-block;
     font-size: 10px;
