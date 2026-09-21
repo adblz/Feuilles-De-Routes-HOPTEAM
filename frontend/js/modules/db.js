@@ -262,6 +262,16 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         astreinte:     el.kind === 'rappel' ? !!el.astreinte : false,
     }));
 
-    await insererInterventions(rows);
+    // Si les interventions sont refusées, on retire l'en-tête qu'on vient de
+    // créer : sinon la journée apparaît « enregistrée » sans aucune intervention,
+    // le calendrier ne propose plus le brouillon, et « Modifier » depuis le
+    // résumé écrase ce brouillon avec une feuille vide (vécu le 2026-09-21).
+    try {
+        await insererInterventions(rows);
+    } catch (e) {
+        try { await dbDelete('feuilles_de_route', `id=eq.${feuille.id}`); }
+        catch (e2) { console.warn('Annulation de l\'en-tête impossible :', e2); }
+        throw e;
+    }
     return feuille.id;
 }
