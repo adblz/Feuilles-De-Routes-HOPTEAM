@@ -185,6 +185,29 @@ export async function enregistrerSuggestion(categorie, message) {
     });
 }
 
+// FILET DE SÉCURITÉ TEMPORAIRE (2026-09-21) — à retirer une fois la migration
+// « groupes / mo_cafe / mo_bar » exécutée dans Supabase (database/migrations.sql).
+// Tant qu'elle ne l'est pas, Supabase refuse la ligne (« PGRST204 : colonne
+// inconnue ») : on réessaie sans ces colonnes pour ne pas bloquer
+// l'enregistrement des feuilles. Ces trois valeurs sont alors perdues pour la
+// feuille concernée ; tout le reste est enregistré normalement.
+const COLONNES_RECENTES = ['groupes', 'mo_cafe', 'mo_bar'];
+
+async function insererInterventions(rows) {
+    try {
+        await dbPost('interventions', rows);
+    } catch (e) {
+        if (!/PGRST204/.test(e.message)) throw e;
+        console.warn('Migration Supabase manquante : enregistrement sans', COLONNES_RECENTES.join(', '));
+        const sansRecentes = rows.map(r => {
+            const copie = { ...r };
+            COLONNES_RECENTES.forEach(c => delete copie[c]);
+            return copie;
+        });
+        await dbPost('interventions', sansRecentes);
+    }
+}
+
 export async function sauvegarderEnBase({ date, tech, company, contrat, heureDebut, heureFin, repasMin, heuresTravail, heuresSupp, astreinte, mode, pdfBlob, pdfFileName, elements }) {
     if (!isSessionValid()) await refreshSession();
 
@@ -239,6 +262,6 @@ export async function sauvegarderEnBase({ date, tech, company, contrat, heureDeb
         astreinte:     el.kind === 'rappel' ? !!el.astreinte : false,
     }));
 
-    await dbPost('interventions', rows);
+    await insererInterventions(rows);
     return feuille.id;
 }

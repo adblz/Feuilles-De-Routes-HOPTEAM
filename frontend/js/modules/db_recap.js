@@ -10,10 +10,10 @@ const COLS_FEUILLE = [
     'repas_min', 'heures_travail', 'astreinte', 'conge',
 ].join(',');
 
-const COLS_INTERVENTION = [
-    'order_index', 'kind', 'heure_arrivee', 'heure_depart', 'client', 'ville',
-    'type_int', 'mo', 'mo_cafe', 'mo_bar', 'becs', 'groupes', 'details', 'pause_debut', 'pause_fin', 'astreinte',
-].join(',');
+// Interventions : toutes les colonnes (aucune n'est volumineuse). Une liste
+// figée casserait la requête dès qu'une colonne manque en base (migration
+// pas encore passée) ou est ajoutée sans penser à ce fichier.
+const COLS_INTERVENTION = '*';
 
 // Toutes les feuilles du technicien connecté entre deux dates (incluses),
 // avec le détail complet de leurs interventions, pauses et rappels.
