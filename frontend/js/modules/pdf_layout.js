@@ -1,16 +1,7 @@
-import { cfg, seuilJour, lireTousLesElements, getLogoBase64 } from './fdr.js';
+import { cfg, lireTousLesElements, getLogoBase64 } from './fdr.js';
 import { renderItems } from './pdf_items.js';
 import { dureeCourte } from '../utils/utils.js';
 import { nbPrestationsFeuille, texteNbPrestations } from './prestations.js';
-
-// Libellé de la case « heures travaillées » selon le trajet retiré par
-// l'entreprise : « Heures trav. » si 0 min, sinon « Heures trav. (−1h30 trajet) ».
-function labelHeuresTrav(min) {
-    if (!min) return 'Heures trav.';
-    const h = Math.floor(min / 60), m = min % 60;
-    const txt = h && m ? `${h}h${String(m).padStart(2, '0')}` : h ? `${h}h` : `${m}min`;
-    return `Heures trav. (−${txt} trajet)`;
-}
 
 // Échappe le texte libre des mentions PDF (saisi dans l'admin) et garde les
 // retours à la ligne.
@@ -34,8 +25,6 @@ export function construirePDF() {
     const debut   = document.getElementById('heure-debut').value || '—';
     const fin     = document.getElementById('heure-fin').value   || '—';
     const repas   = document.getElementById('repas').value ? document.getElementById('repas').value + ' min' : '—';
-    const travail = document.getElementById('heures-travail').value || '—';
-    const supp    = document.getElementById('heures-supp').value   || '0h00';
     const items   = lireTousLesElements();
     const nbPresta = nbPrestationsFeuille(items);
 
@@ -43,11 +32,6 @@ export function construirePDF() {
     const itemsHTML = renderItems(items);
     const astreinteJour = document.getElementById('astreinte-jour')?.checked;
     const astreinte     = astreinteJour || !!(rappel && rappel.astreinte);
-
-    // Écart au seuil du jour (signé). Le total réel se calcule à la semaine.
-    const suppBanner = (supp && supp !== '0h00')
-        ? `<div class="pdf-supp-banner">Heures supp. du jour : ${supp} <span style="font-weight:400;">(écart au seuil du jour — total calculé à la semaine)</span></div>`
-        : '';
 
     const logoB64  = getLogoBase64();
     const logoHtml = logoB64
@@ -70,14 +54,13 @@ export function construirePDF() {
 
         <div class="pdf-technicien-row" style="display:flex;justify-content:space-between;align-items:center;">
             <span>Technicien : ${tech}</span>
-            <span style="font-size:11px;font-weight:400;color:#4a5568;">Contrat ${cfg.contrat}h &mdash; seuil ${seuilJour() / 60}h ce jour</span>
+            <span style="font-size:11px;font-weight:400;color:#4a5568;">Contrat ${cfg.contrat}h</span>
         </div>
 
         <div class="pdf-hours-row">
             <div class="pdf-hour-box"><div class="lbl">Début journée</div><div class="val">${debut}</div></div>
             <div class="pdf-hour-box"><div class="lbl">Fin journée</div><div class="val">${fin}</div></div>
             <div class="pdf-hour-box repas"><div class="lbl">Pause repas</div><div class="val">${repas}</div></div>
-            <div class="pdf-hour-box supp"><div class="lbl">${astreinteJour ? 'Heures travaillées (astreinte)' : labelHeuresTrav(cfg.trajetMinutes)}</div><div class="val">${travail}</div></div>
         </div>
 ${rappel ? `
         <div class="pdf-hours-row">
@@ -85,8 +68,6 @@ ${rappel ? `
             <div class="pdf-hour-box"><div class="lbl">Sortie suppl. — retour</div><div class="val">${rappel.fin || '—'}</div></div>
             ${dureeCourte(rappel.debut, rappel.fin) ? `<div class="pdf-hour-box supp"><div class="lbl">Durée sortie</div><div class="val">${dureeCourte(rappel.debut, rappel.fin)}</div></div>` : ''}
         </div>` : ''}
-
-        ${suppBanner}
 
         <div class="pdf-section-title">Interventions &amp; Pauses (${texteNbPrestations(nbPresta)})</div>
         ${itemsHTML}
