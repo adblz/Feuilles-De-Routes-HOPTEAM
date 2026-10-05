@@ -185,6 +185,91 @@ Donner ce fichier à lire, puis :
    `pdfs` ?).
 2. Continuer l'étape 1 (PDF privés) : bloc SQL + les 4 fichiers listés.
 3. Enchaîner sur les étapes 2 à 5 dans l'ordre de la section 5.
+4. Voir aussi la section 9 : autres améliorations repérées hors capacité
+   (perte possible d'une feuille à l'enregistrement, sauvegarde cloud, tests…).
 
 Ne pas modifier `sw.js` ni `vercel.json` sans relire les règles du
 `CLAUDE.md` du projet (réorganisation de fichiers, déploiement Vercel).
+
+## 9. Autres améliorations repérées (hors capacité)
+
+Relecture complète du code faite le 21 septembre 2026, à la demande de
+l'utilisateur (« quelles améliorations verrais-tu ? »). Rien n'est cassé
+aujourd'hui : ce sont des risques à réduire et des filets de sécurité.
+Aucune de ces pistes n'est commencée.
+
+### Priorité haute
+
+**9.1 — Perte possible d'une feuille à l'enregistrement**
+- Où : `frontend/js/modules/db.js`, fonction `sauvegarderEnBase`.
+- Problème : ré-enregistrer une feuille = **supprimer l'ancienne**, puis
+  envoyer le PDF, puis **recréer** la ligne. Si le réseau coupe entre les
+  deux (technicien en déplacement), l'ancienne feuille est effacée et la
+  nouvelle n'existe pas. Seul le brouillon local du téléphone reste.
+- Correction proposée (au choix) :
+  - simple : inverser l'ordre — créer la nouvelle feuille d'abord,
+    supprimer l'ancienne ensuite ;
+  - mieux : contrainte unique `(user_id, date)` sur `feuilles_de_route`
+    (bloc SQL dans `database/migrations.sql`) + « upsert » (une seule
+    opération, pas de trou). L'upsert garde le **même id** de feuille, ce
+    qui simplifierait aussi les validations du responsable (aujourd'hui
+    liées à `(user_id, date)` justement parce que l'id change).
+- Fichiers : `db.js`, `database/migrations.sql`.
+
+**9.2 — Sauvegarde de la base dépendante du PC**
+- Où : `sauvegarder-base.bat`, lancé par une tâche planifiée Windows.
+- Problème : PC éteint, en panne ou remplacé = plus aucune sauvegarde, et
+  personne n'est prévenu. C'est le risque le plus sérieux du montage gratuit
+  (déjà signalé en section 7).
+- Correction proposée : sauvegarde quotidienne **dans le cloud**, gratuite,
+  via GitHub Actions (`pg_dump` vers un dépôt privé), indépendante du PC.
+- Fichiers : nouveau `.github/workflows/sauvegarde.yml` + un secret GitHub
+  contenant l'adresse de connexion à la base.
+
+### Priorité moyenne
+
+**9.3 — Aucun test automatique sur la règle des heures supp**
+- Où : `frontend/js/modules/heures_calculs.js`, `seuil_jour.js`.
+- Problème : c'est la règle qui décide de la paie ; une modification future
+  peut la casser sans que personne ne s'en aperçoive.
+- Correction proposée : un petit jeu de tests avec `node --test` (rien à
+  installer). Cas à couvrir : semaine 35 h normale, férié, congé, jour ouvré
+  sans feuille, contrat 39 h avec vendredi à 7 h, paliers 25 % / 50 %.
+- Fichiers : nouveau dossier `tests/` + `package.json` racine minimal
+  (`"type": "module"`). Sans impact sur Vercel (son root est `frontend/`).
+
+**9.4 — Session expirée après une longue veille du téléphone**
+- Où : `frontend/js/modules/auth.js` (rafraîchissement toutes les 45 min
+  par minuterie) et `db.js`.
+- Problème : un téléphone en veille plusieurs heures peut envoyer sa
+  première requête avec un jeton périmé → erreur « JWT expired » pour le
+  technicien. Seules `sauvegarderEnBase` et `marquerConge` vérifient avant.
+- Correction proposée : vérifier / rafraîchir la session **dans
+  `buildHeaders()`** de `db.js`, une seule fois pour toutes les requêtes,
+  au lieu du cas par cas.
+
+### Priorité basse
+
+- **9.5** — Mot de passe minimum 6 caractères (`frontend/js/main.js` et
+  backend) → passer à 8.
+- **9.6** — `backend/index.js` : `demarrerResumeQuotidien()` + notifications
+  Telegram — vérifier que c'est encore utilisé ; sinon retirer (moins de
+  code à maintenir).
+
+### Rappel — chantier capacité (section 5) toujours pas commencé
+
+Confirmé dans le code au 21 septembre 2026 :
+- le bucket `pdfs` est encore **public** (`db.js` :
+  `/storage/v1/object/public/pdfs/…`) ;
+- la page responsable charge encore **tout l'historique** à chaque
+  ouverture (`db_responsable.js` → `chargerToutesLesFeuilles`, sans filtre
+  de date) ;
+- le PDF est encore une « photo » lourde via html2pdf (`pdf.js`).
+La question de la section 6 (autres buckets que `pdfs` ?) est toujours sans
+réponse.
+
+### Ordre conseillé
+
+9.1 d'abord (rapide, supprime un vrai risque de perte de données), puis
+reprendre le chantier capacité (sections 5 et 6) dans l'ordre convenu ;
+9.2 et 9.3 sont des filets de sécurité peu coûteux à placer quand on veut.
